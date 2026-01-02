@@ -175,8 +175,8 @@ export interface LoginResponse {
 
 export interface ApiResponse<T> {
   data?: T;
-  success: boolean;
-  message?: string;
+  succeeded: boolean;
+  friendlyMessage?: string;
   errors?: string[];
 }
 
