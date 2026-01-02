@@ -68,7 +68,7 @@ class HttpClient {
 
       const data: ApiResponse<{ token: string; refreshToken: string }> = await response.json();
 
-      if (data.success && data.data) {
+      if (data.succeeded && data.data) {
         await tokenStorage.setToken(data.data.token);
         await tokenStorage.setRefreshToken(data.data.refreshToken);
         return data.data.token;
@@ -119,7 +119,7 @@ class HttpClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP Error: ${response.status}`);
+      throw new Error(errorData.friendlyMessage || `HTTP Error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -182,9 +182,14 @@ class HttpClient {
       if (error.name === 'AbortError') {
         throw new Error('Request timeout');
       }
-      if (error.message === 'Failed to fetch') {
-        throw new Error('Network error');
+
+      console.error('Detailed Network Error:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+
+      // Re-throw with more context if possible, or just the original error
+      if (error.message === 'Network request failed' || error.message === 'Failed to fetch') {
+        throw new Error(`Network request failed: ${error.message}`);
       }
+
       throw error;
     } finally {
       clearTimeout(timeoutId);
