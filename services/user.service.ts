@@ -1,4 +1,4 @@
-import { apiHttpClient as apiClient } from './http.client';
+import { apiClient } from './api.client';
 import type { User, UserDayOff, UserDayOffBalance, UserEmployment, UserRequest, ApiResponse, PaginatedResponse } from '@/types/backend';
 
 class UserService {

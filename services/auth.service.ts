@@ -1,35 +1,62 @@
-import { authHttpClient, apiHttpClient } from './http.client';
+import { apiClient } from './api.client';
 import { tokenStorage } from './api.config';
-import type { LoginRequest, LoginResponse, User } from '@/types/backend';
+import type { LoginRequest, LoginResponse, User, ApiResponse } from '@/types/backend';
+
+const AUTH_API_URL = process.env.EXPO_PUBLIC_AUTH_API_URL || 'https://api.herotr.com/api';
 
 class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json, text/plain, */*',
+      'Accept-Language': 'tr',
+    };
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     try {
-      console.log('Login attempt with:', credentials.userName);
+      const url = `${AUTH_API_URL}/auth/login`;
+      console.log('Login Request:', url);
+      console.log('Body:', credentials);
 
-      // Diagnostic: Check connectivity
-      try {
-        const ping = await fetch('https://www.google.com/favicon.ico', { method: 'HEAD' });
-        console.log('Connectivity check (Google):', ping.status);
-      } catch (err: any) {
-        console.error('Connectivity check failed (Google):', err.message);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(credentials),
+        signal: controller.signal,
+      });
+
+      console.log('Login Response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP Error: ${response.status}`);
       }
 
-      const response = await authHttpClient.post<LoginResponse>('/auth/login', credentials, false);
+      const data: ApiResponse<LoginResponse> = await response.json();
 
-      console.log('Login Response:', JSON.stringify(response, null, 2));
-
-      if (response.succeeded && response.data) {
-        await tokenStorage.setToken(response.data.token);
-        await tokenStorage.setRefreshToken(response.data.refreshToken);
-        console.log('Login successful, token saved');
-        return response.data;
+      if (data.success && data.data) {
+        await tokenStorage.setToken(data.data.token);
+        await tokenStorage.setRefreshToken(data.data.refreshToken);
+        return data.data;
       }
 
-      throw new Error(response.friendlyMessage || 'Login failed');
+      throw new Error(data.message || 'Login failed');
     } catch (error: any) {
       console.error('Login Error:', error);
+
+      if (error.name === 'AbortError') {
+        throw new Error('Request timeout - Server took too long to respond');
+      }
+
+      if (error.message === 'Failed to fetch' || error.message.includes('Network request failed')) {
+        throw new Error('Network error - Cannot connect to server. Please check your internet connection.');
+      }
+
       throw error;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
@@ -44,7 +71,7 @@ class AuthService {
         return null;
       }
 
-      const response = await apiHttpClient.get<User>('/User/current');
+      const response = await apiClient.get<User>('/User/current');
       return response.data || null;
     } catch (error) {
       console.error('Error getting current user:', error);
