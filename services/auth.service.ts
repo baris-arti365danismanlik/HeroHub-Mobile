@@ -1,36 +1,18 @@
-import { authHttpClient, apiHttpClient } from './http.client';
+import { apiClient } from './api.client';
 import { tokenStorage } from './api.config';
-import type { LoginRequest, LoginResponse, User } from '@/types/backend';
+import type { LoginRequest, LoginResponse, User, ApiResponse } from '@/types/backend';
 
 class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    try {
-      console.log('Login attempt with:', credentials.userName);
+    const response = await apiClient.post<LoginResponse>('/api/auth/login', credentials);
 
-      // Diagnostic: Check connectivity
-      try {
-        const ping = await fetch('https://www.google.com/favicon.ico', { method: 'HEAD' });
-        console.log('Connectivity check (Google):', ping.status);
-      } catch (err: any) {
-        console.error('Connectivity check failed (Google):', err.message);
-      }
-
-      const response = await authHttpClient.post<LoginResponse>('/auth/login', credentials, false);
-
-      console.log('Login Response:', JSON.stringify(response, null, 2));
-
-      if (response.succeeded && response.data) {
-        await tokenStorage.setToken(response.data.token);
-        await tokenStorage.setRefreshToken(response.data.refreshToken);
-        console.log('Login successful, token saved');
-        return response.data;
-      }
-
-      throw new Error(response.friendlyMessage || 'Login failed');
-    } catch (error: any) {
-      console.error('Login Error:', error);
-      throw error;
+    if (response.success && response.data) {
+      await tokenStorage.setToken(response.data.token);
+      await tokenStorage.setRefreshToken(response.data.refreshToken);
+      return response.data;
     }
+
+    throw new Error(response.message || 'Login failed');
   }
 
   async logout(): Promise<void> {
@@ -44,7 +26,7 @@ class AuthService {
         return null;
       }
 
-      const response = await apiHttpClient.get<User>('/User/current');
+      const response = await apiClient.get<User>('/api/User/current');
       return response.data || null;
     } catch (error) {
       console.error('Error getting current user:', error);

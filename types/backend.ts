@@ -162,7 +162,7 @@ export interface UserRequest {
 }
 
 export interface LoginRequest {
-  userName: string;
+  email: string;
   password: string;
 }
 
@@ -175,8 +175,8 @@ export interface LoginResponse {
 
 export interface ApiResponse<T> {
   data?: T;
-  succeeded: boolean;
-  friendlyMessage?: string;
+  success: boolean;
+  message?: string;
   errors?: string[];
 }
 
