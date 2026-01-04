@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -13,8 +13,8 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      setError('Lütfen email ve şifre giriniz');
+    if (!userName || !password) {
+      setError('Lütfen kullanıcı adı ve şifre giriniz');
       return;
     }
 
@@ -22,9 +22,11 @@ export default function LoginScreen() {
     setError('');
 
     try {
-      await login({ email, password });
+      console.log('Login attempt with:', userName);
+      await login({ userName, password });
       router.replace('/(tabs)');
     } catch (err: any) {
+      console.error('Login error:', err);
       setError(err.message || 'Giriş başarısız. Lütfen tekrar deneyin.');
     } finally {
       setIsLoading(false);
@@ -40,11 +42,11 @@ export default function LoginScreen() {
         <View style={styles.form}>
           <TextInput
             style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
+            placeholder="Kullanıcı Adı / Telefon"
+            value={userName}
+            onChangeText={setUserName}
             autoCapitalize="none"
-            keyboardType="email-address"
+            keyboardType="default"
             editable={!isLoading}
           />
 
