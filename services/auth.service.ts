@@ -4,7 +4,7 @@ import type { LoginRequest, LoginResponse, User, ApiResponse } from '@/types/bac
 
 class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await apiClient.post<LoginResponse>('/api/auth/login', credentials);
+    const response = await apiClient.post<LoginResponse>('/auth/login', credentials);
 
     if (response.success && response.data) {
       await tokenStorage.setToken(response.data.token);
@@ -26,7 +26,7 @@ class AuthService {
         return null;
       }
 
-      const response = await apiClient.get<User>('/api/User/current');
+      const response = await apiClient.get<User>('/User/current');
       return response.data || null;
     } catch (error) {
       console.error('Error getting current user:', error);

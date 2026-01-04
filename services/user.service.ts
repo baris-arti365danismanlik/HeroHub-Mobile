@@ -3,7 +3,7 @@ import type { User, UserDayOff, UserDayOffBalance, UserEmployment, UserRequest, 
 
 class UserService {
   async getUserById(id: string): Promise<User> {
-    const response = await apiClient.get<User>(`/api/User/${id}`);
+    const response = await apiClient.get<User>(`/User/${id}`);
     if (!response.data) {
       throw new Error('User not found');
     }
@@ -11,7 +11,7 @@ class UserService {
   }
 
   async updateUser(id: string, data: Partial<User>): Promise<User> {
-    const response = await apiClient.put<User>(`/api/User/${id}`, data);
+    const response = await apiClient.put<User>(`/User/${id}`, data);
     if (!response.data) {
       throw new Error('Failed to update user');
     }
@@ -20,7 +20,7 @@ class UserService {
 
   async getDayOffBalance(userId: string, year?: number): Promise<UserDayOffBalance> {
     const params = year ? { year } : {};
-    const response = await apiClient.get<UserDayOffBalance>(`/api/UserDayOffBalance/${userId}`, params);
+    const response = await apiClient.get<UserDayOffBalance>(`/UserDayOffBalance/${userId}`, params);
     if (!response.data) {
       throw new Error('Day off balance not found');
     }
@@ -28,7 +28,7 @@ class UserService {
   }
 
   async getUserDayOffs(userId: string, params?: { year?: number; status?: number }): Promise<UserDayOff[]> {
-    const response = await apiClient.get<UserDayOff[]>(`/api/UserDayOff/user/${userId}`, params);
+    const response = await apiClient.get<UserDayOff[]>(`/UserDayOff/user/${userId}`, params);
     return response.data || [];
   }
 
@@ -39,7 +39,7 @@ class UserService {
     endDate: string;
     reason?: string;
   }): Promise<UserDayOff> {
-    const response = await apiClient.post<UserDayOff>('/api/UserDayOff', data);
+    const response = await apiClient.post<UserDayOff>('/UserDayOff', data);
     if (!response.data) {
       throw new Error('Failed to create day off request');
     }
@@ -47,12 +47,12 @@ class UserService {
   }
 
   async getUserEmployments(userId: string): Promise<UserEmployment[]> {
-    const response = await apiClient.get<UserEmployment[]>(`/api/UserEmployment/user/${userId}`);
+    const response = await apiClient.get<UserEmployment[]>(`/UserEmployment/user/${userId}`);
     return response.data || [];
   }
 
   async getUserRequests(userId: string, params?: { status?: number }): Promise<UserRequest[]> {
-    const response = await apiClient.get<UserRequest[]>(`/api/UserRequest/user/${userId}`, params);
+    const response = await apiClient.get<UserRequest[]>(`/UserRequest/user/${userId}`, params);
     return response.data || [];
   }
 
@@ -63,7 +63,7 @@ class UserService {
     description: string;
     requestedAmount?: number;
   }): Promise<UserRequest> {
-    const response = await apiClient.post<UserRequest>('/api/UserRequest', data);
+    const response = await apiClient.post<UserRequest>('/UserRequest', data);
     if (!response.data) {
       throw new Error('Failed to create request');
     }
