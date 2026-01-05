@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
-import { Calendar, Clock, FileText, Menu } from 'lucide-react-native';
+import { Calendar, Clock, FileText, Menu, Bell, MessageSquare, User as UserIcon } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import type { UserDayOffBalance, UserDayOff, UserRequest } from '@/types/backend';
 
@@ -60,13 +60,44 @@ export default function HomeScreen() {
             >
               <Menu size={24} color="#1a1a1a" />
             </TouchableOpacity>
+
             <View style={styles.logoContainer}>
               <Text style={styles.logoText}>hero</Text>
               <View style={styles.logoBadge}>
                 <Text style={styles.logoBadgeText}>+</Text>
               </View>
             </View>
+
+            <View style={styles.headerActions}>
+              <TouchableOpacity style={styles.iconButton}>
+                <Bell size={20} color="#1a1a1a" />
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>2</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.iconButton}>
+                <MessageSquare size={20} color="#1a1a1a" />
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>12</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.profileButton}>
+                {user?.profilePictureUrl ? (
+                  <Image
+                    source={{ uri: user.profilePictureUrl }}
+                    style={styles.headerProfileImage}
+                  />
+                ) : (
+                  <View style={styles.headerProfilePlaceholder}>
+                    <UserIcon size={20} color="#7C3AED" />
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
+
           <Text style={styles.greeting}>Merhaba,</Text>
           <Text style={styles.userName}>{user?.firstName} {user?.lastName}</Text>
         </View>
@@ -171,9 +202,9 @@ const styles = StyleSheet.create({
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    marginRight: 32,
+    position: 'absolute',
+    left: '50%',
+    marginLeft: -35,
   },
   logoText: {
     fontSize: 24,
@@ -193,6 +224,50 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconButton: {
+    position: 'relative',
+    padding: 4,
+  },
+  badge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  profileButton: {
+    marginLeft: 4,
+  },
+  headerProfileImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
+  headerProfilePlaceholder: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F0E7FF',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   greeting: {
     fontSize: 16,
