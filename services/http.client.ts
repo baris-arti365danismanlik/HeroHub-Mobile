@@ -179,11 +179,17 @@ class HttpClient {
       const response = await makeRequest();
       return await this.handleResponse<T>(response, includeAuth ? makeRequest : undefined);
     } catch (error: any) {
+      console.error('Request failed:', {
+        url: `${this.baseURL}${endpoint}`,
+        error: error.message,
+        name: error.name,
+      });
+
       if (error.name === 'AbortError') {
-        throw new Error('Request timeout');
+        throw new Error('İstek zaman aşımına uğradı. Backend çalışıyor mu?');
       }
-      if (error.message === 'Failed to fetch') {
-        throw new Error('Network error');
+      if (error.message === 'Failed to fetch' || error.message.includes('fetch')) {
+        throw new Error(`Backend'e bağlanılamadı: ${this.baseURL}${endpoint}\n\nBackend çalışıyor mu? CORS açık mı?`);
       }
       throw error;
     } finally {
