@@ -21,7 +21,10 @@ import {
   Users2,
   DollarSign,
   Bell,
-  MessageSquare
+  MessageSquare,
+  Package,
+  Download,
+  Pencil
 } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
@@ -63,6 +66,7 @@ export default function ProfileScreen() {
   const profileSections = [
     'Çalışma Bilgileri',
     'Profil Bilgileri',
+    'Zimmet Bilgileri',
   ];
 
   const renderWorkInfoSection = () => (
@@ -154,6 +158,81 @@ export default function ProfileScreen() {
           ]}
           onEdit={() => handleEdit('employee-2')}
         />
+      </Accordion>
+    </>
+  );
+
+  const renderAssetsSection = () => (
+    <>
+      <Accordion
+        title="ZİMMET BİLGİLERİ"
+        icon={<Package size={18} color="#7C3AED" />}
+        defaultExpanded={true}
+      >
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={styles.downloadButton}
+            onPress={() => console.log('Download report')}
+          >
+            <Download size={18} color="#7C3AED" />
+            <Text style={styles.downloadButtonText}>Zimmet Raporu İndir</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => console.log('Add asset')}
+          >
+            <Text style={styles.addButtonText}>Zimmet Ekle</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.assetCard}>
+          <View style={styles.assetCardHeader}>
+            <Text style={styles.assetCardTitle}>Bilgisayar</Text>
+            <TouchableOpacity
+              style={styles.assetEditButton}
+              onPress={() => handleEdit('asset-1')}
+            >
+              <Pencil size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+          <InfoRow label="Açıklama" value="M3 Macbook Pro 2023" />
+          <InfoRow label="Seri No" value="123131637ABJ1" />
+          <InfoRow label="Teslim Tarihi" value="09.12.2024" isLast />
+        </View>
+
+        <View style={styles.assetCard}>
+          <View style={styles.assetCardHeader}>
+            <Text style={styles.assetCardTitle}>Cep Telefonu</Text>
+            <TouchableOpacity
+              style={styles.assetEditButton}
+              onPress={() => handleEdit('asset-2')}
+            >
+              <Pencil size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+          <InfoRow label="Açıklama" value="iPhone 16" />
+          <InfoRow label="Seri No" value="89781637ABJ1" />
+          <InfoRow label="Teslim Tarihi" value="10.08.2020" isLast />
+        </View>
+
+        <View style={[styles.assetCard, styles.assetCardInactive]}>
+          <View style={styles.assetCardHeader}>
+            <Text style={[styles.assetCardTitle, styles.assetCardInactiveText]}>
+              Telefon
+            </Text>
+            <TouchableOpacity
+              style={styles.assetEditButton}
+              onPress={() => handleEdit('asset-3')}
+            >
+              <Pencil size={16} color="#CCC" />
+            </TouchableOpacity>
+          </View>
+          <InfoRow label="Açıklama" value="Blackberry" />
+          <InfoRow label="Seri No" value="2423AAA112" />
+          <InfoRow label="Teslim Tarihi" value="01.01.2019" />
+          <InfoRow label="İade Tarihi" value="10.08.2020" isLast />
+        </View>
       </Accordion>
     </>
   );
@@ -360,6 +439,8 @@ export default function ProfileScreen() {
         return renderWorkInfoSection();
       case 'Profil Bilgileri':
         return renderProfileInfoSection();
+      case 'Zimmet Bilgileri':
+        return renderAssetsSection();
       default:
         return renderWorkInfoSection();
     }
@@ -653,5 +734,70 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FF3B30',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  downloadButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+    gap: 6,
+  },
+  downloadButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#7C3AED',
+  },
+  addButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: '#7C3AED',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  assetCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  assetCardInactive: {
+    opacity: 0.5,
+  },
+  assetCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  assetCardTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  assetCardInactiveText: {
+    color: '#999',
+  },
+  assetEditButton: {
+    padding: 4,
   },
 });
