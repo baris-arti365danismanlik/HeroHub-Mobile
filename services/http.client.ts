@@ -235,7 +235,7 @@ class HttpClient {
   }
 }
 
-const AUTH_API_URL = process.env.EXPO_PUBLIC_AUTH_API_URL || 'https://api.herotr.com/api';
+const AUTH_API_URL = process.env.EXPO_PUBLIC_AUTH_API_URL || 'https://faz2-api.herotr.com/api';
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://faz2-api.herotr.com/api';
 
 export const authHttpClient = new HttpClient({
