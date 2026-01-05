@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
-import { Plus } from 'lucide-react-native';
+import { Plus, Menu } from 'lucide-react-native';
+import { DrawerMenu } from '@/components/DrawerMenu';
 import type { UserDayOff } from '@/types/backend';
 
 const STATUS_LABELS: Record<number, string> = {
@@ -23,6 +24,7 @@ export default function DayOffScreen() {
   const { user } = useAuth();
   const [dayOffs, setDayOffs] = useState<UserDayOff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -47,17 +49,24 @@ export default function DayOffScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#7C3AED" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>İzinlerim</Text>
-        <TouchableOpacity style={styles.addButton}>
-          <Plus size={24} color="#007AFF" />
+    <>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => setDrawerVisible(true)}
+          >
+            <Menu size={24} color="#1a1a1a" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>İzinlerim</Text>
+          <TouchableOpacity style={styles.addButton}>
+            <Plus size={24} color="#7C3AED" />
         </TouchableOpacity>
       </View>
 
@@ -91,7 +100,13 @@ export default function DayOffScreen() {
           ))
         )}
       </ScrollView>
-    </View>
+      </View>
+
+      <DrawerMenu
+        visible={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+      />
+    </>
   );
 }
 
@@ -114,17 +129,20 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    borderBottomColor: '#F0F0F0',
+  },
+  menuButton: {
+    padding: 4,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#1a1a1a',
+    flex: 1,
+    textAlign: 'center',
   },
   addButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
+    padding: 4,
     alignItems: 'center',
   },
   content: {
