@@ -167,17 +167,26 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
+  id: number;
+  email: string;
   token: string;
+  tokenExpireTime: string;
   refreshToken: string;
-  user: User;
-  expiresAt: string;
+  refreshTokenExpireTime: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  profilePhoto: string;
+  organizationId: number;
 }
 
 export interface ApiResponse<T> {
   data?: T;
-  success: boolean;
+  succeeded?: boolean;
+  success?: boolean;
+  friendlyMessage?: string;
   message?: string;
-  errors?: string[];
+  errors?: string[] | null;
 }
 
 export interface PaginatedResponse<T> {

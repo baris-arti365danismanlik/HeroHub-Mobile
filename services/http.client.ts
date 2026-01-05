@@ -68,7 +68,9 @@ class HttpClient {
 
       const data: ApiResponse<{ token: string; refreshToken: string }> = await response.json();
 
-      if (data.success && data.data) {
+      const isSuccess = data.success || data.succeeded;
+
+      if (isSuccess && data.data) {
         await tokenStorage.setToken(data.data.token);
         await tokenStorage.setRefreshToken(data.data.refreshToken);
         return data.data.token;

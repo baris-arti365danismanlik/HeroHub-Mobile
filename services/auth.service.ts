@@ -9,14 +9,16 @@ class AuthService {
 
       const response = await authHttpClient.post<LoginResponse>('/auth/login', credentials, false);
 
-      if (response.success && response.data) {
+      const isSuccess = response.success || response.succeeded;
+
+      if (isSuccess && response.data) {
         await tokenStorage.setToken(response.data.token);
         await tokenStorage.setRefreshToken(response.data.refreshToken);
         console.log('Login successful, token saved');
         return response.data;
       }
 
-      throw new Error(response.message || 'Login failed');
+      throw new Error(response.message || response.friendlyMessage || 'Login failed');
     } catch (error: any) {
       console.error('Login Error:', error);
       throw error;
