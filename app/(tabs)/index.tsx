@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
-import { Calendar, Clock, FileText } from 'lucide-react-native';
+import { Calendar, Clock, FileText, Menu } from 'lucide-react-native';
+import { DrawerMenu } from '@/components/DrawerMenu';
 import type { UserDayOffBalance, UserDayOff, UserRequest } from '@/types/backend';
 
 export default function HomeScreen() {
@@ -11,6 +12,7 @@ export default function HomeScreen() {
   const [recentDayOffs, setRecentDayOffs] = useState<UserDayOff[]>([]);
   const [recentRequests, setRecentRequests] = useState<UserRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -42,23 +44,39 @@ export default function HomeScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#7C3AED" />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Merhaba,</Text>
-        <Text style={styles.userName}>{user?.firstName} {user?.lastName}</Text>
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Calendar size={24} color="#007AFF" />
-          <Text style={styles.cardTitle}>İzin Bakiyesi</Text>
+    <>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => setDrawerVisible(true)}
+            >
+              <Menu size={24} color="#1a1a1a" />
+            </TouchableOpacity>
+            <View style={styles.logoContainer}>
+              <Text style={styles.logoText}>hero</Text>
+              <View style={styles.logoBadge}>
+                <Text style={styles.logoBadgeText}>+</Text>
+              </View>
+            </View>
+          </View>
+          <Text style={styles.greeting}>Merhaba,</Text>
+          <Text style={styles.userName}>{user?.firstName} {user?.lastName}</Text>
         </View>
+
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Calendar size={24} color="#7C3AED" />
+              <Text style={styles.cardTitle}>İzin Bakiyesi</Text>
+            </View>
         {dayOffBalance ? (
           <View style={styles.balanceContainer}>
             <View style={styles.balanceItem}>
@@ -81,12 +99,12 @@ export default function HomeScreen() {
         )}
       </View>
 
-      {recentDayOffs.length > 0 && (
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Clock size={24} color="#007AFF" />
-            <Text style={styles.cardTitle}>Son İzinler</Text>
-          </View>
+          {recentDayOffs.length > 0 && (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Clock size={24} color="#7C3AED" />
+                <Text style={styles.cardTitle}>Son İzinler</Text>
+              </View>
           {recentDayOffs.map((dayOff) => (
             <View key={dayOff.id} style={styles.listItem}>
               <Text style={styles.listItemTitle}>
@@ -98,12 +116,12 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {recentRequests.length > 0 && (
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <FileText size={24} color="#007AFF" />
-            <Text style={styles.cardTitle}>Son Talepler</Text>
-          </View>
+          {recentRequests.length > 0 && (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <FileText size={24} color="#7C3AED" />
+                <Text style={styles.cardTitle}>Son Talepler</Text>
+              </View>
           {recentRequests.map((request) => (
             <View key={request.id} style={styles.listItem}>
               <Text style={styles.listItemTitle}>{request.title}</Text>
@@ -112,25 +130,69 @@ export default function HomeScreen() {
           ))}
         </View>
       )}
-    </ScrollView>
+        </ScrollView>
+      </View>
+
+      <DrawerMenu
+        visible={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+      />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F8F9FA',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F8F9FA',
   },
   header: {
     padding: 24,
     paddingTop: 60,
     backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  menuButton: {
+    padding: 4,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    marginRight: 32,
+  },
+  logoText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#7C3AED',
+  },
+  logoBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#7C3AED',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
+  },
+  logoBadgeText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   greeting: {
     fontSize: 16,
@@ -141,6 +203,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1a1a1a',
     marginTop: 4,
+  },
+  scrollView: {
+    flex: 1,
   },
   card: {
     backgroundColor: '#fff',
@@ -179,7 +244,7 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   balanceValueHighlight: {
-    color: '#007AFF',
+    color: '#7C3AED',
   },
   balanceLabel: {
     fontSize: 14,
