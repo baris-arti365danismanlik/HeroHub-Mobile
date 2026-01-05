@@ -17,7 +17,8 @@ import {
   Plus,
   UserIcon,
   Calendar,
-  FileText
+  FileText,
+  Package
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -57,6 +58,12 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
       label: 'İzinler',
       icon: <Calendar size={20} color="#7C3AED" />,
       route: '/(tabs)/dayoff',
+    },
+    {
+      id: 'assets',
+      label: 'Zimmet Bilgileri',
+      icon: <Package size={20} color="#7C3AED" />,
+      route: '/(tabs)/assets',
     },
     {
       id: 'requests',
