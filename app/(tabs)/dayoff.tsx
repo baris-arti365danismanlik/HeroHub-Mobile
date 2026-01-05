@@ -1,9 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
-import { Plus, Menu } from 'lucide-react-native';
+import {
+  Plus,
+  Menu,
+  Bell,
+  MessageSquare,
+  User as UserIcon,
+  Briefcase,
+  Building2,
+  Umbrella,
+  ChevronDown,
+} from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
+import { ProfileDropdown } from '@/components/ProfileDropdown';
+import { Accordion } from '@/components/Accordion';
+import { DayOffCard } from '@/components/DayOffCard';
 import type { UserDayOff } from '@/types/backend';
 
 const STATUS_LABELS: Record<number, string> = {
@@ -25,6 +38,9 @@ export default function DayOffScreen() {
   const [dayOffs, setDayOffs] = useState<UserDayOff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [selectedSection, setSelectedSection] = useState('İzin Bilgileri');
+  const [selectedYear, setSelectedYear] = useState('2024');
+  const [selectedType, setSelectedType] = useState('Tümü');
 
   useEffect(() => {
     if (user) {
@@ -54,6 +70,124 @@ export default function DayOffScreen() {
     );
   }
 
+  if (!user) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#7C3AED" />
+      </View>
+    );
+  }
+
+  const sections = ['İzin Bilgileri'];
+
+  const renderDayOffInfoSection = () => (
+    <>
+      <Accordion
+        title="İZİN BİLGİLERİ"
+        icon={<Umbrella size={18} color="#7C3AED" />}
+        defaultExpanded={true}
+      >
+        <View style={styles.balanceCard}>
+          <Text style={styles.balanceLabel}>YILLIK İZİN</Text>
+          <Text style={styles.balanceValue}>-4 Gün</Text>
+        </View>
+
+        <TouchableOpacity style={styles.requestButton}>
+          <Text style={styles.requestButtonText}>İzin Talebi Gir</Text>
+        </TouchableOpacity>
+      </Accordion>
+
+      <Accordion
+        title="PLANLANAN İZİNLER"
+        icon={<Umbrella size={18} color="#7C3AED" />}
+        defaultExpanded={true}
+      >
+        <DayOffCard
+          type="Yıllık İzin"
+          days={5}
+          startDate="05.09.2021 Pzt"
+          endDate="26.10.2024 Pzt"
+          onEdit={() => console.log('Edit')}
+        />
+
+        <DayOffCard
+          type="Doğum Günü İzni"
+          days={1}
+          startDate="05.09.2021 Pzt"
+          endDate="26.10.2024 Pzt"
+          onEdit={() => console.log('Edit')}
+        />
+
+        <DayOffCard
+          type="Karne Günü İzni"
+          days={0.5}
+          startDate="05.09.2021 Pzt"
+          endDate="26.10.2024 Pzt"
+          onEdit={() => console.log('Edit')}
+        />
+
+        <DayOffCard
+          type="Yıllık İzin"
+          days={5}
+          startDate="05.09.2021 Pzt"
+          endDate="26.10.2024 Pzt"
+          onEdit={() => console.log('Edit')}
+        />
+      </Accordion>
+
+      <Accordion
+        title="GEÇMİŞ İZİNLER"
+        icon={<Umbrella size={18} color="#7C3AED" />}
+        defaultExpanded={true}
+      >
+        <View style={styles.filtersRow}>
+          <View style={styles.filterColumn}>
+            <Text style={styles.filterLabel}>İzin Türü</Text>
+            <TouchableOpacity style={styles.filterDropdown}>
+              <Text style={styles.filterDropdownText}>{selectedType}</Text>
+              <ChevronDown size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.filterColumn}>
+            <Text style={styles.filterLabel}>Yıl</Text>
+            <TouchableOpacity style={styles.filterDropdown}>
+              <Text style={styles.filterDropdownText}>{selectedYear}</Text>
+              <ChevronDown size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <DayOffCard
+          type="Yıllık İzin"
+          days={-5}
+          startDate="05.09.2021 Pzt"
+          endDate="26.10.2024 Pzt"
+          isPast
+          onEdit={() => console.log('Edit')}
+        />
+
+        <DayOffCard
+          type="Yıllık İzin"
+          days={-3}
+          startDate="05.09.2021 Pzt"
+          endDate="26.10.2024 Pzt"
+          isPast
+          onEdit={() => console.log('Edit')}
+        />
+
+        <DayOffCard
+          type="Yıllık İzin"
+          days={14}
+          startDate="05.09.2021 Pzt"
+          endDate="26.10.2024 Pzt"
+          isPast
+          onEdit={() => console.log('Edit')}
+        />
+      </Accordion>
+    </>
+  );
+
   return (
     <>
       <View style={styles.container}>
@@ -64,42 +198,93 @@ export default function DayOffScreen() {
           >
             <Menu size={24} color="#1a1a1a" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>İzinlerim</Text>
-          <TouchableOpacity style={styles.addButton}>
-            <Plus size={24} color="#7C3AED" />
-        </TouchableOpacity>
-      </View>
 
-      <ScrollView style={styles.content}>
-        {dayOffs.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Henüz izin kaydınız bulunmamaktadır</Text>
+          <View style={styles.logoContainer}>
+            <Text style={styles.logoText}>hero</Text>
+            <View style={styles.logoBadge}>
+              <Text style={styles.logoBadgeText}>+</Text>
+            </View>
           </View>
-        ) : (
-          dayOffs.map((dayOff) => (
-            <View key={dayOff.id} style={styles.card}>
-              <View style={styles.cardHeader}>
-                <View style={styles.dateContainer}>
-                  <Text style={styles.dateText}>
-                    {new Date(dayOff.startDate).toLocaleDateString('tr-TR')}
-                  </Text>
-                  <Text style={styles.separatorText}>-</Text>
-                  <Text style={styles.dateText}>
-                    {new Date(dayOff.endDate).toLocaleDateString('tr-TR')}
-                  </Text>
-                </View>
-                <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[dayOff.status] }]}>
-                  <Text style={styles.statusText}>{STATUS_LABELS[dayOff.status]}</Text>
-                </View>
+
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.iconButton}>
+              <Bell size={20} color="#1a1a1a" />
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>2</Text>
               </View>
-              <Text style={styles.daysText}>{dayOff.totalDays} gün</Text>
-              {dayOff.reason && (
-                <Text style={styles.reasonText}>{dayOff.reason}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.iconButton}>
+              <MessageSquare size={20} color="#1a1a1a" />
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>12</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.profileButton}>
+              {user.profilePictureUrl ? (
+                <Image
+                  source={{ uri: user.profilePictureUrl }}
+                  style={styles.headerProfileImage}
+                />
+              ) : (
+                <View style={styles.headerProfilePlaceholder}>
+                  <UserIcon size={20} color="#7C3AED" />
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.profileCard}>
+            <View style={styles.profileImageContainer}>
+              {user.profilePictureUrl ? (
+                <Image
+                  source={{ uri: user.profilePictureUrl }}
+                  style={styles.profileImage}
+                />
+              ) : (
+                <View style={styles.profileImagePlaceholder}>
+                  <UserIcon size={48} color="#7C3AED" />
+                </View>
               )}
             </View>
-          ))
-        )}
-      </ScrollView>
+
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>
+                {user.firstName} {user.lastName}
+              </Text>
+
+              <View style={styles.profileDetails}>
+                <View style={styles.profileDetailRow}>
+                  <Briefcase size={16} color="#666" />
+                  <Text style={styles.profileDetailText}>
+                    {user.position || 'Management Trainee'}
+                  </Text>
+                </View>
+                <View style={styles.profileDetailRow}>
+                  <Building2 size={16} color="#666" />
+                  <Text style={styles.profileDetailText}>Art365 Danışmanlık</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <ProfileDropdown
+            options={sections}
+            selectedOption={selectedSection}
+            onSelect={setSelectedSection}
+          />
+
+          <View style={styles.sectionsContainer}>
+            {renderDayOffInfoSection()}
+          </View>
+        </ScrollView>
       </View>
 
       <DrawerMenu
@@ -113,102 +298,207 @@ export default function DayOffScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F8F9FA',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F8F9FA',
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 24,
-    paddingTop: 60,
+    justifyContent: 'space-between',
     backgroundColor: '#fff',
+    paddingTop: 60,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   menuButton: {
     padding: 4,
   },
-  headerTitle: {
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute',
+    left: '50%',
+    marginLeft: -35,
+  },
+  logoText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
-    flex: 1,
-    textAlign: 'center',
+    color: '#7C3AED',
   },
-  addButton: {
+  logoBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#7C3AED',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
+  },
+  logoBadgeText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconButton: {
+    position: 'relative',
     padding: 4,
+  },
+  badge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  profileButton: {
+    marginLeft: 4,
+  },
+  headerProfileImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
+  headerProfilePlaceholder: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F0E7FF',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  content: {
+  scrollView: {
     flex: 1,
-    padding: 16,
   },
-  card: {
+  scrollContent: {
+    paddingBottom: 24,
+  },
+  profileCard: {
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    padding: 20,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
-  cardHeader: {
+  profileImageContainer: {
+    marginBottom: 16,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  profileImagePlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#F0E7FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileInfo: {
+    alignItems: 'center',
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 12,
+  },
+  profileDetails: {
+    gap: 6,
+  },
+  profileDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  profileDetailText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  sectionsContainer: {
+    padding: 16,
+  },
+  balanceCard: {
+    backgroundColor: '#F3E8FF',
+    padding: 16,
+    borderRadius: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  dateText: {
-    fontSize: 16,
-    fontWeight: '500',
+  balanceLabel: {
+    fontSize: 14,
+    fontWeight: '600',
     color: '#1a1a1a',
   },
-  separatorText: {
+  balanceValue: {
     fontSize: 16,
-    color: '#8E8E93',
+    fontWeight: 'bold',
+    color: '#FF3B30',
   },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+  requestButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
   },
-  statusText: {
-    fontSize: 12,
+  requestButtonText: {
+    fontSize: 15,
     fontWeight: '600',
     color: '#fff',
   },
-  daysText: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+  filtersRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
   },
-  reasonText: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 8,
-  },
-  emptyContainer: {
+  filterColumn: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
   },
-  emptyText: {
-    fontSize: 16,
-    color: '#8E8E93',
-    textAlign: 'center',
+  filterLabel: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 6,
+  },
+  filterDropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  filterDropdownText: {
+    fontSize: 14,
+    color: '#1a1a1a',
   },
 });
