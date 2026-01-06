@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -27,7 +27,14 @@ import {
   Download,
   Pencil,
   Umbrella,
-  ChevronDown
+  ChevronDown,
+  Folder,
+  File,
+  Search,
+  Plus,
+  Share2,
+  ChevronRight,
+  FolderOpen
 } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
@@ -74,6 +81,7 @@ export default function ProfileScreen() {
     'Çalışma Bilgileri',
     'Profil Bilgileri',
     'Zimmet Bilgileri',
+    'Dosyalar',
   ];
 
   const renderDayOffSection = () => (
@@ -645,6 +653,112 @@ export default function ProfileScreen() {
     </>
   );
 
+  const renderFilesSection = () => {
+    const files = [
+      { id: '1', name: 'Özlük Dosyaları', type: 'folder', count: 'Boş Klasör', icon: 'folder-blue' },
+      { id: '2', name: 'İmzalı Belgeler', type: 'folder', count: '8 Dosya', icon: 'folder-blue' },
+      { id: '3', name: 'Evrak Klasörüm', type: 'folder', count: '3 Dosya', icon: 'folder-yellow' },
+      { id: '4', name: 'Lazım Olur', type: 'folder', count: 'Boş Klasör', icon: 'folder-yellow' },
+      { id: '5', name: 'vize_evrak.docx', type: 'file', size: '15 kb', icon: 'doc' },
+      { id: '6', name: 'vesikalik.jpeg', type: 'file', size: '423 kb', icon: 'image' },
+      { id: '7', name: 'basvuru_dosya.pdf', type: 'file', size: '1.53 mb', icon: 'pdf' },
+    ];
+
+    const getFileIcon = (iconType: string) => {
+      switch (iconType) {
+        case 'folder-blue':
+          return <FolderOpen size={24} color="#3B82F6" />;
+        case 'folder-yellow':
+          return <Folder size={24} color="#F59E0B" />;
+        case 'doc':
+          return <FileText size={24} color="#2563EB" />;
+        case 'image':
+          return <Package size={24} color="#10B981" />;
+        case 'pdf':
+          return <FileText size={24} color="#EF4444" />;
+        default:
+          return <File size={24} color="#666" />;
+      }
+    };
+
+    return (
+      <>
+        <View style={styles.filesHeader}>
+          <View style={styles.filesHeaderTop}>
+            <View style={styles.filesTitle}>
+              <Folder size={20} color="#7C3AED" />
+              <Text style={styles.filesTitleText}>DOSYALAR</Text>
+            </View>
+            <View style={styles.filesActions}>
+              <TouchableOpacity style={styles.filesActionButton}>
+                <Plus size={20} color="#7C3AED" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.filesActionButton}>
+                <Share2 size={20} color="#7C3AED" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.searchContainer}>
+            <Search size={18} color="#999" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Belgelerin içinde ara..."
+              placeholderTextColor="#999"
+            />
+          </View>
+
+          <View style={styles.breadcrumb}>
+            <TouchableOpacity>
+              <Text style={styles.breadcrumbActive}>Çalışma Alanınız</Text>
+            </TouchableOpacity>
+            <Text style={styles.breadcrumbSeparator}>•</Text>
+            <Text style={styles.breadcrumbText}>...</Text>
+            <Text style={styles.breadcrumbSeparator}>•</Text>
+            <TouchableOpacity>
+              <Text style={styles.breadcrumbLink}>Yeni Klasör</Text>
+            </TouchableOpacity>
+            <Text style={styles.breadcrumbSeparator}>•</Text>
+            <TouchableOpacity>
+              <Text style={styles.breadcrumbText}>Son Klasör</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.filesContainer}>
+          {files.map((item, index) => (
+            <TouchableOpacity
+              key={item.id}
+              style={[
+                styles.fileItem,
+                index === files.length - 1 && styles.fileItemLast
+              ]}
+              activeOpacity={0.7}
+            >
+              <View style={styles.fileItemLeft}>
+                <View style={styles.fileItemDots}>
+                  <View style={styles.dot} />
+                  <View style={styles.dot} />
+                  <View style={styles.dot} />
+                </View>
+                <View style={styles.fileItemIcon}>
+                  {getFileIcon(item.icon)}
+                </View>
+                <View style={styles.fileItemInfo}>
+                  <Text style={styles.fileItemName}>{item.name}</Text>
+                  <Text style={styles.fileItemMeta}>
+                    {item.type === 'folder' ? item.count : item.size}
+                  </Text>
+                </View>
+              </View>
+              <ChevronRight size={20} color="#CCC" />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </>
+    );
+  };
+
   const renderSectionContent = () => {
     switch (selectedSection) {
       case 'İzin Bilgileri':
@@ -655,6 +769,8 @@ export default function ProfileScreen() {
         return renderProfileInfoSection();
       case 'Zimmet Bilgileri':
         return renderAssetsSection();
+      case 'Dosyalar':
+        return renderFilesSection();
       default:
         return renderDayOffSection();
     }
@@ -1129,5 +1245,143 @@ const styles = StyleSheet.create({
   filterDropdownText: {
     fontSize: 14,
     color: '#1a1a1a',
+  },
+  filesHeader: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  filesHeaderTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  filesTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  filesTitleText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    letterSpacing: 0.5,
+  },
+  filesActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  filesActionButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: '#F9FAFB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 8,
+    marginBottom: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#1a1a1a',
+    paddingVertical: 4,
+  },
+  breadcrumb: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  breadcrumbActive: {
+    fontSize: 13,
+    color: '#7C3AED',
+    fontWeight: '600',
+  },
+  breadcrumbLink: {
+    fontSize: 13,
+    color: '#7C3AED',
+  },
+  breadcrumbText: {
+    fontSize: 13,
+    color: '#666',
+  },
+  breadcrumbSeparator: {
+    fontSize: 13,
+    color: '#CCC',
+  },
+  filesContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  fileItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#F3F4F6',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  fileItemLast: {
+    borderBottomWidth: 0,
+  },
+  fileItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  fileItemDots: {
+    gap: 2,
+  },
+  dot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: '#9CA3AF',
+  },
+  fileItemIcon: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fileItemInfo: {
+    flex: 1,
+  },
+  fileItemName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1a1a1a',
+    marginBottom: 2,
+  },
+  fileItemMeta: {
+    fontSize: 13,
+    color: '#6B7280',
   },
 });
