@@ -65,7 +65,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [selectedSection, setSelectedSection] = useState('İzin Bilgileri');
+  const [selectedSection, setSelectedSection] = useState('Özet');
   const [assetModalVisible, setAssetModalVisible] = useState(false);
   const [assetForm, setAssetForm] = useState({
     category: 'Bilgisayar',
@@ -152,6 +152,7 @@ export default function ProfileScreen() {
   }
 
   const profileSections = [
+    'Özet',
     'İzin Bilgileri',
     'Çalışma Bilgileri',
     'Profil Bilgileri',
@@ -742,7 +743,6 @@ export default function ProfileScreen() {
 
   const renderProfileInfoSection = () => (
     <>
-      {renderSummarySection()}
       <Accordion
         title="PROFİL BİLGİLERİ"
         icon={<UserIcon size={18} color="#7C3AED" />}
@@ -1045,6 +1045,8 @@ export default function ProfileScreen() {
 
   const renderSectionContent = () => {
     switch (selectedSection) {
+      case 'Özet':
+        return renderSummarySection();
       case 'İzin Bilgileri':
         return renderDayOffSection();
       case 'Çalışma Bilgileri':
