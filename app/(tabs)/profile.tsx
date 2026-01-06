@@ -46,7 +46,9 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [selectedSection, setSelectedSection] = useState('Çalışma Bilgileri');
+  const [selectedSection, setSelectedSection] = useState('İzin Bilgileri');
+  const [selectedYear, setSelectedYear] = useState('2024');
+  const [selectedType, setSelectedType] = useState('Tümü');
 
   const handleLogout = async () => {
     await logout();
@@ -71,9 +73,6 @@ export default function ProfileScreen() {
     'Profil Bilgileri',
     'Zimmet Bilgileri',
   ];
-
-  const [selectedYear, setSelectedYear] = useState('2024');
-  const [selectedType, setSelectedType] = useState('Tümü');
 
   const renderDayOffSection = () => (
     <>
