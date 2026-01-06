@@ -285,3 +285,70 @@ export interface PaginatedResponse<T> {
   pageSize: number;
   totalPages: number;
 }
+
+export interface OnboardingStep {
+  id: string;
+  title: string;
+  order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface OnboardingTask {
+  id: string;
+  title: string;
+  description?: string;
+  assigned_to?: string;
+  due_date?: string;
+  order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface OnboardingQuestion {
+  id: string;
+  question: string;
+  is_required: boolean;
+  order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface UserOnboarding {
+  id: string;
+  user_id: string;
+  welcome_package_sent: boolean;
+  welcome_package_sent_at?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface UserOnboardingStep {
+  id: string;
+  user_onboarding_id: string;
+  step_id: string;
+  is_completed: boolean;
+  completed_at?: string;
+  created_at: string;
+  step?: OnboardingStep;
+}
+
+export interface UserOnboardingTask {
+  id: string;
+  user_onboarding_id: string;
+  task_id: string;
+  is_completed: boolean;
+  completed_at?: string;
+  created_at: string;
+  task?: OnboardingTask;
+}
+
+export interface UserOnboardingAnswer {
+  id: string;
+  user_onboarding_id: string;
+  question_id: string;
+  answer?: string;
+  created_at: string;
+  updated_at?: string;
+  question?: OnboardingQuestion;
+}

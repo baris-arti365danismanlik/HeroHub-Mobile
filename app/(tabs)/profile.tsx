@@ -52,7 +52,19 @@ import { WorkInfoCard } from '@/components/WorkInfoCard';
 import { assetService } from '@/services/asset.service';
 import { leaveService } from '@/services/leave.service';
 import { inboxService } from '@/services/inbox.service';
-import { Asset, AssetStatus, LeaveRequest } from '@/types/backend';
+import { onboardingService } from '@/services/onboarding.service';
+import {
+  Asset,
+  AssetStatus,
+  LeaveRequest,
+  OnboardingStep,
+  OnboardingTask,
+  OnboardingQuestion,
+  UserOnboarding,
+  UserOnboardingStep,
+  UserOnboardingTask,
+  UserOnboardingAnswer,
+} from '@/types/backend';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
 import {
@@ -105,6 +117,25 @@ export default function ProfileScreen() {
   const [showDurationDropdown, setShowDurationDropdown] = useState(false);
   const [inboxVisible, setInboxVisible] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [onboardingData, setOnboardingData] = useState<{
+    userOnboarding: UserOnboarding | null;
+    steps: OnboardingStep[];
+    tasks: OnboardingTask[];
+    questions: OnboardingQuestion[];
+    userSteps: UserOnboardingStep[];
+    userTasks: UserOnboardingTask[];
+    userAnswers: UserOnboardingAnswer[];
+  }>({
+    userOnboarding: null,
+    steps: [],
+    tasks: [],
+    questions: [],
+    userSteps: [],
+    userTasks: [],
+    userAnswers: [],
+  });
+  const [onboardingLoading, setOnboardingLoading] = useState(false);
+  const [answerInputs, setAnswerInputs] = useState<Record<string, string>>({});
 
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
   const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
@@ -123,6 +154,7 @@ export default function ProfileScreen() {
       loadAssets();
       loadLeaveRequests();
       loadUnreadCount();
+      loadOnboardingData();
     }
   }, [user?.id]);
 
@@ -161,6 +193,70 @@ export default function ProfileScreen() {
       console.error('Error loading leave requests:', error);
     } finally {
       setLeaveLoading(false);
+    }
+  };
+
+  const loadOnboardingData = async () => {
+    if (!user?.id) return;
+
+    try {
+      setOnboardingLoading(true);
+
+      const [steps, tasks, questions] = await Promise.all([
+        onboardingService.getSteps(),
+        onboardingService.getTasks(),
+        onboardingService.getQuestions(),
+      ]);
+
+      let userOnboarding = await onboardingService.getUserOnboarding(user.id);
+
+      if (!userOnboarding) {
+        userOnboarding = await onboardingService.createUserOnboarding(user.id);
+      }
+
+      const [userSteps, userTasks, userAnswers] = await Promise.all([
+        onboardingService.getUserSteps(userOnboarding.id),
+        onboardingService.getUserTasks(userOnboarding.id),
+        onboardingService.getUserAnswers(userOnboarding.id),
+      ]);
+
+      if (userSteps.length === 0) {
+        await onboardingService.initializeUserSteps(userOnboarding.id, steps);
+      }
+
+      if (userTasks.length === 0) {
+        await onboardingService.initializeUserTasks(userOnboarding.id, tasks);
+      }
+
+      const refreshedUserSteps = userSteps.length === 0
+        ? await onboardingService.getUserSteps(userOnboarding.id)
+        : userSteps;
+
+      const refreshedUserTasks = userTasks.length === 0
+        ? await onboardingService.getUserTasks(userOnboarding.id)
+        : userTasks;
+
+      const answersMap: Record<string, string> = {};
+      userAnswers.forEach((answer) => {
+        if (answer.answer) {
+          answersMap[answer.question_id] = answer.answer;
+        }
+      });
+      setAnswerInputs(answersMap);
+
+      setOnboardingData({
+        userOnboarding,
+        steps,
+        tasks,
+        questions,
+        userSteps: refreshedUserSteps,
+        userTasks: refreshedUserTasks,
+        userAnswers,
+      });
+    } catch (error) {
+      console.error('Error loading onboarding data:', error);
+    } finally {
+      setOnboardingLoading(false);
     }
   };
 
@@ -235,6 +331,37 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleSendWelcomePackage = async () => {
+    if (!onboardingData.userOnboarding) return;
+
+    try {
+      await onboardingService.updateWelcomePackage(onboardingData.userOnboarding.id, true);
+      await loadOnboardingData();
+    } catch (error) {
+      console.error('Error sending welcome package:', error);
+    }
+  };
+
+  const handleCompleteTask = async (userTaskId: string) => {
+    try {
+      await onboardingService.completeTask(userTaskId);
+      await loadOnboardingData();
+    } catch (error) {
+      console.error('Error completing task:', error);
+    }
+  };
+
+  const handleSaveAnswer = async (questionId: string, answer: string) => {
+    if (!onboardingData.userOnboarding) return;
+
+    try {
+      await onboardingService.saveAnswer(onboardingData.userOnboarding.id, questionId, answer);
+      setAnswerInputs((prev) => ({ ...prev, [questionId]: answer }));
+    } catch (error) {
+      console.error('Error saving answer:', error);
+    }
+  };
+
   if (!user) {
     return (
       <View style={styles.loadingContainer}>
@@ -245,6 +372,7 @@ export default function ProfileScreen() {
 
   const profileSections = [
     'Özet',
+    'İşe Başlama',
     'İzin Bilgileri',
     'Çalışma Bilgileri',
     'Profil Bilgileri',
@@ -1004,6 +1132,158 @@ export default function ProfileScreen() {
     </>
   );
 
+  const renderOnboardingSection = () => {
+    if (onboardingLoading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#7C3AED" />
+        </View>
+      );
+    }
+
+    return (
+      <>
+        <View style={styles.onboardingHeader}>
+          <Package size={18} color="#7C3AED" />
+          <Text style={styles.onboardingHeaderTitle}>İŞE BAŞLAMA (ONBOARDING)</Text>
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.welcomePackageButton,
+            onboardingData.userOnboarding?.welcome_package_sent && styles.welcomePackageButtonSent,
+          ]}
+          onPress={handleSendWelcomePackage}
+          disabled={onboardingData.userOnboarding?.welcome_package_sent}
+        >
+          <Text style={styles.welcomePackageButtonText}>Hoşgeldin Paketi Gönder</Text>
+        </TouchableOpacity>
+
+        <View style={styles.onboardingStepsContainer}>
+          {onboardingData.steps.map((step, index) => {
+            const userStep = onboardingData.userSteps.find((us) => us.step_id === step.id);
+            const isCompleted = userStep?.is_completed || false;
+
+            return (
+              <View key={step.id} style={styles.stepItem}>
+                <View style={styles.stepIndicator}>
+                  <View style={[styles.stepNumber, isCompleted && styles.stepNumberCompleted]}>
+                    <Text style={[styles.stepNumberText, isCompleted && styles.stepNumberTextCompleted]}>
+                      {index + 1}
+                    </Text>
+                  </View>
+                  {index < onboardingData.steps.length - 1 && <View style={styles.stepLine} />}
+                </View>
+                <Text style={[styles.stepTitle, isCompleted && styles.stepTitleCompleted]}>
+                  {step.title}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+
+        <Accordion
+          title="İŞE BAŞLAMA GÖREVLERİ"
+          icon={<AlignJustify size={18} color="#7C3AED" />}
+          defaultExpanded={true}
+        >
+          {onboardingData.tasks.map((task) => {
+            const userTask = onboardingData.userTasks.find((ut) => ut.task_id === task.id);
+            const isCompleted = userTask?.is_completed || false;
+
+            return (
+              <View key={task.id} style={styles.taskCard}>
+                <View style={styles.taskHeader}>
+                  <Text style={styles.taskCategory}>{task.title}</Text>
+                  {isCompleted && (
+                    <View style={styles.taskCompletedBadge}>
+                      <Text style={styles.taskCompletedBadgeText}>Tamamlandı</Text>
+                    </View>
+                  )}
+                </View>
+                {task.description && <Text style={styles.taskDescription}>{task.description}</Text>}
+                <View style={styles.taskInfo}>
+                  <View style={styles.taskInfoRow}>
+                    <Text style={styles.taskInfoLabel}>İlgili</Text>
+                    <Text style={styles.taskInfoValue}>{task.assigned_to || '-'}</Text>
+                  </View>
+                  <View style={styles.taskInfoRow}>
+                    <Text style={styles.taskInfoLabel}>Son Tarih</Text>
+                    <Text style={styles.taskInfoValueDate}>
+                      {task.due_date ? formatDate(task.due_date) : '-'}
+                    </Text>
+                  </View>
+                </View>
+                {!isCompleted && userTask && (
+                  <TouchableOpacity
+                    style={styles.completeTaskButton}
+                    onPress={() => handleCompleteTask(userTask.id)}
+                  >
+                    <Text style={styles.completeTaskButtonText}>Görevi Tamamla</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            );
+          })}
+        </Accordion>
+
+        <Accordion
+          title="SENİ TANIYALIM"
+          icon={<UserIcon size={18} color="#7C3AED" />}
+          defaultExpanded={true}
+        >
+          <View style={styles.questionsContainer}>
+            <Text style={styles.questionsSubtitle}>Seni Tanıyalım Soruları</Text>
+            {onboardingData.questions.map((question) => {
+              const answer = answerInputs[question.id] || '';
+              const userAnswer = onboardingData.userAnswers.find((ua) => ua.question_id === question.id);
+              const isSaved = !!userAnswer?.answer;
+
+              return (
+                <View key={question.id} style={styles.questionCard}>
+                  <View style={styles.questionHeader}>
+                    {isSaved && (
+                      <View style={styles.questionCheckbox}>
+                        <Check size={16} color="#7C3AED" />
+                      </View>
+                    )}
+                    <Text style={styles.questionLabel}>
+                      {question.is_required && <Text style={styles.requiredStar}>* </Text>}
+                      Zorunlu Soru
+                    </Text>
+                  </View>
+                  <Text style={styles.questionText}>{question.question}</Text>
+                  <TextInput
+                    style={styles.questionInput}
+                    placeholder="Cevabınızı yazın..."
+                    placeholderTextColor="#999"
+                    value={answer}
+                    onChangeText={(text) => setAnswerInputs((prev) => ({ ...prev, [question.id]: text }))}
+                    multiline
+                  />
+                  <View style={styles.questionActions}>
+                    <TouchableOpacity
+                      style={styles.saveAnswerButton}
+                      onPress={() => handleSaveAnswer(question.id, answer)}
+                    >
+                      <Text style={styles.saveAnswerButtonText}>Sil</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              );
+            })}
+            <TouchableOpacity style={styles.addQuestionButton}>
+              <Text style={styles.addQuestionButtonText}>Soru Ekle</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.submitAnswersButton}>
+              <Text style={styles.submitAnswersButtonText}>Seni Tanıyalım E-postası Gönder</Text>
+            </TouchableOpacity>
+          </View>
+        </Accordion>
+      </>
+    );
+  };
+
   const renderFilesSection = () => {
     const files = [
       { id: '1', name: 'Özlük Dosyaları', type: 'folder', count: 'Boş Klasör', icon: 'folder-blue' },
@@ -1114,6 +1394,8 @@ export default function ProfileScreen() {
     switch (selectedSection) {
       case 'Özet':
         return renderSummarySection();
+      case 'İşe Başlama':
+        return renderOnboardingSection();
       case 'İzin Bilgileri':
         return renderDayOffSection();
       case 'Çalışma Bilgileri':
@@ -2648,6 +2930,256 @@ const styles = StyleSheet.create({
   },
   successButtonText: {
     fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  onboardingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  onboardingHeaderTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    letterSpacing: 0.5,
+  },
+  welcomePackageButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginVertical: 16,
+    alignItems: 'center',
+  },
+  welcomePackageButtonSent: {
+    backgroundColor: '#E0E0E0',
+  },
+  welcomePackageButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  onboardingStepsContainer: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginBottom: 16,
+  },
+  stepItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 8,
+  },
+  stepIndicator: {
+    alignItems: 'center',
+  },
+  stepNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepNumberCompleted: {
+    backgroundColor: '#7C3AED',
+    borderColor: '#7C3AED',
+  },
+  stepNumberText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#9CA3AF',
+  },
+  stepNumberTextCompleted: {
+    color: '#fff',
+  },
+  stepLine: {
+    width: 2,
+    height: 24,
+    backgroundColor: '#E5E7EB',
+    marginTop: 4,
+  },
+  stepTitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    paddingTop: 6,
+    flex: 1,
+  },
+  stepTitleCompleted: {
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  taskCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+  },
+  taskHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  taskCategory: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  taskCompletedBadge: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  taskCompletedBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  taskDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 12,
+  },
+  taskInfo: {
+    gap: 8,
+    marginBottom: 12,
+  },
+  taskInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  taskInfoLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  taskInfoValue: {
+    fontSize: 13,
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  taskInfoValueDate: {
+    fontSize: 13,
+    color: '#EF4444',
+    fontWeight: '500',
+  },
+  completeTaskButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  completeTaskButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#7C3AED',
+  },
+  questionsContainer: {
+    paddingTop: 8,
+  },
+  questionsSubtitle: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    marginBottom: 16,
+  },
+  questionCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  questionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  questionCheckbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+    backgroundColor: '#F3E8FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  questionLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  requiredStar: {
+    color: '#EF4444',
+  },
+  questionText: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    marginBottom: 12,
+  },
+  questionInput: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#1a1a1a',
+    minHeight: 80,
+    textAlignVertical: 'top',
+    marginBottom: 12,
+  },
+  questionActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  saveAnswerButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  saveAnswerButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#EF4444',
+  },
+  addQuestionButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  addQuestionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#7C3AED',
+  },
+  submitAnswersButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  submitAnswersButtonText: {
+    fontSize: 14,
     fontWeight: '600',
     color: '#fff',
   },
