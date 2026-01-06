@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   SafeAreaView,
+  Image,
 } from 'react-native';
 import {
   X,
@@ -14,6 +15,8 @@ import {
   Users,
   Settings,
   Plus,
+  Bell,
+  Mail,
 } from 'lucide-react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -135,9 +138,34 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                 </View>
               </View>
 
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <X size={24} color="#1a1a1a" />
-              </TouchableOpacity>
+              <View style={styles.headerRight}>
+                <TouchableOpacity onPress={onClose} style={styles.iconButton}>
+                  <X size={20} color="#666666" />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.iconButton}>
+                  <Bell size={20} color="#666666" />
+                  <View style={styles.notificationBadge} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.iconButton}>
+                  <Mail size={20} color="#666666" />
+                  <View style={styles.mailBadge}>
+                    <Text style={styles.badgeText}>12</Text>
+                  </View>
+                </TouchableOpacity>
+
+                {user?.profilePictureUrl ? (
+                  <Image
+                    source={{ uri: user.profilePictureUrl }}
+                    style={styles.avatar}
+                  />
+                ) : (
+                  <View style={styles.avatar}>
+                    <User size={18} color="#7C3AED" />
+                  </View>
+                )}
+              </View>
             </View>
 
             <View style={styles.menuItems}>
@@ -214,8 +242,52 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-  closeButton: {
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconButton: {
+    position: 'relative',
     padding: 4,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  mailBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3E8FF',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   menuItems: {
     paddingTop: 8,
