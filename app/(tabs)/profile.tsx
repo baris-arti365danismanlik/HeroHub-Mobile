@@ -53,6 +53,7 @@ import { assetService } from '@/services/asset.service';
 import { leaveService } from '@/services/leave.service';
 import { inboxService } from '@/services/inbox.service';
 import { onboardingService } from '@/services/onboarding.service';
+import { pdksService } from '@/services/pdks.service';
 import {
   Asset,
   AssetStatus,
@@ -64,6 +65,7 @@ import {
   UserOnboardingStep,
   UserOnboardingTask,
   UserOnboardingAnswer,
+  AttendanceRecord,
 } from '@/types/backend';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
@@ -90,7 +92,7 @@ export default function ProfileScreen() {
     deliveryDate: '',
     returnDate: '',
   });
-  const [selectedYear, setSelectedYear] = useState('2024');
+  const [selectedYearAssets, setSelectedYearAssets] = useState('2024');
   const [selectedType, setSelectedType] = useState('Tümü');
   const [assets, setAssets] = useState<Asset[]>([]);
   const [assetLoading, setAssetLoading] = useState(false);
@@ -137,6 +139,11 @@ export default function ProfileScreen() {
   const [onboardingLoading, setOnboardingLoading] = useState(false);
   const [answerInputs, setAnswerInputs] = useState<Record<string, string>>({});
   const [welcomePackageModalVisible, setWelcomePackageModalVisible] = useState(false);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
+  const [pdksLoading, setPdksLoading] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
   const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
@@ -156,8 +163,9 @@ export default function ProfileScreen() {
       loadLeaveRequests();
       loadUnreadCount();
       loadOnboardingData();
+      loadPDKSData();
     }
-  }, [user?.id]);
+  }, [user?.id, selectedMonth, selectedYear]);
 
   const loadUnreadCount = async () => {
     if (!user?.id) return;
@@ -368,6 +376,51 @@ export default function ProfileScreen() {
     }
   };
 
+  const loadPDKSData = async () => {
+    if (!user?.id) return;
+
+    try {
+      setPdksLoading(true);
+      const startDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`;
+      const lastDayOfMonth = new Date(selectedYear, selectedMonth, 0);
+      const endDate = lastDayOfMonth.toISOString().split('T')[0];
+
+      const [records, today] = await Promise.all([
+        pdksService.getAttendanceRecords(user.id, startDate, endDate),
+        pdksService.getTodayRecord(user.id),
+      ]);
+
+      setAttendanceRecords(records);
+      setTodayRecord(today);
+    } catch (error) {
+      console.error('Error loading PDKS data:', error);
+    } finally {
+      setPdksLoading(false);
+    }
+  };
+
+  const handleCheckIn = async () => {
+    if (!user?.id) return;
+
+    try {
+      await pdksService.checkIn(user.id);
+      await loadPDKSData();
+    } catch (error) {
+      console.error('Error checking in:', error);
+    }
+  };
+
+  const handleCheckOut = async () => {
+    if (!user?.id) return;
+
+    try {
+      await pdksService.checkOut(user.id);
+      await loadPDKSData();
+    } catch (error) {
+      console.error('Error checking out:', error);
+    }
+  };
+
   if (!user) {
     return (
       <View style={styles.loadingContainer}>
@@ -379,6 +432,7 @@ export default function ProfileScreen() {
   const profileSections = [
     'Özet',
     'İşe Başlama',
+    'PDKS',
     'İzin Bilgileri',
     'Çalışma Bilgileri',
     'Profil Bilgileri',
@@ -1138,6 +1192,152 @@ export default function ProfileScreen() {
     </>
   );
 
+  const formatTime = (dateString?: string) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}s ${mins}dk`;
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'normal':
+        return 'Normal';
+      case 'late':
+        return 'Geç Giriş';
+      case 'early_leave':
+        return 'Erken Çıkış';
+      case 'absent':
+        return 'İzinli';
+      default:
+        return status;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'normal':
+        return '#10B981';
+      case 'late':
+        return '#F59E0B';
+      case 'early_leave':
+        return '#EF4444';
+      case 'absent':
+        return '#9CA3AF';
+      default:
+        return '#6B7280';
+    }
+  };
+
+  const renderPDKSSection = () => {
+    if (pdksLoading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#7C3AED" />
+        </View>
+      );
+    }
+
+    const totalWorkHours = attendanceRecords.reduce((sum, r) => sum + r.work_duration, 0);
+    const avgWorkHours = attendanceRecords.length > 0 ? totalWorkHours / attendanceRecords.length : 0;
+
+    return (
+      <>
+        <View style={styles.pdksHeader}>
+          <Clock size={18} color="#7C3AED" />
+          <Text style={styles.pdksHeaderTitle}>PDKS</Text>
+        </View>
+
+        <View style={styles.pdksQuickActions}>
+          <TouchableOpacity
+            style={[styles.pdksActionButton, todayRecord?.check_in_time && styles.pdksActionButtonDisabled]}
+            onPress={handleCheckIn}
+            disabled={!!todayRecord?.check_in_time}
+          >
+            <Text style={styles.pdksActionButtonText}>
+              {todayRecord?.check_in_time ? 'Giriş Yapıldı' : 'Giriş Yap'}
+            </Text>
+            {todayRecord?.check_in_time && (
+              <Text style={styles.pdksActionButtonTime}>{formatTime(todayRecord.check_in_time)}</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.pdksActionButton,
+              styles.pdksCheckoutButton,
+              (!todayRecord?.check_in_time || todayRecord?.check_out_time) && styles.pdksActionButtonDisabled,
+            ]}
+            onPress={handleCheckOut}
+            disabled={!todayRecord?.check_in_time || !!todayRecord?.check_out_time}
+          >
+            <Text style={styles.pdksActionButtonText}>
+              {todayRecord?.check_out_time ? 'Çıkış Yapıldı' : 'Çıkış Yap'}
+            </Text>
+            {todayRecord?.check_out_time && (
+              <Text style={styles.pdksActionButtonTime}>{formatTime(todayRecord.check_out_time)}</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.pdksStats}>
+          <View style={styles.pdksStatCard}>
+            <Text style={styles.pdksStatValue}>{attendanceRecords.length}</Text>
+            <Text style={styles.pdksStatLabel}>Toplam Gün</Text>
+          </View>
+          <View style={styles.pdksStatCard}>
+            <Text style={styles.pdksStatValue}>{formatDuration(Math.floor(totalWorkHours))}</Text>
+            <Text style={styles.pdksStatLabel}>Toplam Süre</Text>
+          </View>
+          <View style={styles.pdksStatCard}>
+            <Text style={styles.pdksStatValue}>{formatDuration(Math.floor(avgWorkHours))}</Text>
+            <Text style={styles.pdksStatLabel}>Ortalama</Text>
+          </View>
+        </View>
+
+        <Accordion title="AYLIK KAYITLAR" icon={<Calendar size={18} color="#7C3AED" />} defaultExpanded={true}>
+          <View style={styles.pdksRecordsContainer}>
+            {attendanceRecords.length === 0 ? (
+              <Text style={styles.pdksNoRecords}>Bu ay için kayıt bulunamadı</Text>
+            ) : (
+              attendanceRecords.map((record) => (
+                <View key={record.id} style={styles.pdksRecordCard}>
+                  <View style={styles.pdksRecordHeader}>
+                    <Text style={styles.pdksRecordDate}>{formatDate(record.date)}</Text>
+                    <View style={[styles.pdksStatusBadge, { backgroundColor: getStatusColor(record.status) }]}>
+                      <Text style={styles.pdksStatusBadgeText}>{getStatusText(record.status)}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.pdksRecordBody}>
+                    <View style={styles.pdksRecordRow}>
+                      <Text style={styles.pdksRecordLabel}>Giriş:</Text>
+                      <Text style={styles.pdksRecordValue}>{formatTime(record.check_in_time)}</Text>
+                    </View>
+                    <View style={styles.pdksRecordRow}>
+                      <Text style={styles.pdksRecordLabel}>Çıkış:</Text>
+                      <Text style={styles.pdksRecordValue}>{formatTime(record.check_out_time)}</Text>
+                    </View>
+                    <View style={styles.pdksRecordRow}>
+                      <Text style={styles.pdksRecordLabel}>Süre:</Text>
+                      <Text style={[styles.pdksRecordValue, styles.pdksRecordDuration]}>
+                        {formatDuration(record.work_duration)}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+        </Accordion>
+      </>
+    );
+  };
+
   const renderOnboardingSection = () => {
     if (onboardingLoading) {
       return (
@@ -1402,6 +1602,8 @@ export default function ProfileScreen() {
         return renderSummarySection();
       case 'İşe Başlama':
         return renderOnboardingSection();
+      case 'PDKS':
+        return renderPDKSSection();
       case 'İzin Bilgileri':
         return renderDayOffSection();
       case 'Çalışma Bilgileri':
@@ -3361,5 +3563,141 @@ const styles = StyleSheet.create({
   welcomePackageStepDate: {
     fontSize: 12,
     color: '#9CA3AF',
+  },
+  pdksHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  pdksHeaderTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    letterSpacing: 0.5,
+  },
+  pdksQuickActions: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#F9FAFB',
+  },
+  pdksActionButton: {
+    flex: 1,
+    backgroundColor: '#7C3AED',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  pdksCheckoutButton: {
+    backgroundColor: '#EF4444',
+  },
+  pdksActionButtonDisabled: {
+    backgroundColor: '#E5E7EB',
+  },
+  pdksActionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  pdksActionButtonTime: {
+    fontSize: 12,
+    color: '#fff',
+  },
+  pdksStats: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#fff',
+  },
+  pdksStatCard: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  pdksStatValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#7C3AED',
+    marginBottom: 4,
+  },
+  pdksStatLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  pdksRecordsContainer: {
+    paddingTop: 8,
+  },
+  pdksNoRecords: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    paddingVertical: 24,
+  },
+  pdksRecordCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  pdksRecordHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  pdksRecordDate: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  pdksStatusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  pdksStatusBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  pdksRecordBody: {
+    gap: 8,
+  },
+  pdksRecordRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pdksRecordLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  pdksRecordValue: {
+    fontSize: 13,
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  pdksRecordDuration: {
+    color: '#7C3AED',
+    fontWeight: '600',
   },
 });

@@ -352,3 +352,23 @@ export interface UserOnboardingAnswer {
   updated_at?: string;
   question?: OnboardingQuestion;
 }
+
+export enum AttendanceStatus {
+  Normal = 'normal',
+  Late = 'late',
+  EarlyLeave = 'early_leave',
+  Absent = 'absent',
+}
+
+export interface AttendanceRecord {
+  id: string;
+  user_id: string;
+  date: string;
+  check_in_time?: string;
+  check_out_time?: string;
+  work_duration: number;
+  status: AttendanceStatus;
+  notes?: string;
+  created_at: string;
+  updated_at?: string;
+}
