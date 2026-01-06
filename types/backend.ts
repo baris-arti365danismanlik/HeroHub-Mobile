@@ -92,6 +92,7 @@ export interface User {
   phone?: string;
   identityNumber?: string;
   birthDate?: string;
+  birthPlace?: string;
   gender?: Gender;
   bloodType?: BloodType;
   maritalStatus?: MaritalStatus;
@@ -101,6 +102,21 @@ export interface User {
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;
+  personalNumber?: string;
+  mobilePhone?: string;
+  workPhone?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  position?: string;
+  department?: string;
+  manager?: string;
+  location?: string;
+  role?: string;
+  unit?: string;
+  workLocation?: string;
+  payrollLocation?: string;
+  shift?: string;
 }
 
 export interface UserDayOffBalance {
@@ -195,4 +211,89 @@ export interface PaginatedResponse<T> {
   pageNumber: number;
   pageSize: number;
   totalPages: number;
+}
+
+export interface UserEducation {
+  id: string;
+  userId: string;
+  school: string;
+  degree: string;
+  fieldOfStudy?: string;
+  startDate: string;
+  endDate?: string;
+  isCurrent: boolean;
+  description?: string;
+}
+
+export interface UserExperience {
+  id: string;
+  userId: string;
+  company: string;
+  position: string;
+  startDate: string;
+  endDate?: string;
+  isCurrent: boolean;
+  description?: string;
+}
+
+export interface UserFamily {
+  id: string;
+  userId: string;
+  name: string;
+  relationship: string;
+  birthDate?: string;
+  identityNumber?: string;
+}
+
+export interface UserVisa {
+  id: string;
+  userId: string;
+  country: string;
+  visaType: string;
+  validFrom: string;
+  validUntil: string;
+  status: string;
+}
+
+export interface UserCertificate {
+  id: string;
+  userId: string;
+  name: string;
+  issuedBy: string;
+  issueDate: string;
+  expiryDate?: string;
+  credentialId?: string;
+}
+
+export interface UserSocialLink {
+  id: string;
+  userId: string;
+  platform: string;
+  url: string;
+}
+
+export interface UserLanguage {
+  id: string;
+  userId: string;
+  language: string;
+  proficiency: string;
+  level?: string;
+}
+
+export interface UserPassport {
+  id: string;
+  userId: string;
+  passportNumber: string;
+  issueDate: string;
+  expiryDate: string;
+  issuingCountry: string;
+}
+
+export interface UserYAZC {
+  id: string;
+  userId: string;
+  title: string;
+  status: string;
+  date: string;
+  description?: string;
 }
