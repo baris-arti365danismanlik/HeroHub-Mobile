@@ -484,14 +484,14 @@ export default function ProfileScreen() {
             <View
               key={asset.id}
               style={[
-                styles.assetCard,
+                styles.assetCardNew,
                 asset.status === AssetStatus.Returned && styles.assetCardInactive,
               ]}
             >
-              <View style={styles.assetCardHeader}>
+              <View style={styles.assetCardNewHeader}>
                 <Text
                   style={[
-                    styles.assetCardTitle,
+                    styles.assetCardNewTitle,
                     asset.status === AssetStatus.Returned && styles.assetCardInactiveText,
                   ]}
                 >
@@ -502,26 +502,57 @@ export default function ProfileScreen() {
                   onPress={() => handleEdit(`asset-${asset.id}`)}
                 >
                   <Pencil
-                    size={16}
+                    size={18}
                     color={asset.status === AssetStatus.Returned ? '#CCC' : '#666'}
                   />
                 </TouchableOpacity>
               </View>
+
               {asset.description && (
-                <InfoRow label="Açıklama" value={asset.description} />
+                <View style={styles.assetInfoRow}>
+                  <Text style={styles.assetInfoLabel}>Açıklama</Text>
+                  <Text
+                    style={[
+                      styles.assetInfoValue,
+                      asset.status === AssetStatus.Returned && styles.assetCardInactiveText,
+                    ]}
+                  >
+                    {asset.description}
+                  </Text>
+                </View>
               )}
-              <InfoRow label="Seri No" value={asset.serial_no} />
-              <InfoRow
-                label="Teslim Tarihi"
-                value={new Date(asset.delivery_date).toLocaleDateString('tr-TR')}
-                isLast={!asset.return_date}
-              />
+
+              <View style={styles.assetInfoRow}>
+                <Text style={styles.assetInfoLabel}>Seri No</Text>
+                <Text
+                  style={[
+                    styles.assetInfoValue,
+                    asset.status === AssetStatus.Returned && styles.assetCardInactiveText,
+                  ]}
+                >
+                  {asset.serial_no}
+                </Text>
+              </View>
+
+              <View style={styles.assetInfoRow}>
+                <Text style={styles.assetInfoLabel}>Teslim Tarihi</Text>
+                <Text
+                  style={[
+                    styles.assetInfoValue,
+                    asset.status === AssetStatus.Returned && styles.assetCardInactiveText,
+                  ]}
+                >
+                  {new Date(asset.delivery_date).toLocaleDateString('tr-TR')}
+                </Text>
+              </View>
+
               {asset.return_date && (
-                <InfoRow
-                  label="İade Tarihi"
-                  value={new Date(asset.return_date).toLocaleDateString('tr-TR')}
-                  isLast
-                />
+                <View style={styles.assetInfoRow}>
+                  <Text style={styles.assetInfoLabel}>İade Tarihi</Text>
+                  <Text style={[styles.assetInfoValue, styles.assetCardInactiveText]}>
+                    {new Date(asset.return_date).toLocaleDateString('tr-TR')}
+                  </Text>
+                </View>
               )}
             </View>
           ))
@@ -1314,7 +1345,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   assetCardInactive: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   assetCardHeader: {
     flexDirection: 'row',
@@ -1330,11 +1361,54 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1a1a1a',
   },
+  assetCardNew: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  assetCardNewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  assetCardNewTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
   assetCardInactiveText: {
-    color: '#999',
+    color: '#CCC',
   },
   assetEditButton: {
     padding: 4,
+  },
+  assetInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  assetInfoLabel: {
+    fontSize: 14,
+    color: '#666',
+    flex: 1,
+  },
+  assetInfoValue: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    fontWeight: '500',
+    flex: 1,
+    textAlign: 'right',
   },
   balanceCard: {
     backgroundColor: '#F3E8FF',
