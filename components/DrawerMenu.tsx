@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  Image,
   SafeAreaView,
 } from 'react-native';
 import {
@@ -15,10 +14,8 @@ import {
   Users,
   Settings,
   Plus,
-  UserIcon,
-  FileText
 } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface DrawerMenuProps {
@@ -29,52 +26,76 @@ interface DrawerMenuProps {
 interface MenuItem {
   id: string;
   label: string;
-  icon: React.ReactNode;
+  icon: string;
   route: string;
   roles?: string[];
 }
 
 export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useAuth();
+
+  const isActive = (route: string) => {
+    if (route === '/(tabs)' && pathname === '/') return true;
+    if (route === '/(tabs)/profile' && pathname === '/profile') return true;
+    if (route === '/(tabs)/employees' && pathname === '/employees') return true;
+    if (route === '/(tabs)/admin' && pathname === '/admin') return true;
+    if (route === '/(tabs)/plus-admin' && pathname === '/plus-admin') return true;
+    return pathname === route;
+  };
+
+  const getIcon = (iconName: string, isActive: boolean) => {
+    const color = isActive ? '#7C3AED' : '#1a1a1a';
+    const size = 20;
+
+    switch (iconName) {
+      case 'home':
+        return <Home size={size} color={color} />;
+      case 'user':
+        return <User size={size} color={color} />;
+      case 'users':
+        return <Users size={size} color={color} />;
+      case 'settings':
+        return <Settings size={size} color={color} />;
+      case 'plus':
+        return <Plus size={size} color={color} />;
+      default:
+        return null;
+    }
+  };
 
   const menuItems: MenuItem[] = [
     {
       id: 'home',
       label: 'Anasayfa',
-      icon: <Home size={20} color="#7C3AED" />,
+      icon: 'home',
       route: '/(tabs)',
     },
     {
       id: 'profile',
       label: 'Profilim',
-      icon: <User size={20} color="#7C3AED" />,
+      icon: 'user',
       route: '/(tabs)/profile',
-    },
-    {
-      id: 'requests',
-      label: 'Talepler',
-      icon: <FileText size={20} color="#7C3AED" />,
-      route: '/(tabs)/requests',
     },
     {
       id: 'employees',
       label: 'Çalışanlar',
-      icon: <Users size={20} color="#7C3AED" />,
+      icon: 'users',
       route: '/(tabs)/employees',
       roles: ['Admin', 'Manager', 'HR'],
     },
     {
       id: 'admin',
       label: 'Admin',
-      icon: <Settings size={20} color="#7C3AED" />,
+      icon: 'settings',
       route: '/(tabs)/admin',
       roles: ['Admin'],
     },
     {
       id: 'plus-admin',
       label: 'Artı Admin',
-      icon: <Plus size={20} color="#7C3AED" />,
+      icon: 'plus',
       route: '/(tabs)/plus-admin',
       roles: ['SuperAdmin'],
     },
@@ -114,37 +135,27 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                 </View>
               </View>
 
-              <View style={styles.headerRight}>
-                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                  <X size={24} color="#666" />
-                </TouchableOpacity>
-
-                {user?.profilePictureUrl ? (
-                  <Image
-                    source={{ uri: user.profilePictureUrl }}
-                    style={styles.avatar}
-                  />
-                ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <UserIcon size={20} color="#7C3AED" />
-                  </View>
-                )}
-              </View>
+              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <X size={24} color="#1a1a1a" />
+              </TouchableOpacity>
             </View>
 
             <View style={styles.menuItems}>
               {menuItems.map((item) => {
                 if (!hasAccess(item)) return null;
+                const active = isActive(item.route);
 
                 return (
                   <TouchableOpacity
                     key={item.id}
-                    style={styles.menuItem}
+                    style={[styles.menuItem, active && styles.menuItemActive]}
                     onPress={() => handleNavigation(item.route)}
                     activeOpacity={0.7}
                   >
-                    <View style={styles.menuItemIcon}>{item.icon}</View>
-                    <Text style={styles.menuItemText}>{item.label}</Text>
+                    <View style={styles.menuItemIcon}>{getIcon(item.icon, active)}</View>
+                    <Text style={[styles.menuItemText, active && styles.menuItemTextActive]}>
+                      {item.label}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -179,8 +190,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   logoContainer: {
     flexDirection: 'row',
@@ -205,36 +214,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
   closeButton: {
     padding: 4,
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  avatarPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F0E7FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   menuItems: {
-    paddingTop: 8,
+    paddingTop: 16,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 14,
     paddingHorizontal: 20,
-    gap: 16,
+    gap: 12,
+  },
+  menuItemActive: {
+    backgroundColor: '#E9D5FF',
   },
   menuItemIcon: {
     width: 24,
@@ -243,8 +237,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   menuItemText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#1a1a1a',
+    fontWeight: '400',
+  },
+  menuItemTextActive: {
+    color: '#7C3AED',
     fontWeight: '500',
   },
 });
