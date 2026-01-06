@@ -16,6 +16,7 @@ import {
   Settings,
   Plus,
   UserIcon,
+  Calendar,
   FileText
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -50,6 +51,12 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
       label: 'Profilim',
       icon: <User size={20} color="#7C3AED" />,
       route: '/(tabs)/profile',
+    },
+    {
+      id: 'dayoff',
+      label: 'İzinler',
+      icon: <Calendar size={20} color="#7C3AED" />,
+      route: '/(tabs)/dayoff',
     },
     {
       id: 'requests',
