@@ -218,27 +218,27 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   menuItems: {
-    paddingTop: 16,
+    paddingTop: 8,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     gap: 12,
   },
   menuItemActive: {
-    backgroundColor: '#E9D5FF',
+    backgroundColor: '#F3E8FF',
   },
   menuItemIcon: {
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
   menuItemText: {
-    fontSize: 15,
-    color: '#1a1a1a',
+    fontSize: 16,
+    color: '#333333',
     fontWeight: '400',
   },
   menuItemTextActive: {
