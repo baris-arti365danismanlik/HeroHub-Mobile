@@ -166,6 +166,46 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface Role {
+  id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface Module {
+  id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+}
+
+export interface RoleAuthorizationModule {
+  id: string;
+  role_id: string;
+  module_id: string;
+  can_read: boolean;
+  can_write: boolean;
+  can_delete: boolean;
+  created_at: string;
+}
+
+export interface UserProfile {
+  id: string;
+  role_id?: string;
+  full_name: string;
+  created_at: string;
+  updated_at?: string;
+  role?: Role;
+}
+
+export interface ModulePermissions {
+  can_read: boolean;
+  can_write: boolean;
+  can_delete: boolean;
+}
+
 export interface LoginResponse {
   id: number;
   email: string;

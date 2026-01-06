@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import {
   User as UserIcon,
   Phone,
@@ -42,7 +43,8 @@ import {
 } from '@/utils/formatters';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, userProfile } = useAuth();
+  const { canWrite, canDelete, isAdmin } = usePermissions();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -86,9 +88,11 @@ export default function ProfileScreen() {
           <Text style={styles.balanceValue}>-4 Gün</Text>
         </View>
 
-        <TouchableOpacity style={styles.requestButton}>
-          <Text style={styles.requestButtonText}>İzin Talebi Gir</Text>
-        </TouchableOpacity>
+        {canWrite('Leave') && (
+          <TouchableOpacity style={styles.requestButton}>
+            <Text style={styles.requestButtonText}>İzin Talebi Gir</Text>
+          </TouchableOpacity>
+        )}
       </Accordion>
 
       <Accordion
@@ -729,6 +733,14 @@ export default function ProfileScreen() {
               </Text>
 
               <View style={styles.profileDetails}>
+                {userProfile?.role && (
+                  <View style={styles.profileDetailRow}>
+                    <Award size={16} color="#7C3AED" />
+                    <Text style={[styles.profileDetailText, { color: '#7C3AED', fontWeight: '600' }]}>
+                      {userProfile.role.name}
+                    </Text>
+                  </View>
+                )}
                 <View style={styles.profileDetailRow}>
                   <Briefcase size={16} color="#666" />
                   <Text style={styles.profileDetailText}>
