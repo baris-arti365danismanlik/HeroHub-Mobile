@@ -86,6 +86,14 @@ export default function ProfileScreen() {
     exitDate: '',
     notes: '',
   });
+  const [leaveModalVisible, setLeaveModalVisible] = useState(false);
+  const [leaveForm, setLeaveForm] = useState({
+    leaveType: 'Yıllık İzin',
+    startDate: '',
+    endDate: '',
+    duration: '0.5 Gün',
+    notes: '',
+  });
 
   const handleLogout = async () => {
     await logout();
@@ -180,11 +188,12 @@ export default function ProfileScreen() {
           <Text style={styles.balanceValue}>-4 Gün</Text>
         </View>
 
-        {canWrite('Leave') && (
-          <TouchableOpacity style={styles.requestButton}>
-            <Text style={styles.requestButtonText}>İzin Talebi Gir</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={styles.leaveRequestButton}
+          onPress={() => setLeaveModalVisible(true)}
+        >
+          <Text style={styles.leaveRequestButtonText}>İzin Talebi Gir</Text>
+        </TouchableOpacity>
       </Accordion>
 
       <Accordion
@@ -1404,6 +1413,123 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={leaveModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setLeaveModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>İzin Talebi Gir</Text>
+              <TouchableOpacity
+                onPress={() => setLeaveModalVisible(false)}
+                style={styles.modalCloseButton}
+              >
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalContent}>
+              <View style={styles.leaveUserCard}>
+                {user.profilePictureUrl ? (
+                  <Image
+                    source={{ uri: user.profilePictureUrl }}
+                    style={styles.leaveUserImage}
+                  />
+                ) : (
+                  <View style={styles.leaveUserPlaceholder}>
+                    <UserIcon size={24} color="#7C3AED" />
+                  </View>
+                )}
+                <View style={styles.leaveUserInfo}>
+                  <Text style={styles.leaveUserName}>{user.firstName} {user.lastName}</Text>
+                  <Text style={styles.leaveUserRole}>{userProfile?.role?.name || 'Management Trainee'}</Text>
+                </View>
+                <View style={styles.leaveBalanceBox}>
+                  <Text style={styles.leaveBalanceLabel}>İZİN BAKİYESİ</Text>
+                  <Text style={styles.leaveBalanceValue}>125,5 Gün</Text>
+                </View>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>İzin Türü</Text>
+                <TouchableOpacity style={styles.formDropdown}>
+                  <Text style={styles.formDropdownText}>{leaveForm.leaveType}</Text>
+                  <ChevronDown size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Başlangıç Tarihi</Text>
+                <TouchableOpacity style={styles.formDatePicker}>
+                  <TextInput
+                    style={styles.formDateInput}
+                    placeholder="12 / 23 / 2023"
+                    value={leaveForm.startDate}
+                    onChangeText={(text) => setLeaveForm({...leaveForm, startDate: text})}
+                  />
+                  <Calendar size={20} color="#7C3AED" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Bitiş Tarihi</Text>
+                <TouchableOpacity style={styles.formDatePicker}>
+                  <TextInput
+                    style={styles.formDateInput}
+                    placeholder="12 / 23 / 2023"
+                    value={leaveForm.endDate}
+                    onChangeText={(text) => setLeaveForm({...leaveForm, endDate: text})}
+                  />
+                  <Calendar size={20} color="#7C3AED" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Süre</Text>
+                <TouchableOpacity style={styles.formDropdown}>
+                  <Text style={styles.formDropdownText}>{leaveForm.duration}</Text>
+                  <ChevronDown size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Not</Text>
+                <TextInput
+                  style={[styles.formInput, styles.formTextarea]}
+                  placeholder="Varsa iletmek istediği detayları çalışan bu alandan gönderebilir."
+                  multiline
+                  numberOfLines={4}
+                  value={leaveForm.notes}
+                  onChangeText={(text) => setLeaveForm({...leaveForm, notes: text})}
+                  textAlignVertical="top"
+                />
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setLeaveModalVisible(false)}
+              >
+                <Text style={styles.modalCancelText}>Vazgeç</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalSubmitButton}
+                onPress={() => {
+                  console.log('İzin talebi:', leaveForm);
+                  setLeaveModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalSubmitText}>Devam Et</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -2267,5 +2393,65 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#fff',
+  },
+  leaveRequestButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  leaveRequestButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  leaveUserCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 24,
+  },
+  leaveUserImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  leaveUserPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#E9D5FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  leaveUserInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  leaveUserName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 2,
+  },
+  leaveUserRole: {
+    fontSize: 14,
+    color: '#666',
+  },
+  leaveBalanceBox: {
+    alignItems: 'flex-end',
+  },
+  leaveBalanceLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 2,
+  },
+  leaveBalanceValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#10B981',
   },
 });
