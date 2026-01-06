@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -16,9 +16,15 @@ import {
   Settings,
   Plus,
   UserIcon,
-  FileText
+  FileText,
+  Briefcase,
+  Shield,
+  ShieldCheck,
+  Building,
+  Clock,
+  Mail,
 } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface DrawerMenuProps {
@@ -27,69 +33,98 @@ interface DrawerMenuProps {
 }
 
 interface MenuItem {
-  id: string;
+  moduleName: string;
   label: string;
-  icon: React.ReactNode;
+  icon: React.ComponentType<any>;
   route: string;
-  roles?: string[];
 }
+
+const MODULE_CONFIG: Record<string, Omit<MenuItem, 'moduleName'>> = {
+  Home: {
+    label: 'Anasayfa',
+    icon: Home,
+    route: '/(tabs)',
+  },
+  Profile: {
+    label: 'Profilim',
+    icon: User,
+    route: '/(tabs)/profile',
+  },
+  Requests: {
+    label: 'Talepler',
+    icon: FileText,
+    route: '/(tabs)/requests',
+  },
+  Employees: {
+    label: 'Çalışanlar',
+    icon: Users,
+    route: '/(tabs)/employees',
+  },
+  Assets: {
+    label: 'Zimmetler',
+    icon: Briefcase,
+    route: '/(tabs)/assets',
+  },
+  Leaves: {
+    label: 'İzinler',
+    icon: Clock,
+    route: '/(tabs)/leaves',
+  },
+  Inbox: {
+    label: 'Gelen Kutusu',
+    icon: Mail,
+    route: '/(tabs)/inbox',
+  },
+  Admin: {
+    label: 'Admin',
+    icon: Settings,
+    route: '/(tabs)/admin',
+  },
+  SuperAdmin: {
+    label: 'Süper Admin',
+    icon: ShieldCheck,
+    route: '/(tabs)/super-admin',
+  },
+  Roles: {
+    label: 'Roller',
+    icon: Shield,
+    route: '/(tabs)/roles',
+  },
+  Organization: {
+    label: 'Organizasyon',
+    icon: Building,
+    route: '/(tabs)/organization',
+  },
+};
 
 export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  const pathname = usePathname();
+  const { permissions, isAuthenticated, user } = useAuth();
 
-  const menuItems: MenuItem[] = [
-    {
-      id: 'home',
-      label: 'Anasayfa',
-      icon: <Home size={20} color="#7C3AED" />,
-      route: '/(tabs)',
-    },
-    {
-      id: 'profile',
-      label: 'Profilim',
-      icon: <User size={20} color="#7C3AED" />,
-      route: '/(tabs)/profile',
-    },
-    {
-      id: 'requests',
-      label: 'Talepler',
-      icon: <FileText size={20} color="#7C3AED" />,
-      route: '/(tabs)/requests',
-    },
-    {
-      id: 'employees',
-      label: 'Çalışanlar',
-      icon: <Users size={20} color="#7C3AED" />,
-      route: '/(tabs)/employees',
-      roles: ['Admin', 'Manager', 'HR'],
-    },
-    {
-      id: 'admin',
-      label: 'Admin',
-      icon: <Settings size={20} color="#7C3AED" />,
-      route: '/(tabs)/admin',
-      roles: ['Admin'],
-    },
-    {
-      id: 'plus-admin',
-      label: 'Artı Admin',
-      icon: <Plus size={20} color="#7C3AED" />,
-      route: '/(tabs)/plus-admin',
-      roles: ['SuperAdmin'],
-    },
-  ];
+  const menuItems = useMemo(() => {
+    if (!isAuthenticated) return [];
 
-  const hasAccess = (item: MenuItem): boolean => {
-    if (!item.roles || item.roles.length === 0) return true;
-    if (!user?.role) return false;
-    return item.roles.includes(user.role);
-  };
+    const items: MenuItem[] = [];
+
+    Object.entries(permissions).forEach(([moduleName, modulePermissions]) => {
+      if (modulePermissions.can_read && MODULE_CONFIG[moduleName]) {
+        items.push({
+          moduleName,
+          ...MODULE_CONFIG[moduleName],
+        });
+      }
+    });
+
+    return items;
+  }, [permissions, isAuthenticated]);
 
   const handleNavigation = (route: string) => {
     onClose();
     router.push(route as any);
   };
+
+  if (!isAuthenticated) return null;
 
   return (
     <Modal
@@ -134,17 +169,22 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
 
             <View style={styles.menuItems}>
               {menuItems.map((item) => {
-                if (!hasAccess(item)) return null;
+                const IconComponent = item.icon;
+                const isActive = pathname === item.route;
 
                 return (
                   <TouchableOpacity
-                    key={item.id}
-                    style={styles.menuItem}
+                    key={item.moduleName}
+                    style={[styles.menuItem, isActive && styles.menuItemActive]}
                     onPress={() => handleNavigation(item.route)}
                     activeOpacity={0.7}
                   >
-                    <View style={styles.menuItemIcon}>{item.icon}</View>
-                    <Text style={styles.menuItemText}>{item.label}</Text>
+                    <View style={styles.menuItemIcon}>
+                      <IconComponent size={20} color={isActive ? '#7C3AED' : '#666'} />
+                    </View>
+                    <Text style={[styles.menuItemText, isActive && styles.menuItemTextActive]}>
+                      {item.label}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -236,6 +276,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 16,
   },
+  menuItemActive: {
+    backgroundColor: '#F5F0FF',
+  },
   menuItemIcon: {
     width: 24,
     height: 24,
@@ -244,7 +287,11 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: 16,
-    color: '#1a1a1a',
+    color: '#666',
+    fontWeight: '400',
+  },
+  menuItemTextActive: {
+    color: '#7C3AED',
     fontWeight: '500',
   },
 });
