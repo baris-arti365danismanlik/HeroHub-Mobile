@@ -78,6 +78,14 @@ export default function ProfileScreen() {
   const [selectedType, setSelectedType] = useState('Tümü');
   const [assets, setAssets] = useState<Asset[]>([]);
   const [assetLoading, setAssetLoading] = useState(false);
+  const [visaModalVisible, setVisaModalVisible] = useState(false);
+  const [visaForm, setVisaForm] = useState({
+    visaType: 'Turist/Turizm Vizesi',
+    country: 'Hollanda',
+    entryDate: '',
+    exitDate: '',
+    notes: '',
+  });
 
   const handleLogout = async () => {
     await logout();
@@ -928,6 +936,12 @@ export default function ProfileScreen() {
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>Henüz vize bilgisi eklenmemiş</Text>
         </View>
+        <TouchableOpacity
+          style={styles.visaRequestButton}
+          onPress={() => setVisaModalVisible(true)}
+        >
+          <Text style={styles.visaRequestButtonText}>Vize Başvuru Evrak Talebi</Text>
+        </TouchableOpacity>
       </Accordion>
     </>
   );
@@ -1289,6 +1303,102 @@ export default function ProfileScreen() {
                 ) : (
                   <Text style={styles.modalSubmitText}>Devam Et</Text>
                 )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={visaModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setVisaModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Vize Başvuru Evrak Talebi</Text>
+              <TouchableOpacity
+                onPress={() => setVisaModalVisible(false)}
+                style={styles.modalCloseButton}
+              >
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalContent}>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Vize Türü</Text>
+                <TouchableOpacity style={styles.formDropdown}>
+                  <Text style={styles.formDropdownText}>{visaForm.visaType}</Text>
+                  <ChevronDown size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Başvurulacak Ülke</Text>
+                <TouchableOpacity style={styles.formDropdown}>
+                  <Text style={styles.formDropdownText}>{visaForm.country}</Text>
+                  <ChevronDown size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Giriş Tarihi</Text>
+                <TouchableOpacity style={styles.formDatePicker}>
+                  <TextInput
+                    style={styles.formDateInput}
+                    placeholder="12 / 23 / 2023"
+                    value={visaForm.entryDate}
+                    onChangeText={(text) => setVisaForm({...visaForm, entryDate: text})}
+                  />
+                  <Calendar size={20} color="#7C3AED" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Çıkış Tarihi</Text>
+                <TouchableOpacity style={styles.formDatePicker}>
+                  <TextInput
+                    style={styles.formDateInput}
+                    placeholder="12 / 23 / 2023"
+                    value={visaForm.exitDate}
+                    onChangeText={(text) => setVisaForm({...visaForm, exitDate: text})}
+                  />
+                  <Calendar size={20} color="#7C3AED" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Not</Text>
+                <TextInput
+                  style={[styles.formInput, styles.formTextarea]}
+                  placeholder="Varsa iletmek istediği detayları çalışan bu alandan gönderebilir."
+                  multiline
+                  numberOfLines={4}
+                  value={visaForm.notes}
+                  onChangeText={(text) => setVisaForm({...visaForm, notes: text})}
+                  textAlignVertical="top"
+                />
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setVisaModalVisible(false)}
+              >
+                <Text style={styles.modalCancelText}>Vazgeç</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalSubmitButton}
+                onPress={() => {
+                  console.log('Vize başvurusu:', visaForm);
+                  setVisaModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalSubmitText}>Devam Et</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -2145,5 +2255,17 @@ const styles = StyleSheet.create({
   personRole: {
     fontSize: 13,
     color: '#666',
+  },
+  visaRequestButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  visaRequestButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
