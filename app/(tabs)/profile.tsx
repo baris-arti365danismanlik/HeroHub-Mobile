@@ -36,7 +36,8 @@ import {
   ChevronRight,
   FolderOpen,
   Calendar,
-  X
+  X,
+  AlignJustify
 } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
@@ -453,9 +454,37 @@ export default function ProfileScreen() {
 
   const renderAssetsSection = () => (
     <>
+      <View style={styles.assetUserCard}>
+        {user.profilePictureUrl ? (
+          <Image
+            source={{ uri: user.profilePictureUrl }}
+            style={styles.assetUserImage}
+          />
+        ) : (
+          <View style={styles.assetUserPlaceholder}>
+            <UserIcon size={32} color="#7C3AED" />
+          </View>
+        )}
+        <View style={styles.assetUserInfo}>
+          <Text style={styles.assetUserName}>
+            {user.firstName} {user.lastName}
+          </Text>
+          {userProfile?.role?.name && (
+            <View style={styles.assetUserDetail}>
+              <Briefcase size={14} color="#666" />
+              <Text style={styles.assetUserDetailText}>{userProfile.role.name}</Text>
+            </View>
+          )}
+          <View style={styles.assetUserDetail}>
+            <Building2 size={14} color="#666" />
+            <Text style={styles.assetUserDetailText}>Art365 Danışmanlık</Text>
+          </View>
+        </View>
+      </View>
+
       <Accordion
         title="ZİMMET BİLGİLERİ"
-        icon={<Package size={18} color="#7C3AED" />}
+        icon={<AlignJustify size={18} color="#1a1a1a" />}
         defaultExpanded={true}
       >
         <View style={styles.actionButtons}>
@@ -1816,5 +1845,52 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#fff',
+  },
+  assetUserCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  assetUserImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 12,
+    marginRight: 16,
+  },
+  assetUserPlaceholder: {
+    width: 72,
+    height: 72,
+    borderRadius: 12,
+    backgroundColor: '#E9D5FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  assetUserInfo: {
+    flex: 1,
+  },
+  assetUserName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 8,
+  },
+  assetUserDetail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  assetUserDetailText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 6,
   },
 });
