@@ -37,7 +37,12 @@ import {
   FolderOpen,
   Calendar,
   X,
-  AlignJustify
+  AlignJustify,
+  Linkedin,
+  Facebook,
+  Instagram,
+  Clock,
+  Smartphone
 } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
@@ -452,6 +457,147 @@ export default function ProfileScreen() {
     </>
   );
 
+  const calculateWorkDuration = (startDate: string) => {
+    const start = new Date(startDate);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const years = Math.floor(diffDays / 365);
+    const months = Math.floor((diffDays % 365) / 30);
+    const days = diffDays % 30;
+    return `${years} yıl ${months} ay ${days} gün`;
+  };
+
+  const renderSummarySection = () => (
+    <>
+      <View style={styles.assetUserCard}>
+        {user.profilePictureUrl ? (
+          <Image
+            source={{ uri: user.profilePictureUrl }}
+            style={styles.assetUserImage}
+          />
+        ) : (
+          <View style={styles.assetUserPlaceholder}>
+            <UserIcon size={32} color="#7C3AED" />
+          </View>
+        )}
+        <View style={styles.assetUserInfo}>
+          <Text style={styles.assetUserName}>
+            {user.firstName} {user.lastName}
+          </Text>
+          {userProfile?.role?.name && (
+            <View style={styles.assetUserDetail}>
+              <Briefcase size={14} color="#666" />
+              <Text style={styles.assetUserDetailText}>{userProfile.role.name}</Text>
+            </View>
+          )}
+          <View style={styles.assetUserDetail}>
+            <Building2 size={14} color="#666" />
+            <Text style={styles.assetUserDetailText}>Art365 Danışmanlık</Text>
+          </View>
+        </View>
+      </View>
+
+      <Accordion
+        title="Özet"
+        icon={<UserIcon size={18} color="#1a1a1a" />}
+        defaultExpanded={false}
+      >
+        <View style={styles.summaryContainer}>
+          <View style={styles.contactItem}>
+            <Phone size={20} color="#333" />
+            <Text style={styles.contactText}>+90 530 234 76 54</Text>
+          </View>
+
+          <View style={styles.contactItem}>
+            <Smartphone size={20} color="#333" />
+            <Text style={styles.contactText}>+90 530 234 76 54</Text>
+          </View>
+
+          <View style={styles.contactItem}>
+            <Mail size={20} color="#333" />
+            <Text style={styles.contactText}>{user.email}</Text>
+          </View>
+
+          <View style={styles.socialMediaContainer}>
+            <TouchableOpacity style={styles.socialIcon}>
+              <Linkedin size={20} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialIcon}>
+              <Facebook size={20} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialIcon}>
+              <Instagram size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.dividerLine} />
+
+          <View style={styles.workInfoSection}>
+            <Text style={styles.workInfoTitle}>İşe Başlama Tarihi</Text>
+            <Text style={styles.workInfoDate}>10 Eylül 2021</Text>
+            <Text style={styles.workInfoDuration}>3 yıl 2 ay 6 gün</Text>
+          </View>
+
+          <View style={styles.dividerLine} />
+
+          <View style={styles.summaryDetailItem}>
+            <Briefcase size={20} color="#333" />
+            <Text style={styles.summaryDetailText}>
+              {userProfile?.role?.name || 'Management Trainee'}
+            </Text>
+          </View>
+
+          <View style={styles.summaryDetailItem}>
+            <Building2 size={20} color="#333" />
+            <Text style={styles.summaryDetailText}>Art365 Danışmanlık</Text>
+          </View>
+
+          <View style={styles.summaryDetailItem}>
+            <Clock size={20} color="#333" />
+            <Text style={styles.summaryDetailText}>Tam Zamanlı</Text>
+          </View>
+
+          <View style={styles.dividerLine} />
+
+          <View style={styles.managerSection}>
+            <Text style={styles.sectionTitle}>Yöneticisi</Text>
+            <View style={styles.personItem}>
+              <View style={styles.personAvatar}>
+                <UserIcon size={20} color="#7C3AED" />
+              </View>
+              <View style={styles.personInfo}>
+                <Text style={styles.personName}>Gözde Onay</Text>
+                <Text style={styles.personRole}>Pazarlama ve Ürün Direktörü</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.teamSection}>
+            <Text style={styles.sectionTitle}>Ekip Arkadaşları</Text>
+            {[
+              { name: 'Justin Press', role: 'Ürün Uzmanı' },
+              { name: 'Gretchen Vaccaro', role: 'İş Analisti' },
+              { name: 'Jaylon Rosser', role: 'Ürün Müdürü' },
+              { name: 'Tatiana Curtis', role: 'Pazarlama Elemanı' },
+              { name: 'Jaydon Dorwart', role: 'Tedarikçi' },
+            ].map((member, index, array) => (
+              <View key={index} style={[styles.personItem, index === array.length - 1 && { marginBottom: 0 }]}>
+                <View style={styles.personAvatar}>
+                  <UserIcon size={20} color="#7C3AED" />
+                </View>
+                <View style={styles.personInfo}>
+                  <Text style={styles.personName}>{member.name}</Text>
+                  <Text style={styles.personRole}>{member.role}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+      </Accordion>
+    </>
+  );
+
   const renderAssetsSection = () => (
     <>
       <View style={styles.assetUserCard}>
@@ -596,6 +742,7 @@ export default function ProfileScreen() {
 
   const renderProfileInfoSection = () => (
     <>
+      {renderSummarySection()}
       <Accordion
         title="PROFİL BİLGİLERİ"
         icon={<UserIcon size={18} color="#7C3AED" />}
@@ -1892,5 +2039,101 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginLeft: 6,
+  },
+  summaryContainer: {
+    gap: 16,
+  },
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  contactText: {
+    fontSize: 15,
+    color: '#1a1a1a',
+  },
+  socialMediaContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 4,
+  },
+  socialIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 6,
+    backgroundColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dividerLine: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginVertical: 8,
+  },
+  workInfoSection: {
+    paddingVertical: 8,
+  },
+  workInfoTitle: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  workInfoDate: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  workInfoDuration: {
+    fontSize: 13,
+    color: '#666',
+  },
+  summaryDetailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  summaryDetailText: {
+    fontSize: 15,
+    color: '#1a1a1a',
+  },
+  managerSection: {
+    paddingTop: 8,
+  },
+  teamSection: {
+    paddingTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  personItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  personAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#E9D5FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  personInfo: {
+    flex: 1,
+  },
+  personName: {
+    fontSize: 15,
+    color: '#1a1a1a',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  personRole: {
+    fontSize: 13,
+    color: '#666',
   },
 });
