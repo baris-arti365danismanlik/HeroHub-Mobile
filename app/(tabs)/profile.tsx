@@ -1540,15 +1540,10 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   assetCardNew: {
-    backgroundColor: '#fff',
+    backgroundColor: '#F9FAFB',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   assetCardNewHeader: {
     flexDirection: 'row',
