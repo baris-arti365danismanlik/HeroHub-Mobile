@@ -999,7 +999,7 @@ export default function ProfileScreen() {
         onEdit={() => handleEdit('profile')}
       >
         <InfoRow label="Personel No" value="1203354" />
-        <InfoRow label="TCKN" value={user.identityNumber} />
+        <InfoRow label="TCKN" value={user.identityNumber || '-'} />
         <InfoRow label="Adı Soyadı" value="Selin Yeşilce" />
         <InfoRow label="Doğum Yeri" value="Balıkesir" />
         <InfoRow label="Doğum Tarihi" value="12.10.1982" />

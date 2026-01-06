@@ -7,9 +7,10 @@ interface AccordionProps {
   icon?: ReactNode;
   children: ReactNode;
   defaultExpanded?: boolean;
+  onEdit?: () => void;
 }
 
-export function Accordion({ title, icon, children, defaultExpanded = false }: AccordionProps) {
+export function Accordion({ title, icon, children, defaultExpanded = false, onEdit }: AccordionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   return (

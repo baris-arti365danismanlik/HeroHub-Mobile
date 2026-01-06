@@ -38,6 +38,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setUserProfile(profile);
         setPermissions(perms);
+
+        setUser((prevUser) => {
+          if (prevUser && profile) {
+            return {
+              ...prevUser,
+              role: profile.role?.name,
+              position: profile.position,
+            };
+          }
+          return prevUser;
+        });
       }
     } catch (error) {
       console.error('Error loading user profile:', error);
@@ -49,8 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const isAuth = await authService.isAuthenticated();
       if (isAuth) {
         const currentUser = await authService.getCurrentUser();
-        setUser(currentUser);
-        await loadUserProfile(currentUser.id);
+        if (currentUser) {
+          setUser(currentUser);
+          await loadUserProfile(currentUser.id);
+        }
       }
     } catch (error) {
       console.error('Error checking auth:', error);
@@ -91,8 +104,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = async () => {
     try {
       const currentUser = await authService.getCurrentUser();
-      setUser(currentUser);
-      await loadUserProfile(currentUser.id);
+      if (currentUser) {
+        setUser(currentUser);
+        await loadUserProfile(currentUser.id);
+      }
     } catch (error) {
       console.error('Error refreshing user:', error);
     }

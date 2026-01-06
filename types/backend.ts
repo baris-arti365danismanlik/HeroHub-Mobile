@@ -106,6 +106,8 @@ export interface User {
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;
+  role?: string;
+  position?: string;
 }
 
 export interface UserDayOffBalance {
@@ -244,6 +246,7 @@ export interface UserProfile {
   id: string;
   role_id?: string;
   full_name: string;
+  position?: string;
   created_at: string;
   updated_at?: string;
   role?: Role;
