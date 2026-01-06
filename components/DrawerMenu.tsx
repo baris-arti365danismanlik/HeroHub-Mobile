@@ -37,7 +37,7 @@ interface MenuItem {
 export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
 
   const isActive = (route: string) => {
     if (route === '/(tabs)' && pathname === '/') return true;
@@ -86,28 +86,28 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
       label: 'Çalışanlar',
       icon: 'users',
       route: '/(tabs)/employees',
-      roles: ['Admin', 'Manager', 'HR'],
+      roles: ['Admin', 'Manager', 'Company Admin'],
     },
     {
       id: 'admin',
       label: 'Admin',
       icon: 'settings',
       route: '/(tabs)/admin',
-      roles: ['Admin'],
+      roles: ['Admin', 'Company Admin'],
     },
     {
       id: 'plus-admin',
       label: 'Artı Admin',
       icon: 'plus',
       route: '/(tabs)/plus-admin',
-      roles: ['SuperAdmin'],
+      roles: ['Admin'],
     },
   ];
 
   const hasAccess = (item: MenuItem): boolean => {
     if (!item.roles || item.roles.length === 0) return true;
-    if (!user?.role) return false;
-    return item.roles.includes(user.role);
+    if (!userProfile?.role?.name) return false;
+    return item.roles.includes(userProfile.role.name);
   };
 
   const handleNavigation = (route: string) => {

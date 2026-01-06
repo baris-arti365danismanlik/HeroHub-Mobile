@@ -24,9 +24,9 @@ class HttpClient {
     };
   }
 
-  private async getHeaders(includeAuth = true): Promise<HeadersInit> {
-    const headers: HeadersInit = {
-      ...this.defaultHeaders,
+  private async getHeaders(includeAuth = true): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {
+      ...(this.defaultHeaders as Record<string, string>),
     };
 
     if (includeAuth) {

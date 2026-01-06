@@ -745,7 +745,7 @@ export default function ProfileScreen() {
         onEdit={() => handleEdit('profile')}
       >
         <InfoRow label="Personel No" value="1203354" />
-        <InfoRow label="TCKN" value={user.identityNumber} />
+        <InfoRow label="TCKN" value={user.identityNumber || '-'} />
         <InfoRow label="Adı Soyadı" value="Selin Yeşilce" />
         <InfoRow label="Doğum Yeri" value="Balıkesir" />
         <InfoRow label="Doğum Tarihi" value="12.10.1982" />
@@ -1141,7 +1141,7 @@ export default function ProfileScreen() {
                 <View style={styles.profileDetailRow}>
                   <Briefcase size={16} color="#666" />
                   <Text style={styles.profileDetailText}>
-                    {user.position || 'Management Trainee'}
+                    {userProfile?.role?.name || 'Management Trainee'}
                   </Text>
                 </View>
                 <View style={styles.profileDetailRow}>
@@ -1206,7 +1206,7 @@ export default function ProfileScreen() {
                 )}
                 <View style={styles.modalUserInfo}>
                   <Text style={styles.modalUserName}>{user.firstName} {user.lastName}</Text>
-                  <Text style={styles.modalUserRole}>{userProfile?.position || 'Pozisyon'}</Text>
+                  <Text style={styles.modalUserRole}>{userProfile?.role?.name || 'Pozisyon'}</Text>
                 </View>
               </View>
 

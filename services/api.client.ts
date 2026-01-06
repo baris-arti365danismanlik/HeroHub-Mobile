@@ -1,5 +1,11 @@
 import { apiConfig, tokenStorage } from './api.config';
 import type { ApiResponse } from '@/types/backend';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 class ApiClient {
   private baseURL: string;
@@ -10,9 +16,9 @@ class ApiClient {
     this.timeout = apiConfig.timeout;
   }
 
-  private async getHeaders(): Promise<HeadersInit> {
-    const headers: HeadersInit = {
-      ...apiConfig.headers,
+  private async getHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {
+      ...(apiConfig.headers as Record<string, string>),
     };
 
     const token = await tokenStorage.getToken();
