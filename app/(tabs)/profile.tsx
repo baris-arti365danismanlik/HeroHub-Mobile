@@ -136,6 +136,7 @@ export default function ProfileScreen() {
   });
   const [onboardingLoading, setOnboardingLoading] = useState(false);
   const [answerInputs, setAnswerInputs] = useState<Record<string, string>>({});
+  const [welcomePackageModalVisible, setWelcomePackageModalVisible] = useState(false);
 
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
   const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
@@ -336,10 +337,15 @@ export default function ProfileScreen() {
 
     try {
       await onboardingService.updateWelcomePackage(onboardingData.userOnboarding.id, true);
+      setWelcomePackageModalVisible(false);
       await loadOnboardingData();
     } catch (error) {
       console.error('Error sending welcome package:', error);
     }
+  };
+
+  const handleOpenWelcomePackageModal = () => {
+    setWelcomePackageModalVisible(true);
   };
 
   const handleCompleteTask = async (userTaskId: string) => {
@@ -1153,7 +1159,7 @@ export default function ProfileScreen() {
             styles.welcomePackageButton,
             onboardingData.userOnboarding?.welcome_package_sent && styles.welcomePackageButtonSent,
           ]}
-          onPress={handleSendWelcomePackage}
+          onPress={handleOpenWelcomePackageModal}
           disabled={onboardingData.userOnboarding?.welcome_package_sent}
         >
           <Text style={styles.welcomePackageButtonText}>Hoşgeldin Paketi Gönder</Text>
@@ -1929,6 +1935,71 @@ export default function ProfileScreen() {
             >
               <Text style={styles.successButtonText}>Kapat</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={welcomePackageModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setWelcomePackageModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.welcomePackageModalContainer}>
+            <View style={styles.welcomePackageModalHeader}>
+              <Package size={18} color="#7C3AED" />
+              <Text style={styles.welcomePackageModalTitle}>İŞE BAŞLAMA (ONBOARDING)</Text>
+            </View>
+
+            <View style={styles.welcomePackageModalActions}>
+              <TouchableOpacity
+                style={styles.resendButton}
+                onPress={handleSendWelcomePackage}
+              >
+                <Text style={styles.resendButtonText}>Tekrar Gönder</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setWelcomePackageModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>İptal Et</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.welcomePackageModalContent}>
+              {onboardingData.steps.map((step, index) => {
+                const userStep = onboardingData.userSteps.find((us) => us.step_id === step.id);
+                const isCompleted = userStep?.is_completed || (index === 0 && onboardingData.userOnboarding?.welcome_package_sent);
+
+                return (
+                  <View key={step.id} style={styles.welcomePackageStepItem}>
+                    <View style={styles.welcomePackageStepIndicator}>
+                      <View style={[styles.welcomePackageStepNumber, isCompleted && styles.welcomePackageStepNumberCompleted]}>
+                        {isCompleted ? (
+                          <Check size={16} color="#fff" />
+                        ) : (
+                          <Text style={styles.welcomePackageStepNumberText}>{index + 1}</Text>
+                        )}
+                      </View>
+                      {index < onboardingData.steps.length - 1 && (
+                        <View style={styles.welcomePackageStepLine} />
+                      )}
+                    </View>
+                    <View style={styles.welcomePackageStepContent}>
+                      <Text style={[styles.welcomePackageStepTitle, isCompleted && styles.welcomePackageStepTitleCompleted]}>
+                        {step.title}
+                      </Text>
+                      {index === 0 && isCompleted && onboardingData.userOnboarding?.welcome_package_sent_at && (
+                        <Text style={styles.welcomePackageStepDate}>
+                          {formatDate(onboardingData.userOnboarding.welcome_package_sent_at)}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                );
+              })}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -3182,5 +3253,113 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
+  },
+  welcomePackageModalContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    width: '90%',
+    maxHeight: '80%',
+    overflow: 'hidden',
+  },
+  welcomePackageModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  welcomePackageModalTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    letterSpacing: 0.5,
+  },
+  welcomePackageModalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  resendButton: {
+    flex: 1,
+    backgroundColor: '#7C3AED',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  resendButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#EF4444',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  welcomePackageModalContent: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  welcomePackageStepItem: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  welcomePackageStepIndicator: {
+    alignItems: 'center',
+  },
+  welcomePackageStepNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  welcomePackageStepNumberCompleted: {
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
+  },
+  welcomePackageStepNumberText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#9CA3AF',
+  },
+  welcomePackageStepLine: {
+    width: 2,
+    height: 32,
+    backgroundColor: '#E5E7EB',
+    marginTop: 4,
+  },
+  welcomePackageStepContent: {
+    flex: 1,
+    paddingTop: 4,
+  },
+  welcomePackageStepTitle: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginBottom: 4,
+  },
+  welcomePackageStepTitleCompleted: {
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  welcomePackageStepDate: {
+    fontSize: 12,
+    color: '#9CA3AF',
   },
 });
