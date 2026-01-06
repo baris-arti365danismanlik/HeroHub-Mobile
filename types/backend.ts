@@ -180,6 +180,25 @@ export interface Asset {
   updated_at?: string;
 }
 
+export enum LeaveRequestStatus {
+  Pending = 'pending',
+  Approved = 'approved',
+  Rejected = 'rejected',
+}
+
+export interface LeaveRequest {
+  id: string;
+  user_id: string;
+  leave_type: string;
+  start_date: string;
+  end_date: string;
+  duration: number;
+  notes?: string;
+  status: LeaveRequestStatus;
+  created_at: string;
+  updated_at?: string;
+}
+
 export interface LoginRequest {
   userName: string;
   password: string;

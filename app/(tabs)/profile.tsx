@@ -42,14 +42,16 @@ import {
   Facebook,
   Instagram,
   Clock,
-  Smartphone
+  Smartphone,
+  Check
 } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { WorkInfoCard } from '@/components/WorkInfoCard';
 import { assetService } from '@/services/asset.service';
-import { Asset, AssetStatus } from '@/types/backend';
+import { leaveService } from '@/services/leave.service';
+import { Asset, AssetStatus, LeaveRequest } from '@/types/backend';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import {
   formatGender,
@@ -87,13 +89,21 @@ export default function ProfileScreen() {
     notes: '',
   });
   const [leaveModalVisible, setLeaveModalVisible] = useState(false);
+  const [leaveSuccessModalVisible, setLeaveSuccessModalVisible] = useState(false);
   const [leaveForm, setLeaveForm] = useState({
     leaveType: 'Yıllık İzin',
     startDate: '',
     endDate: '',
-    duration: '0.5 Gün',
+    duration: 0.5,
     notes: '',
   });
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [leaveLoading, setLeaveLoading] = useState(false);
+  const [showLeaveTypeDropdown, setShowLeaveTypeDropdown] = useState(false);
+  const [showDurationDropdown, setShowDurationDropdown] = useState(false);
+
+  const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
+  const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
 
   const handleLogout = async () => {
     await logout();
@@ -107,6 +117,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (user?.id) {
       loadAssets();
+      loadLeaveRequests();
     }
   }, [user?.id]);
 
@@ -121,6 +132,56 @@ export default function ProfileScreen() {
       console.error('Error loading assets:', error);
     } finally {
       setAssetLoading(false);
+    }
+  };
+
+  const loadLeaveRequests = async () => {
+    if (!user?.id) return;
+
+    try {
+      setLeaveLoading(true);
+      const data = await leaveService.getPendingLeaveRequests(user.id);
+      setLeaveRequests(data);
+    } catch (error) {
+      console.error('Error loading leave requests:', error);
+    } finally {
+      setLeaveLoading(false);
+    }
+  };
+
+  const handleSubmitLeaveRequest = async () => {
+    if (!user?.id || !leaveForm.startDate || !leaveForm.endDate) {
+      return;
+    }
+
+    try {
+      setLeaveLoading(true);
+
+      await leaveService.createLeaveRequest({
+        user_id: user.id,
+        leave_type: leaveForm.leaveType,
+        start_date: leaveForm.startDate,
+        end_date: leaveForm.endDate,
+        duration: leaveForm.duration,
+        notes: leaveForm.notes,
+      });
+
+      setLeaveForm({
+        leaveType: 'Yıllık İzin',
+        startDate: '',
+        endDate: '',
+        duration: 0.5,
+        notes: '',
+      });
+
+      setLeaveModalVisible(false);
+      setLeaveSuccessModalVisible(true);
+
+      await loadLeaveRequests();
+    } catch (error) {
+      console.error('Error submitting leave request:', error);
+    } finally {
+      setLeaveLoading(false);
     }
   };
 
@@ -201,93 +262,66 @@ export default function ProfileScreen() {
         icon={<Umbrella size={18} color="#7C3AED" />}
         defaultExpanded={true}
       >
-        <View style={styles.dayOffItem}>
-          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#7C3AED' }]} />
-          <View style={styles.dayOffContent}>
-            <View style={styles.dayOffHeader}>
-              <View style={styles.dayOffTitleRow}>
-                <Umbrella size={16} color="#666" />
-                <Text style={styles.dayOffType}>Yıllık İzin</Text>
-              </View>
-              <TouchableOpacity onPress={() => console.log('Edit')}>
-                <Pencil size={16} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.dayOffDays}>
-              <Text style={styles.dayOffDaysText}>5 Gün</Text>
-            </View>
-            <View style={styles.dayOffDates}>
-              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
-              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
-            </View>
+        {leaveLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color="#7C3AED" />
           </View>
-        </View>
+        ) : leaveRequests.length > 0 ? (
+          leaveRequests.map((request) => {
+            const getLeaveColor = (type: string) => {
+              if (type.includes('Yıllık')) return '#7C3AED';
+              if (type.includes('Doğum Günü') || type.includes('Karne')) return '#F59E0B';
+              return '#10B981';
+            };
 
-        <View style={styles.dayOffItem}>
-          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#F59E0B' }]} />
-          <View style={styles.dayOffContent}>
-            <View style={styles.dayOffHeader}>
-              <View style={styles.dayOffTitleRow}>
-                <Umbrella size={16} color="#666" />
-                <Text style={styles.dayOffType}>Doğum Günü İzni</Text>
-              </View>
-              <TouchableOpacity onPress={() => console.log('Edit')}>
-                <Pencil size={16} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.dayOffDays}>
-              <Text style={styles.dayOffDaysText}>1 Gün</Text>
-            </View>
-            <View style={styles.dayOffDates}>
-              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
-              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
-            </View>
-          </View>
-        </View>
+            const formatLeaveDate = (dateStr: string) => {
+              const date = new Date(dateStr);
+              const day = date.getDate().toString().padStart(2, '0');
+              const month = (date.getMonth() + 1).toString().padStart(2, '0');
+              const year = date.getFullYear();
+              const days = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+              const dayName = days[date.getDay()];
+              return `${day}.${month}.${year} ${dayName}`;
+            };
 
-        <View style={styles.dayOffItem}>
-          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#F59E0B' }]} />
-          <View style={styles.dayOffContent}>
-            <View style={styles.dayOffHeader}>
-              <View style={styles.dayOffTitleRow}>
-                <Umbrella size={16} color="#666" />
-                <Text style={styles.dayOffType}>Karne Günü İzni</Text>
+            return (
+              <View key={request.id} style={styles.dayOffItem}>
+                <View
+                  style={[
+                    styles.dayOffLeftBorder,
+                    { backgroundColor: getLeaveColor(request.leave_type) },
+                  ]}
+                />
+                <View style={styles.dayOffContent}>
+                  <View style={styles.dayOffHeader}>
+                    <View style={styles.dayOffTitleRow}>
+                      <Umbrella size={16} color="#666" />
+                      <Text style={styles.dayOffType}>{request.leave_type}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => console.log('Edit', request.id)}>
+                      <Pencil size={16} color="#666" />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.dayOffDays}>
+                    <Text style={styles.dayOffDaysText}>{request.duration} Gün</Text>
+                  </View>
+                  <View style={styles.dayOffDates}>
+                    <Text style={styles.dayOffDateText}>
+                      {formatLeaveDate(request.start_date)}
+                    </Text>
+                    <Text style={styles.dayOffDateText}>
+                      {formatLeaveDate(request.end_date)}
+                    </Text>
+                  </View>
+                </View>
               </View>
-              <TouchableOpacity onPress={() => console.log('Edit')}>
-                <Pencil size={16} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.dayOffDays}>
-              <Text style={styles.dayOffDaysText}>0.5 Gün</Text>
-            </View>
-            <View style={styles.dayOffDates}>
-              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
-              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
-            </View>
+            );
+          })
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Planlanan izin bulunmuyor</Text>
           </View>
-        </View>
-
-        <View style={styles.dayOffItem}>
-          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#7C3AED' }]} />
-          <View style={styles.dayOffContent}>
-            <View style={styles.dayOffHeader}>
-              <View style={styles.dayOffTitleRow}>
-                <Umbrella size={16} color="#666" />
-                <Text style={styles.dayOffType}>Yıllık İzin</Text>
-              </View>
-              <TouchableOpacity onPress={() => console.log('Edit')}>
-                <Pencil size={16} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.dayOffDays}>
-              <Text style={styles.dayOffDaysText}>5 Gün</Text>
-            </View>
-            <View style={styles.dayOffDates}>
-              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
-              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
-            </View>
-          </View>
-        </View>
+        )}
       </Accordion>
 
       <Accordion
@@ -1456,44 +1490,84 @@ export default function ProfileScreen() {
 
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>İzin Türü</Text>
-                <TouchableOpacity style={styles.formDropdown}>
+                <TouchableOpacity
+                  style={styles.formDropdown}
+                  onPress={() => setShowLeaveTypeDropdown(!showLeaveTypeDropdown)}
+                >
                   <Text style={styles.formDropdownText}>{leaveForm.leaveType}</Text>
                   <ChevronDown size={20} color="#666" />
                 </TouchableOpacity>
+                {showLeaveTypeDropdown && (
+                  <View style={styles.dropdownList}>
+                    {leaveTypes.map((type) => (
+                      <TouchableOpacity
+                        key={type}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setLeaveForm({ ...leaveForm, leaveType: type });
+                          setShowLeaveTypeDropdown(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{type}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
 
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Başlangıç Tarihi</Text>
-                <TouchableOpacity style={styles.formDatePicker}>
+                <View style={styles.formDatePicker}>
                   <TextInput
                     style={styles.formDateInput}
-                    placeholder="12 / 23 / 2023"
+                    placeholder="YYYY-MM-DD"
                     value={leaveForm.startDate}
-                    onChangeText={(text) => setLeaveForm({...leaveForm, startDate: text})}
+                    onChangeText={(text) => setLeaveForm({ ...leaveForm, startDate: text })}
                   />
                   <Calendar size={20} color="#7C3AED" />
-                </TouchableOpacity>
+                </View>
               </View>
 
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Bitiş Tarihi</Text>
-                <TouchableOpacity style={styles.formDatePicker}>
+                <View style={styles.formDatePicker}>
                   <TextInput
                     style={styles.formDateInput}
-                    placeholder="12 / 23 / 2023"
+                    placeholder="YYYY-MM-DD"
                     value={leaveForm.endDate}
-                    onChangeText={(text) => setLeaveForm({...leaveForm, endDate: text})}
+                    onChangeText={(text) => setLeaveForm({ ...leaveForm, endDate: text })}
                   />
                   <Calendar size={20} color="#7C3AED" />
-                </TouchableOpacity>
+                </View>
               </View>
 
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Süre</Text>
-                <TouchableOpacity style={styles.formDropdown}>
-                  <Text style={styles.formDropdownText}>{leaveForm.duration}</Text>
+                <TouchableOpacity
+                  style={styles.formDropdown}
+                  onPress={() => setShowDurationDropdown(!showDurationDropdown)}
+                >
+                  <Text style={styles.formDropdownText}>{leaveForm.duration} Gün</Text>
                   <ChevronDown size={20} color="#666" />
                 </TouchableOpacity>
+                {showDurationDropdown && (
+                  <View style={styles.dropdownList}>
+                    <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
+                      {durations.map((dur) => (
+                        <TouchableOpacity
+                          key={dur}
+                          style={styles.dropdownItem}
+                          onPress={() => {
+                            setLeaveForm({ ...leaveForm, duration: dur });
+                            setShowDurationDropdown(false);
+                          }}
+                        >
+                          <Text style={styles.dropdownItemText}>{dur} Gün</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
               </View>
 
               <View style={styles.formGroup}>
@@ -1519,14 +1593,40 @@ export default function ProfileScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalSubmitButton}
-                onPress={() => {
-                  console.log('İzin talebi:', leaveForm);
-                  setLeaveModalVisible(false);
-                }}
+                onPress={handleSubmitLeaveRequest}
+                disabled={leaveLoading}
               >
-                <Text style={styles.modalSubmitText}>Devam Et</Text>
+                {leaveLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.modalSubmitText}>Devam Et</Text>
+                )}
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={leaveSuccessModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setLeaveSuccessModalVisible(false)}
+      >
+        <View style={styles.successModalOverlay}>
+          <View style={styles.successModalContainer}>
+            <View style={styles.successIconContainer}>
+              <View style={styles.successIcon}>
+                <Check size={48} color="#fff" strokeWidth={3} />
+              </View>
+            </View>
+            <Text style={styles.successMessage}>Talebiniz başarı ile iletildi.</Text>
+            <TouchableOpacity
+              style={styles.successButton}
+              onPress={() => setLeaveSuccessModalVisible(false)}
+            >
+              <Text style={styles.successButtonText}>Kapat</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -2453,5 +2553,73 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#10B981',
+  },
+  dropdownList: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginTop: 8,
+    maxHeight: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dropdownScroll: {
+    maxHeight: 200,
+  },
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  dropdownItemText: {
+    fontSize: 15,
+    color: '#1a1a1a',
+  },
+  successModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  successModalContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    maxWidth: 320,
+    width: '85%',
+  },
+  successIconContainer: {
+    marginBottom: 24,
+  },
+  successIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#10B981',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  successMessage: {
+    fontSize: 16,
+    color: '#1a1a1a',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  successButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 12,
+    paddingHorizontal: 48,
+    borderRadius: 10,
+  },
+  successButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
