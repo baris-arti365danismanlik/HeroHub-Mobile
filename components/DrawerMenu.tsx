@@ -173,15 +173,63 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                 if (!hasAccess(item)) return null;
                 const active = isActive(item.route);
 
+                if (item.id === 'home') {
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[styles.menuItem, active && styles.menuItemActive]}
+                      onPress={() => handleNavigation(item.route)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.menuItemIcon}>{getIcon(item.icon, active)}</View>
+                      <Text style={[styles.menuItemText, active && styles.menuItemTextActive]}>
+                        {item.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }
+
+                if (item.id === 'profile') {
+                  return (
+                    <View key={item.id}>
+                      <TouchableOpacity
+                        style={[styles.menuItem, active && styles.menuItemActive]}
+                        onPress={() => handleNavigation(item.route)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.menuItemIcon}>{getIcon(item.icon, active)}</View>
+                        <Text style={[styles.menuItemText, active && styles.menuItemTextActive]}>
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                }
+
+                const subIcon = (() => {
+                  const color = '#666666';
+                  const size = 18;
+                  switch (item.icon) {
+                    case 'users':
+                      return <Users size={size} color={color} />;
+                    case 'settings':
+                      return <Settings size={size} color={color} />;
+                    case 'plus':
+                      return <Plus size={size} color={color} />;
+                    default:
+                      return null;
+                  }
+                })();
+
                 return (
                   <TouchableOpacity
                     key={item.id}
-                    style={[styles.menuItem, active && styles.menuItemActive]}
+                    style={[styles.subMenuItem]}
                     onPress={() => handleNavigation(item.route)}
                     activeOpacity={0.7}
                   >
-                    <View style={styles.menuItemIcon}>{getIcon(item.icon, active)}</View>
-                    <Text style={[styles.menuItemText, active && styles.menuItemTextActive]}>
+                    <View style={styles.subMenuItemIcon}>{subIcon}</View>
+                    <Text style={styles.subMenuItemText}>
                       {item.label}
                     </Text>
                   </TouchableOpacity>
@@ -316,5 +364,24 @@ const styles = StyleSheet.create({
   menuItemTextActive: {
     color: '#7C3AED',
     fontWeight: '500',
+  },
+  subMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingLeft: 32,
+    gap: 12,
+  },
+  subMenuItemIcon: {
+    width: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  subMenuItemText: {
+    fontSize: 15,
+    color: '#666666',
+    fontWeight: '400',
   },
 });
