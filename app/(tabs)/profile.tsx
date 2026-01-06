@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, TextInput, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -34,12 +34,16 @@ import {
   Plus,
   Share2,
   ChevronRight,
-  FolderOpen
+  FolderOpen,
+  Calendar,
+  X
 } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { WorkInfoCard } from '@/components/WorkInfoCard';
+import { assetService } from '@/services/asset.service';
+import { Asset, AssetStatus } from '@/types/backend';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import {
   formatGender,
@@ -56,8 +60,18 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedSection, setSelectedSection] = useState('İzin Bilgileri');
+  const [assetModalVisible, setAssetModalVisible] = useState(false);
+  const [assetForm, setAssetForm] = useState({
+    category: 'Bilgisayar',
+    serialNo: '',
+    description: '',
+    deliveryDate: '',
+    returnDate: '',
+  });
   const [selectedYear, setSelectedYear] = useState('2024');
   const [selectedType, setSelectedType] = useState('Tümü');
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [assetLoading, setAssetLoading] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -66,6 +80,61 @@ export default function ProfileScreen() {
 
   const handleEdit = (section: string) => {
     console.log('Edit section:', section);
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      loadAssets();
+    }
+  }, [user?.id]);
+
+  const loadAssets = async () => {
+    if (!user?.id) return;
+
+    try {
+      setAssetLoading(true);
+      const data = await assetService.getUserAssets(user.id);
+      setAssets(data);
+    } catch (error) {
+      console.error('Error loading assets:', error);
+    } finally {
+      setAssetLoading(false);
+    }
+  };
+
+  const handleAddAsset = async () => {
+    if (!user?.id || !assetForm.serialNo || !assetForm.deliveryDate) {
+      return;
+    }
+
+    try {
+      setAssetLoading(true);
+
+      await assetService.createAsset({
+        user_id: user.id,
+        category: assetForm.category,
+        serial_no: assetForm.serialNo,
+        description: assetForm.description,
+        delivery_date: assetForm.deliveryDate,
+        return_date: assetForm.returnDate || undefined,
+        status: AssetStatus.Active,
+      });
+
+      setAssetForm({
+        category: 'Bilgisayar',
+        serialNo: '',
+        description: '',
+        deliveryDate: '',
+        returnDate: '',
+      });
+
+      setAssetModalVisible(false);
+      await loadAssets();
+    } catch (error) {
+      console.error('Error adding asset:', error);
+    } finally {
+      setAssetLoading(false);
+    }
   };
 
   if (!user) {
@@ -400,59 +469,67 @@ export default function ProfileScreen() {
 
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => console.log('Add asset')}
+            onPress={() => setAssetModalVisible(true)}
           >
             <Text style={styles.addButtonText}>Zimmet Ekle</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.assetCard}>
-          <View style={styles.assetCardHeader}>
-            <Text style={styles.assetCardTitle}>Bilgisayar</Text>
-            <TouchableOpacity
-              style={styles.assetEditButton}
-              onPress={() => handleEdit('asset-1')}
-            >
-              <Pencil size={16} color="#666" />
-            </TouchableOpacity>
+        {assetLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color="#7C3AED" />
           </View>
-          <InfoRow label="Açıklama" value="M3 Macbook Pro 2023" />
-          <InfoRow label="Seri No" value="123131637ABJ1" />
-          <InfoRow label="Teslim Tarihi" value="09.12.2024" isLast />
-        </View>
-
-        <View style={styles.assetCard}>
-          <View style={styles.assetCardHeader}>
-            <Text style={styles.assetCardTitle}>Cep Telefonu</Text>
-            <TouchableOpacity
-              style={styles.assetEditButton}
-              onPress={() => handleEdit('asset-2')}
+        ) : assets.length > 0 ? (
+          assets.map((asset) => (
+            <View
+              key={asset.id}
+              style={[
+                styles.assetCard,
+                asset.status === AssetStatus.Returned && styles.assetCardInactive,
+              ]}
             >
-              <Pencil size={16} color="#666" />
-            </TouchableOpacity>
+              <View style={styles.assetCardHeader}>
+                <Text
+                  style={[
+                    styles.assetCardTitle,
+                    asset.status === AssetStatus.Returned && styles.assetCardInactiveText,
+                  ]}
+                >
+                  {asset.category}
+                </Text>
+                <TouchableOpacity
+                  style={styles.assetEditButton}
+                  onPress={() => handleEdit(`asset-${asset.id}`)}
+                >
+                  <Pencil
+                    size={16}
+                    color={asset.status === AssetStatus.Returned ? '#CCC' : '#666'}
+                  />
+                </TouchableOpacity>
+              </View>
+              {asset.description && (
+                <InfoRow label="Açıklama" value={asset.description} />
+              )}
+              <InfoRow label="Seri No" value={asset.serial_no} />
+              <InfoRow
+                label="Teslim Tarihi"
+                value={new Date(asset.delivery_date).toLocaleDateString('tr-TR')}
+                isLast={!asset.return_date}
+              />
+              {asset.return_date && (
+                <InfoRow
+                  label="İade Tarihi"
+                  value={new Date(asset.return_date).toLocaleDateString('tr-TR')}
+                  isLast
+                />
+              )}
+            </View>
+          ))
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Henüz zimmet kaydı bulunmuyor</Text>
           </View>
-          <InfoRow label="Açıklama" value="iPhone 16" />
-          <InfoRow label="Seri No" value="89781637ABJ1" />
-          <InfoRow label="Teslim Tarihi" value="10.08.2020" isLast />
-        </View>
-
-        <View style={[styles.assetCard, styles.assetCardInactive]}>
-          <View style={styles.assetCardHeader}>
-            <Text style={[styles.assetCardTitle, styles.assetCardInactiveText]}>
-              Telefon
-            </Text>
-            <TouchableOpacity
-              style={styles.assetEditButton}
-              onPress={() => handleEdit('asset-3')}
-            >
-              <Pencil size={16} color="#CCC" />
-            </TouchableOpacity>
-          </View>
-          <InfoRow label="Açıklama" value="Blackberry" />
-          <InfoRow label="Seri No" value="2423AAA112" />
-          <InfoRow label="Teslim Tarihi" value="01.01.2019" />
-          <InfoRow label="İade Tarihi" value="10.08.2020" isLast />
-        </View>
+        )}
       </Accordion>
     </>
   );
@@ -892,6 +969,127 @@ export default function ProfileScreen() {
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       />
+
+      <Modal
+        visible={assetModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setAssetModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Zimmet Ekle</Text>
+              <TouchableOpacity
+                onPress={() => setAssetModalVisible(false)}
+                style={styles.modalCloseButton}
+              >
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalContent}>
+              <View style={styles.modalUserCard}>
+                {user.profilePictureUrl ? (
+                  <Image
+                    source={{ uri: user.profilePictureUrl }}
+                    style={styles.modalUserImage}
+                  />
+                ) : (
+                  <View style={styles.modalUserPlaceholder}>
+                    <UserIcon size={24} color="#7C3AED" />
+                  </View>
+                )}
+                <View style={styles.modalUserInfo}>
+                  <Text style={styles.modalUserName}>{user.firstName} {user.lastName}</Text>
+                  <Text style={styles.modalUserRole}>{userProfile?.position || 'Pozisyon'}</Text>
+                </View>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Kategori</Text>
+                <TouchableOpacity style={styles.formDropdown}>
+                  <Text style={styles.formDropdownText}>{assetForm.category}</Text>
+                  <ChevronDown size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Seri No</Text>
+                <TextInput
+                  style={styles.formInput}
+                  placeholder="123131637ABJ1"
+                  value={assetForm.serialNo}
+                  onChangeText={(text) => setAssetForm({...assetForm, serialNo: text})}
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Zimmet Açıklaması</Text>
+                <TextInput
+                  style={[styles.formInput, styles.formTextarea]}
+                  placeholder="M3 Macbook Pro 2023"
+                  multiline
+                  numberOfLines={4}
+                  value={assetForm.description}
+                  onChangeText={(text) => setAssetForm({...assetForm, description: text})}
+                  textAlignVertical="top"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Teslim Tarihi</Text>
+                <TouchableOpacity style={styles.formDatePicker}>
+                  <TextInput
+                    style={styles.formDateInput}
+                    placeholder="12 / 23 / 2023"
+                    value={assetForm.deliveryDate}
+                    onChangeText={(text) => setAssetForm({...assetForm, deliveryDate: text})}
+                  />
+                  <Calendar size={20} color="#7C3AED" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>İade Tarihi</Text>
+                <TouchableOpacity style={styles.formDatePicker}>
+                  <TextInput
+                    style={styles.formDateInput}
+                    placeholder="12 / 23 / 2023"
+                    value={assetForm.returnDate}
+                    onChangeText={(text) => setAssetForm({...assetForm, returnDate: text})}
+                  />
+                  <Calendar size={20} color="#7C3AED" />
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity style={styles.addFileButton}>
+                <Text style={styles.addFileText}>Dosya Ekle</Text>
+              </TouchableOpacity>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setAssetModalVisible(false)}
+              >
+                <Text style={styles.modalCancelText}>Vazgeç</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalSubmitButton}
+                onPress={handleAddAsset}
+                disabled={assetLoading}
+              >
+                {assetLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.modalSubmitText}>Devam Et</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -1383,5 +1581,166 @@ const styles = StyleSheet.create({
   fileItemMeta: {
     fontSize: 13,
     color: '#6B7280',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '90%',
+    paddingBottom: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  modalCloseButton: {
+    padding: 4,
+  },
+  modalContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  modalUserCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 24,
+  },
+  modalUserImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  modalUserPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#E9D5FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalUserInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  modalUserName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 2,
+  },
+  modalUserRole: {
+    fontSize: 14,
+    color: '#666',
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  formLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1a1a1a',
+    marginBottom: 8,
+  },
+  formDropdown: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  formDropdownText: {
+    fontSize: 15,
+    color: '#1a1a1a',
+  },
+  formInput: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#1a1a1a',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  formTextarea: {
+    minHeight: 100,
+    paddingTop: 14,
+  },
+  formDatePicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  formDateInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1a1a1a',
+    padding: 0,
+  },
+  addFileButton: {
+    marginBottom: 20,
+  },
+  addFileText: {
+    fontSize: 15,
+    color: '#7C3AED',
+    fontWeight: '500',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  modalCancelButton: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#666',
+  },
+  modalSubmitButton: {
+    flex: 1,
+    backgroundColor: '#7C3AED',
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  modalSubmitText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
   },
 });

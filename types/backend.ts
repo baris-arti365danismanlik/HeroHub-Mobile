@@ -84,6 +84,11 @@ export enum ContractType {
   Internship = 3,
 }
 
+export enum AssetStatus {
+  Active = 'active',
+  Returned = 'returned',
+}
+
 export interface User {
   id: string;
   firstName: string;
@@ -159,6 +164,20 @@ export interface UserRequest {
   rejectionReason?: string;
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface Asset {
+  id: string;
+  user_id: string;
+  category: string;
+  serial_no: string;
+  description?: string;
+  delivery_date: string;
+  return_date?: string;
+  file_url?: string;
+  status: AssetStatus;
+  created_at: string;
+  updated_at?: string;
 }
 
 export interface LoginRequest {
