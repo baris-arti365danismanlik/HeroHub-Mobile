@@ -51,8 +51,10 @@ import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { WorkInfoCard } from '@/components/WorkInfoCard';
 import { assetService } from '@/services/asset.service';
 import { leaveService } from '@/services/leave.service';
+import { inboxService } from '@/services/inbox.service';
 import { Asset, AssetStatus, LeaveRequest } from '@/types/backend';
 import { DrawerMenu } from '@/components/DrawerMenu';
+import { InboxModal } from '@/components/InboxModal';
 import {
   formatGender,
   formatBloodType,
@@ -101,6 +103,8 @@ export default function ProfileScreen() {
   const [leaveLoading, setLeaveLoading] = useState(false);
   const [showLeaveTypeDropdown, setShowLeaveTypeDropdown] = useState(false);
   const [showDurationDropdown, setShowDurationDropdown] = useState(false);
+  const [inboxVisible, setInboxVisible] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
   const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
@@ -118,8 +122,19 @@ export default function ProfileScreen() {
     if (user?.id) {
       loadAssets();
       loadLeaveRequests();
+      loadUnreadCount();
     }
   }, [user?.id]);
+
+  const loadUnreadCount = async () => {
+    if (!user?.id) return;
+    try {
+      const count = await inboxService.getUnreadCount(user.id);
+      setUnreadCount(count);
+    } catch (error) {
+      console.error('Error loading unread count:', error);
+    }
+  };
 
   const loadAssets = async () => {
     if (!user?.id) return;
@@ -1140,11 +1155,16 @@ export default function ProfileScreen() {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setInboxVisible(true)}
+            >
               <MessageSquare size={20} color="#1a1a1a" />
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>12</Text>
-              </View>
+              {unreadCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{unreadCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.profileButton}>
@@ -1630,6 +1650,15 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      {user && (
+        <InboxModal
+          visible={inboxVisible}
+          onClose={() => setInboxVisible(false)}
+          userId={user.id}
+          onUnreadCountChange={setUnreadCount}
+        />
+      )}
     </>
   );
 }

@@ -199,6 +199,17 @@ export interface LeaveRequest {
   updated_at?: string;
 }
 
+export interface InboxMessage {
+  id: string;
+  user_id: string;
+  sender_name: string;
+  subject: string;
+  message?: string;
+  is_read: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
 export interface LoginRequest {
   userName: string;
   password: string;

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
+import { inboxService } from '@/services/inbox.service';
 import { Calendar, Clock, FileText, Menu, Bell, MessageSquare, User as UserIcon } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
+import { InboxModal } from '@/components/InboxModal';
 import type { UserDayOffBalance, UserDayOff, UserRequest } from '@/types/backend';
 
 export default function HomeScreen() {
@@ -13,6 +15,8 @@ export default function HomeScreen() {
   const [recentRequests, setRecentRequests] = useState<UserRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [inboxVisible, setInboxVisible] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -25,15 +29,17 @@ export default function HomeScreen() {
 
     try {
       setIsLoading(true);
-      const [balance, dayOffs, requests] = await Promise.all([
+      const [balance, dayOffs, requests, unread] = await Promise.all([
         userService.getDayOffBalance(user.id),
         userService.getUserDayOffs(user.id),
         userService.getUserRequests(user.id),
+        inboxService.getUnreadCount(user.id),
       ]);
 
       setDayOffBalance(balance);
       setRecentDayOffs(dayOffs.slice(0, 3));
       setRecentRequests(requests.slice(0, 3));
+      setUnreadCount(unread);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -76,11 +82,16 @@ export default function HomeScreen() {
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.iconButton}>
+              <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => setInboxVisible(true)}
+              >
                 <MessageSquare size={20} color="#1a1a1a" />
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>12</Text>
-                </View>
+                {unreadCount > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{unreadCount}</Text>
+                  </View>
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.profileButton}>
@@ -168,6 +179,15 @@ export default function HomeScreen() {
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       />
+
+      {user && (
+        <InboxModal
+          visible={inboxVisible}
+          onClose={() => setInboxVisible(false)}
+          userId={user.id}
+          onUnreadCountChange={setUnreadCount}
+        />
+      )}
     </>
   );
 }
