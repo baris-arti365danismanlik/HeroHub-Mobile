@@ -24,7 +24,9 @@ import {
   MessageSquare,
   Package,
   Download,
-  Pencil
+  Pencil,
+  Umbrella,
+  ChevronDown
 } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
@@ -64,10 +66,217 @@ export default function ProfileScreen() {
   }
 
   const profileSections = [
+    'İzin Bilgileri',
     'Çalışma Bilgileri',
     'Profil Bilgileri',
     'Zimmet Bilgileri',
   ];
+
+  const [selectedYear, setSelectedYear] = useState('2024');
+  const [selectedType, setSelectedType] = useState('Tümü');
+
+  const renderDayOffSection = () => (
+    <>
+      <Accordion
+        title="İZİN BİLGİLERİ"
+        icon={<Umbrella size={18} color="#7C3AED" />}
+        defaultExpanded={true}
+      >
+        <View style={styles.balanceCard}>
+          <Text style={styles.balanceLabel}>YILLIK İZİN</Text>
+          <Text style={styles.balanceValue}>-4 Gün</Text>
+        </View>
+
+        <TouchableOpacity style={styles.requestButton}>
+          <Text style={styles.requestButtonText}>İzin Talebi Gir</Text>
+        </TouchableOpacity>
+      </Accordion>
+
+      <Accordion
+        title="PLANLANAN İZİNLER"
+        icon={<Umbrella size={18} color="#7C3AED" />}
+        defaultExpanded={true}
+      >
+        <View style={styles.dayOffItem}>
+          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#7C3AED' }]} />
+          <View style={styles.dayOffContent}>
+            <View style={styles.dayOffHeader}>
+              <View style={styles.dayOffTitleRow}>
+                <Umbrella size={16} color="#666" />
+                <Text style={styles.dayOffType}>Yıllık İzin</Text>
+              </View>
+              <TouchableOpacity onPress={() => console.log('Edit')}>
+                <Pencil size={16} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.dayOffDays}>
+              <Text style={styles.dayOffDaysText}>5 Gün</Text>
+            </View>
+            <View style={styles.dayOffDates}>
+              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
+              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.dayOffItem}>
+          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#F59E0B' }]} />
+          <View style={styles.dayOffContent}>
+            <View style={styles.dayOffHeader}>
+              <View style={styles.dayOffTitleRow}>
+                <Umbrella size={16} color="#666" />
+                <Text style={styles.dayOffType}>Doğum Günü İzni</Text>
+              </View>
+              <TouchableOpacity onPress={() => console.log('Edit')}>
+                <Pencil size={16} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.dayOffDays}>
+              <Text style={styles.dayOffDaysText}>1 Gün</Text>
+            </View>
+            <View style={styles.dayOffDates}>
+              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
+              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.dayOffItem}>
+          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#F59E0B' }]} />
+          <View style={styles.dayOffContent}>
+            <View style={styles.dayOffHeader}>
+              <View style={styles.dayOffTitleRow}>
+                <Umbrella size={16} color="#666" />
+                <Text style={styles.dayOffType}>Karne Günü İzni</Text>
+              </View>
+              <TouchableOpacity onPress={() => console.log('Edit')}>
+                <Pencil size={16} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.dayOffDays}>
+              <Text style={styles.dayOffDaysText}>0.5 Gün</Text>
+            </View>
+            <View style={styles.dayOffDates}>
+              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
+              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.dayOffItem}>
+          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#7C3AED' }]} />
+          <View style={styles.dayOffContent}>
+            <View style={styles.dayOffHeader}>
+              <View style={styles.dayOffTitleRow}>
+                <Umbrella size={16} color="#666" />
+                <Text style={styles.dayOffType}>Yıllık İzin</Text>
+              </View>
+              <TouchableOpacity onPress={() => console.log('Edit')}>
+                <Pencil size={16} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.dayOffDays}>
+              <Text style={styles.dayOffDaysText}>5 Gün</Text>
+            </View>
+            <View style={styles.dayOffDates}>
+              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
+              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
+            </View>
+          </View>
+        </View>
+      </Accordion>
+
+      <Accordion
+        title="GEÇMİŞ İZİNLER"
+        icon={<Umbrella size={18} color="#7C3AED" />}
+        defaultExpanded={true}
+      >
+        <View style={styles.filtersRow}>
+          <View style={styles.filterColumn}>
+            <Text style={styles.filterLabel}>İzin Türü</Text>
+            <TouchableOpacity style={styles.filterDropdown}>
+              <Text style={styles.filterDropdownText}>{selectedType}</Text>
+              <ChevronDown size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.filterColumn}>
+            <Text style={styles.filterLabel}>Yıl</Text>
+            <TouchableOpacity style={styles.filterDropdown}>
+              <Text style={styles.filterDropdownText}>{selectedYear}</Text>
+              <ChevronDown size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.dayOffItem}>
+          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#EF4444' }]} />
+          <View style={styles.dayOffContent}>
+            <View style={styles.dayOffHeader}>
+              <View style={styles.dayOffTitleRow}>
+                <Umbrella size={16} color="#666" />
+                <Text style={styles.dayOffType}>Yıllık İzin</Text>
+              </View>
+              <TouchableOpacity onPress={() => console.log('Edit')}>
+                <Pencil size={16} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.dayOffDays}>
+              <Text style={[styles.dayOffDaysText, { color: '#EF4444' }]}>-5 Gün</Text>
+            </View>
+            <View style={styles.dayOffDates}>
+              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
+              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.dayOffItem}>
+          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#EF4444' }]} />
+          <View style={styles.dayOffContent}>
+            <View style={styles.dayOffHeader}>
+              <View style={styles.dayOffTitleRow}>
+                <Umbrella size={16} color="#666" />
+                <Text style={styles.dayOffType}>Yıllık İzin</Text>
+              </View>
+              <TouchableOpacity onPress={() => console.log('Edit')}>
+                <Pencil size={16} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.dayOffDays}>
+              <Text style={[styles.dayOffDaysText, { color: '#EF4444' }]}>-3 Gün</Text>
+            </View>
+            <View style={styles.dayOffDates}>
+              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
+              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.dayOffItem}>
+          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#10B981' }]} />
+          <View style={styles.dayOffContent}>
+            <View style={styles.dayOffHeader}>
+              <View style={styles.dayOffTitleRow}>
+                <Umbrella size={16} color="#666" />
+                <Text style={styles.dayOffType}>Yıllık İzin</Text>
+              </View>
+              <TouchableOpacity onPress={() => console.log('Edit')}>
+                <Pencil size={16} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.dayOffDays}>
+              <Text style={[styles.dayOffDaysText, { color: '#10B981' }]}>+14 Gün</Text>
+            </View>
+            <View style={styles.dayOffDates}>
+              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
+              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
+            </View>
+          </View>
+        </View>
+      </Accordion>
+    </>
+  );
 
   const renderWorkInfoSection = () => (
     <>
@@ -435,6 +644,8 @@ export default function ProfileScreen() {
 
   const renderSectionContent = () => {
     switch (selectedSection) {
+      case 'İzin Bilgileri':
+        return renderDayOffSection();
       case 'Çalışma Bilgileri':
         return renderWorkInfoSection();
       case 'Profil Bilgileri':
@@ -442,7 +653,7 @@ export default function ProfileScreen() {
       case 'Zimmet Bilgileri':
         return renderAssetsSection();
       default:
-        return renderWorkInfoSection();
+        return renderDayOffSection();
     }
   };
 
@@ -799,5 +1010,113 @@ const styles = StyleSheet.create({
   },
   assetEditButton: {
     padding: 4,
+  },
+  balanceCard: {
+    backgroundColor: '#F3E8FF',
+    padding: 16,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  balanceLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  balanceValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FF3B30',
+  },
+  requestButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  requestButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  dayOffItem: {
+    flexDirection: 'row',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  dayOffLeftBorder: {
+    width: 4,
+  },
+  dayOffContent: {
+    flex: 1,
+    padding: 12,
+  },
+  dayOffHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  dayOffTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  dayOffType: {
+    fontSize: 14,
+    color: '#666',
+  },
+  dayOffDays: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  dayOffDaysText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#7C3AED',
+  },
+  dayOffDates: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  dayOffDateText: {
+    fontSize: 13,
+    color: '#666',
+  },
+  filtersRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  filterColumn: {
+    flex: 1,
+  },
+  filterLabel: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 6,
+  },
+  filterDropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  filterDropdownText: {
+    fontSize: 14,
+    color: '#1a1a1a',
   },
 });
