@@ -499,12 +499,7 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <Accordion
-        title="Özet"
-        icon={<UserIcon size={18} color="#1a1a1a" />}
-        defaultExpanded={false}
-      >
-        <View style={styles.summaryContainer}>
+      <View style={styles.summaryContainer}>
           <View style={styles.contactItem}>
             <Phone size={20} color="#333" />
             <Text style={styles.contactText}>+90 530 234 76 54</Text>
@@ -595,7 +590,6 @@ export default function ProfileScreen() {
             ))}
           </View>
         </View>
-      </Accordion>
     </>
   );
 
@@ -629,12 +623,12 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <Accordion
-        title="ZİMMET BİLGİLERİ"
-        icon={<AlignJustify size={18} color="#1a1a1a" />}
-        defaultExpanded={true}
-      >
-        <View style={styles.actionButtons}>
+      <View style={styles.sectionHeader}>
+        <AlignJustify size={18} color="#1a1a1a" />
+        <Text style={styles.sectionHeaderTitle}>ZİMMET BİLGİLERİ</Text>
+      </View>
+
+      <View style={styles.actionButtons}>
           <TouchableOpacity
             style={styles.downloadButton}
             onPress={() => console.log('Download report')}
@@ -739,7 +733,6 @@ export default function ProfileScreen() {
             <Text style={styles.emptyText}>Henüz zimmet kaydı bulunmuyor</Text>
           </View>
         )}
-      </Accordion>
     </>
   );
 
@@ -1481,6 +1474,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FF3B30',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#fff',
+    marginBottom: 16,
+  },
+  sectionHeaderTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
   },
   actionButtons: {
     flexDirection: 'row',
