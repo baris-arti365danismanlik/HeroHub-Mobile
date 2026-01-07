@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
+import { leaveService } from '@/services/leave.service';
 import { Plus, Menu } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
+import { LeaveRequestModal, LeaveRequestData } from '@/components/LeaveRequestModal';
+import { SuccessModal } from '@/components/SuccessModal';
 import type { UserRequest } from '@/types/backend';
 
 const STATUS_LABELS: Record<number, string> = {
@@ -25,6 +28,8 @@ export default function RequestsScreen() {
   const [requests, setRequests] = useState<UserRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [leaveModalVisible, setLeaveModalVisible] = useState(false);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -43,6 +48,27 @@ export default function RequestsScreen() {
       console.error('Error loading requests:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLeaveSubmit = async (data: LeaveRequestData) => {
+    if (!user) return;
+
+    try {
+      await leaveService.createLeaveRequest({
+        user_id: user.id,
+        leave_type: data.leaveType,
+        start_date: data.startDate,
+        end_date: data.endDate,
+        duration: data.duration,
+        notes: data.notes,
+      });
+
+      setLeaveModalVisible(false);
+      setSuccessModalVisible(true);
+      loadRequests();
+    } catch (error) {
+      console.error('Error creating leave request:', error);
     }
   };
 
@@ -65,7 +91,7 @@ export default function RequestsScreen() {
             <Menu size={24} color="#1a1a1a" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Taleplerim</Text>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton} onPress={() => setLeaveModalVisible(true)}>
             <Plus size={24} color="#7C3AED" />
           </TouchableOpacity>
         </View>
@@ -97,6 +123,19 @@ export default function RequestsScreen() {
       <DrawerMenu
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
+      />
+
+      <LeaveRequestModal
+        visible={leaveModalVisible}
+        onClose={() => setLeaveModalVisible(false)}
+        onSubmit={handleLeaveSubmit}
+      />
+
+      <SuccessModal
+        visible={successModalVisible}
+        onClose={() => setSuccessModalVisible(false)}
+        title="İzin Talebi Gir"
+        message="Talebiniz başarı ile iletildi."
       />
     </>
   );
