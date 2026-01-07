@@ -17,7 +17,7 @@ export function SuccessModal({ visible, onClose, title, message }: SuccessModalP
           <Text style={styles.title}>{title}</Text>
 
           <View style={styles.iconContainer}>
-            <Check size={60} color="#34C759" strokeWidth={3} />
+            <Check size={70} color="#34C759" strokeWidth={4} />
           </View>
 
           <Text style={styles.message}>{message}</Text>
@@ -41,34 +41,42 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: 20,
+    padding: 32,
     width: '100%',
     maxWidth: 340,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     color: '#1a1a1a',
-    marginBottom: 24,
+    marginBottom: 32,
     textAlign: 'center',
   },
   iconContainer: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   message: {
     fontSize: 16,
     color: '#1a1a1a',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
     lineHeight: 24,
   },
   closeButton: {
     backgroundColor: '#7C3AED',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 48,
-    borderRadius: 8,
+    borderRadius: 12,
     width: '100%',
   },
   closeButtonText: {

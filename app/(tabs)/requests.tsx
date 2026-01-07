@@ -55,6 +55,7 @@ export default function RequestsScreen() {
     if (!user) return;
 
     try {
+      console.log('Creating leave request:', data);
       await leaveService.createLeaveRequest({
         user_id: user.id,
         leave_type: data.leaveType,
@@ -64,8 +65,13 @@ export default function RequestsScreen() {
         notes: data.notes,
       });
 
+      console.log('Leave request created successfully');
       setLeaveModalVisible(false);
-      setSuccessModalVisible(true);
+
+      setTimeout(() => {
+        setSuccessModalVisible(true);
+      }, 300);
+
       loadRequests();
     } catch (error) {
       console.error('Error creating leave request:', error);

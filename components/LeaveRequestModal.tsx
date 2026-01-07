@@ -42,11 +42,27 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
   const [notes, setNotes] = useState('');
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
 
+  const resetForm = () => {
+    setLeaveType('');
+    setStartDate('');
+    setEndDate('');
+    setDuration('');
+    setNotes('');
+    setShowTypeDropdown(false);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
   const handleSubmit = () => {
     if (!leaveType || !startDate || !endDate || !duration) {
+      console.log('Form validation failed:', { leaveType, startDate, endDate, duration });
       return;
     }
 
+    console.log('Submitting leave request from modal');
     onSubmit({
       leaveType,
       startDate,
@@ -55,20 +71,16 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
       notes: notes || undefined,
     });
 
-    setLeaveType('');
-    setStartDate('');
-    setEndDate('');
-    setDuration('');
-    setNotes('');
+    resetForm();
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={handleClose}>
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>İzin Talebi Gir</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
               <X size={24} color="#666" />
             </TouchableOpacity>
           </View>
