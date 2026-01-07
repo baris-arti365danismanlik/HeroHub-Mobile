@@ -182,58 +182,6 @@ export default function ProfileScreen() {
     country: 'Türkiye',
   });
 
-  const [educationEditModalVisible, setEducationEditModalVisible] = useState(false);
-  const [educationEditForm, setEducationEditForm] = useState({
-    department: 'Kimya',
-    university: 'İstanbul Üniversitesi',
-    startDate: '01',
-  });
-
-  const [bankEditModalVisible, setBankEditModalVisible] = useState(false);
-  const [bankEditForm, setBankEditForm] = useState({
-    bankName: 'Akbank',
-    iban: 'TR63 0011 1000 0000 0084 5959 70',
-    accountNo: 'Türkiye Cumhuriyet',
-  });
-
-  const [experienceEditModalVisible, setExperienceEditModalVisible] = useState(false);
-  const [experienceEditForm, setExperienceEditForm] = useState({
-    company: 'Okan Abal',
-    position: 'Satış Müdürü',
-    startDate: 'Orta Satış',
-    leaveReason: 'Farklı İlçede Yaşamak İstiyorum',
-  });
-
-  const [skillsEditModalVisible, setSkillsEditModalVisible] = useState(false);
-  const [skillsEditForm, setSkillsEditForm] = useState({
-    skills: '218',
-  });
-
-  const [socialEditModalVisible, setSocialEditModalVisible] = useState(false);
-  const [socialEditForm, setSocialEditForm] = useState({
-    instagram: 'www.instagram.com/company',
-    facebook: 'www.facebook.com/company',
-  });
-
-  const [languagesEditModalVisible, setLanguagesEditModalVisible] = useState(false);
-  const [languagesEditForm, setLanguagesEditForm] = useState({
-    level1: 'Orta Seviye',
-    level2: 'C1',
-  });
-
-  const [certificatesEditModalVisible, setCertificatesEditModalVisible] = useState(false);
-  const [certificatesEditForm, setCertificatesEditForm] = useState({
-    title: 'Marketing Eğitimi',
-    region: 'Marketing Eğitimi',
-    date: '12.12.2020',
-  });
-
-  const [passportEditModalVisible, setPassportEditModalVisible] = useState(false);
-  const [passportEditForm, setPassportEditForm] = useState({
-    issueDate: '12.11.2017',
-    serialNo: 'Seri Referans İdentitesi',
-    expiryDate: '11.08.2020',
-  });
 
   const [healthEditModalVisible, setHealthEditModalVisible] = useState(false);
   const [healthEditForm, setHealthEditForm] = useState({
@@ -258,14 +206,6 @@ export default function ProfileScreen() {
     startDate: '',
     endDate: '',
     postponementReason: '',
-  });
-
-  const [familyEditModalVisible, setFamilyEditModalVisible] = useState(false);
-  const [familyEditForm, setFamilyEditForm] = useState({
-    memberName: '',
-    relation: '',
-    birthDate: '',
-    occupation: '',
   });
 
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
@@ -295,44 +235,6 @@ export default function ProfileScreen() {
         break;
       case 'military':
         setMilitaryEditModalVisible(true);
-        break;
-      case 'family':
-        setFamilyEditModalVisible(true);
-        break;
-      case 'education':
-      case 'education-1':
-      case 'education-2':
-        setEducationEditModalVisible(true);
-        break;
-      case 'bank':
-      case 'bank-1':
-      case 'bank-2':
-        setBankEditModalVisible(true);
-        break;
-      case 'experience':
-      case 'exp-1':
-        setExperienceEditModalVisible(true);
-        break;
-      case 'skills':
-        setSkillsEditModalVisible(true);
-        break;
-      case 'social':
-        setSocialEditModalVisible(true);
-        break;
-      case 'languages':
-        setLanguagesEditModalVisible(true);
-        break;
-      case 'certificates':
-      case 'cert-1':
-        setCertificatesEditModalVisible(true);
-        break;
-      case 'passport':
-      case 'passport-1':
-      case 'passport-2':
-        setPassportEditModalVisible(true);
-        break;
-      case 'visa':
-        setVisaModalVisible(true);
         break;
       default:
         console.log('Edit section:', section);
@@ -388,46 +290,6 @@ export default function ProfileScreen() {
     setAddressEditModalVisible(false);
   };
 
-  const saveEducationInfo = () => {
-    console.log('Save education info:', educationEditForm);
-    setEducationEditModalVisible(false);
-  };
-
-  const saveBankInfo = () => {
-    console.log('Save bank info:', bankEditForm);
-    setBankEditModalVisible(false);
-  };
-
-  const saveExperienceInfo = () => {
-    console.log('Save experience info:', experienceEditForm);
-    setExperienceEditModalVisible(false);
-  };
-
-  const saveSkillsInfo = () => {
-    console.log('Save skills info:', skillsEditForm);
-    setSkillsEditModalVisible(false);
-  };
-
-  const saveSocialInfo = () => {
-    console.log('Save social info:', socialEditForm);
-    setSocialEditModalVisible(false);
-  };
-
-  const saveLanguagesInfo = () => {
-    console.log('Save languages info:', languagesEditForm);
-    setLanguagesEditModalVisible(false);
-  };
-
-  const saveCertificatesInfo = () => {
-    console.log('Save certificates info:', certificatesEditForm);
-    setCertificatesEditModalVisible(false);
-  };
-
-  const savePassportInfo = () => {
-    console.log('Save passport info:', passportEditForm);
-    setPassportEditModalVisible(false);
-  };
-
   const saveHealthInfo = () => {
     console.log('Save health info:', healthEditForm);
     setHealthEditModalVisible(false);
@@ -441,11 +303,6 @@ export default function ProfileScreen() {
   const saveMilitaryInfo = () => {
     console.log('Save military info:', militaryEditForm);
     setMilitaryEditModalVisible(false);
-  };
-
-  const saveFamilyInfo = () => {
-    console.log('Save family info:', familyEditForm);
-    setFamilyEditModalVisible(false);
   };
 
   useEffect(() => {
@@ -1363,7 +1220,6 @@ export default function ProfileScreen() {
         title="AİLE BİLGİLERİ"
         icon={<Users2 size={18} color="#7C3AED" />}
         defaultExpanded={false}
-        onEdit={() => handleEdit('family')}
       >
         <InfoRow label="Aile Üyesi" value="-" />
         <InfoRow label="Yakınlık Derecesi" value="-" />
@@ -1375,7 +1231,6 @@ export default function ProfileScreen() {
         title="EĞİTİM BİLGİLERİ"
         icon={<GraduationCap size={18} color="#7C3AED" />}
         defaultExpanded={false}
-        onEdit={() => handleEdit('education')}
       >
         <WorkInfoCard
           title="1. Eğitim"
@@ -1384,14 +1239,12 @@ export default function ProfileScreen() {
             { label: 'Üniversite', value: 'İstanbul Üniversitesi' },
             { label: 'Başlangıç Tarihi', value: '01' },
           ]}
-          onEdit={() => handleEdit('education-1')}
         />
         <WorkInfoCard
           title="2. Eğitim"
           details={[
             { label: 'Güneydoğu Tarihi', value: '12.30.2020' },
           ]}
-          onEdit={() => handleEdit('education-2')}
         />
       </Accordion>
 
@@ -1399,7 +1252,6 @@ export default function ProfileScreen() {
         title="BANKA BİLGİLERİ"
         icon={<CreditCard size={18} color="#7C3AED" />}
         defaultExpanded={false}
-        onEdit={() => handleEdit('bank')}
       >
         <WorkInfoCard
           title="1. Banka"
@@ -1408,7 +1260,6 @@ export default function ProfileScreen() {
             { label: 'IBAN', value: 'TR63 0011 1000 0000 0084 5959 70' },
             { label: 'Hesap No', value: 'Türkiye Cumhuriyet' },
           ]}
-          onEdit={() => handleEdit('bank-1')}
         />
         <WorkInfoCard
           title="2. Banka"
@@ -1417,7 +1268,6 @@ export default function ProfileScreen() {
             { label: 'Hesap No', value: 'Yapılır' },
             { label: 'İban/TR', value: 'TR63 0011 1000 0000 0084 5959 70' },
           ]}
-          onEdit={() => handleEdit('bank-2')}
         />
       </Accordion>
 
@@ -1425,7 +1275,6 @@ export default function ProfileScreen() {
         title="İŞ TECRÜBELERİ"
         icon={<Briefcase size={18} color="#7C3AED" />}
         defaultExpanded={false}
-        onEdit={() => handleEdit('experience')}
       >
         <WorkInfoCard
           title="Okan Abal"
@@ -1434,7 +1283,6 @@ export default function ProfileScreen() {
             { label: 'İşe Giriş Tarihi', value: 'Orta Satış' },
             { label: 'İşten Ayrılma Nedeni', value: 'Farklı İlçede Yaşamak İstiyorum' },
           ]}
-          onEdit={() => handleEdit('exp-1')}
         />
       </Accordion>
 
@@ -1442,7 +1290,6 @@ export default function ProfileScreen() {
         title="YETKİNLİKLER"
         icon={<Award size={18} color="#7C3AED" />}
         defaultExpanded={false}
-        onEdit={() => handleEdit('skills')}
       >
         <InfoRow label="Cinsiyet" value="218" isLast />
       </Accordion>
@@ -1451,7 +1298,6 @@ export default function ProfileScreen() {
         title="SOSYAL LİNKLER"
         icon={<Globe size={18} color="#7C3AED" />}
         defaultExpanded={false}
-        onEdit={() => handleEdit('social')}
       >
         <InfoRow label="Instagram" value="www.instagram.com/company" />
         <InfoRow label="Facebook" value="www.facebook.com/company" isLast />
@@ -1461,7 +1307,6 @@ export default function ProfileScreen() {
         title="DİL BİLGİLERİ"
         icon={<Languages size={18} color="#7C3AED" />}
         defaultExpanded={false}
-        onEdit={() => handleEdit('languages')}
       >
         <InfoRow label="Seviye" value="Orta Seviye" />
         <InfoRow label="Seviye" value="C1" isLast />
@@ -1471,7 +1316,6 @@ export default function ProfileScreen() {
         title="SERTİFİKALAR"
         icon={<Award size={18} color="#7C3AED" />}
         defaultExpanded={false}
-        onEdit={() => handleEdit('certificates')}
       >
         <WorkInfoCard
           title="Marketing Eğitimi"
@@ -1479,7 +1323,6 @@ export default function ProfileScreen() {
             { label: 'Bölge İl', value: 'Marketing Eğitimi' },
             { label: 'Almaya Tarihi', value: '12.12.2020' },
           ]}
-          onEdit={() => handleEdit('cert-1')}
         />
       </Accordion>
 
@@ -1487,7 +1330,6 @@ export default function ProfileScreen() {
         title="PASAPORT BİLGİLERİ"
         icon={<CreditCard size={18} color="#7C3AED" />}
         defaultExpanded={false}
-        onEdit={() => handleEdit('passport')}
       >
         <WorkInfoCard
           title="1. Pasaport"
@@ -1496,7 +1338,6 @@ export default function ProfileScreen() {
             { label: 'Veriliş', value: 'Seri Referans İdentitesi' },
             { label: 'İşlem Tarihi', value: '11.08.2020' },
           ]}
-          onEdit={() => handleEdit('passport-1')}
         />
         <WorkInfoCard
           title="2. Pasaport"
@@ -1509,7 +1350,6 @@ export default function ProfileScreen() {
             { label: 'Doğum', value: 'İsveçlik' },
             { label: 'Almak İçin', value: '11.08.2038' },
           ]}
-          onEdit={() => handleEdit('passport-2')}
         />
       </Accordion>
 
@@ -1517,7 +1357,6 @@ export default function ProfileScreen() {
         title="VİZE BİLGİLERİ"
         icon={<FileText size={18} color="#7C3AED" />}
         defaultExpanded={false}
-        onEdit={() => handleEdit('visa')}
       >
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>Henüz vize bilgisi eklenmemiş</Text>
@@ -2811,320 +2650,6 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      <Modal visible={educationEditModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Eğitim Bilgilerini Düzenle</Text>
-              <TouchableOpacity onPress={() => setEducationEditModalVisible(false)} style={styles.modalCloseButton}>
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalContent}>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Bölüm</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={educationEditForm.department}
-                  onChangeText={(text) => setEducationEditForm({ ...educationEditForm, department: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Üniversite</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={educationEditForm.university}
-                  onChangeText={(text) => setEducationEditForm({ ...educationEditForm, university: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Başlangıç Tarihi</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={educationEditForm.startDate}
-                  onChangeText={(text) => setEducationEditForm({ ...educationEditForm, startDate: text })}
-                />
-              </View>
-            </ScrollView>
-            <TouchableOpacity style={styles.saveButton} onPress={saveEducationInfo}>
-              <Text style={styles.saveButtonText}>Kaydet</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={bankEditModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Banka Bilgilerini Düzenle</Text>
-              <TouchableOpacity onPress={() => setBankEditModalVisible(false)} style={styles.modalCloseButton}>
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalContent}>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Banka Adı</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={bankEditForm.bankName}
-                  onChangeText={(text) => setBankEditForm({ ...bankEditForm, bankName: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>IBAN</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={bankEditForm.iban}
-                  onChangeText={(text) => setBankEditForm({ ...bankEditForm, iban: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Hesap No</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={bankEditForm.accountNo}
-                  onChangeText={(text) => setBankEditForm({ ...bankEditForm, accountNo: text })}
-                />
-              </View>
-            </ScrollView>
-            <TouchableOpacity style={styles.saveButton} onPress={saveBankInfo}>
-              <Text style={styles.saveButtonText}>Kaydet</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={experienceEditModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>İş Tecrübelerini Düzenle</Text>
-              <TouchableOpacity onPress={() => setExperienceEditModalVisible(false)} style={styles.modalCloseButton}>
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalContent}>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Şirket Adı</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={experienceEditForm.company}
-                  onChangeText={(text) => setExperienceEditForm({ ...experienceEditForm, company: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Görev</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={experienceEditForm.position}
-                  onChangeText={(text) => setExperienceEditForm({ ...experienceEditForm, position: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>İşe Giriş Tarihi</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={experienceEditForm.startDate}
-                  onChangeText={(text) => setExperienceEditForm({ ...experienceEditForm, startDate: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>İşten Ayrılma Nedeni</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={experienceEditForm.leaveReason}
-                  onChangeText={(text) => setExperienceEditForm({ ...experienceEditForm, leaveReason: text })}
-                  multiline
-                />
-              </View>
-            </ScrollView>
-            <TouchableOpacity style={styles.saveButton} onPress={saveExperienceInfo}>
-              <Text style={styles.saveButtonText}>Kaydet</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={skillsEditModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Yetkinlikleri Düzenle</Text>
-              <TouchableOpacity onPress={() => setSkillsEditModalVisible(false)} style={styles.modalCloseButton}>
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalContent}>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Yetkinlikler</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={skillsEditForm.skills}
-                  onChangeText={(text) => setSkillsEditForm({ ...skillsEditForm, skills: text })}
-                  multiline
-                />
-              </View>
-            </ScrollView>
-            <TouchableOpacity style={styles.saveButton} onPress={saveSkillsInfo}>
-              <Text style={styles.saveButtonText}>Kaydet</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={socialEditModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Sosyal Linkleri Düzenle</Text>
-              <TouchableOpacity onPress={() => setSocialEditModalVisible(false)} style={styles.modalCloseButton}>
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalContent}>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Instagram</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={socialEditForm.instagram}
-                  onChangeText={(text) => setSocialEditForm({ ...socialEditForm, instagram: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Facebook</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={socialEditForm.facebook}
-                  onChangeText={(text) => setSocialEditForm({ ...socialEditForm, facebook: text })}
-                />
-              </View>
-            </ScrollView>
-            <TouchableOpacity style={styles.saveButton} onPress={saveSocialInfo}>
-              <Text style={styles.saveButtonText}>Kaydet</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={languagesEditModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Dil Bilgilerini Düzenle</Text>
-              <TouchableOpacity onPress={() => setLanguagesEditModalVisible(false)} style={styles.modalCloseButton}>
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalContent}>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Seviye 1</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={languagesEditForm.level1}
-                  onChangeText={(text) => setLanguagesEditForm({ ...languagesEditForm, level1: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Seviye 2</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={languagesEditForm.level2}
-                  onChangeText={(text) => setLanguagesEditForm({ ...languagesEditForm, level2: text })}
-                />
-              </View>
-            </ScrollView>
-            <TouchableOpacity style={styles.saveButton} onPress={saveLanguagesInfo}>
-              <Text style={styles.saveButtonText}>Kaydet</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={certificatesEditModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Sertifikaları Düzenle</Text>
-              <TouchableOpacity onPress={() => setCertificatesEditModalVisible(false)} style={styles.modalCloseButton}>
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalContent}>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Sertifika Adı</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={certificatesEditForm.title}
-                  onChangeText={(text) => setCertificatesEditForm({ ...certificatesEditForm, title: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Bölge İl</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={certificatesEditForm.region}
-                  onChangeText={(text) => setCertificatesEditForm({ ...certificatesEditForm, region: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Alınma Tarihi</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={certificatesEditForm.date}
-                  onChangeText={(text) => setCertificatesEditForm({ ...certificatesEditForm, date: text })}
-                />
-              </View>
-            </ScrollView>
-            <TouchableOpacity style={styles.saveButton} onPress={saveCertificatesInfo}>
-              <Text style={styles.saveButtonText}>Kaydet</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={passportEditModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Pasaport Bilgilerini Düzenle</Text>
-              <TouchableOpacity onPress={() => setPassportEditModalVisible(false)} style={styles.modalCloseButton}>
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalContent}>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Veriliş Tarihi</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={passportEditForm.issueDate}
-                  onChangeText={(text) => setPassportEditForm({ ...passportEditForm, issueDate: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Seri No</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={passportEditForm.serialNo}
-                  onChangeText={(text) => setPassportEditForm({ ...passportEditForm, serialNo: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Son Kullanma Tarihi</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={passportEditForm.expiryDate}
-                  onChangeText={(text) => setPassportEditForm({ ...passportEditForm, expiryDate: text })}
-                />
-              </View>
-            </ScrollView>
-            <TouchableOpacity style={styles.saveButton} onPress={savePassportInfo}>
-              <Text style={styles.saveButtonText}>Kaydet</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
       <Modal visible={healthEditModalVisible} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
@@ -3283,55 +2808,6 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      <Modal visible={familyEditModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Aile Bilgilerini Düzenle</Text>
-              <TouchableOpacity onPress={() => setFamilyEditModalVisible(false)} style={styles.modalCloseButton}>
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalContent}>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Aile Üyesi</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={familyEditForm.memberName}
-                  onChangeText={(text) => setFamilyEditForm({ ...familyEditForm, memberName: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Yakınlık Derecesi</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={familyEditForm.relation}
-                  onChangeText={(text) => setFamilyEditForm({ ...familyEditForm, relation: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Doğum Tarihi</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={familyEditForm.birthDate}
-                  onChangeText={(text) => setFamilyEditForm({ ...familyEditForm, birthDate: text })}
-                />
-              </View>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Meslek</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={familyEditForm.occupation}
-                  onChangeText={(text) => setFamilyEditForm({ ...familyEditForm, occupation: text })}
-                />
-              </View>
-            </ScrollView>
-            <TouchableOpacity style={styles.saveButton} onPress={saveFamilyInfo}>
-              <Text style={styles.saveButtonText}>Kaydet</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </>
   );
 }
