@@ -56,6 +56,20 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
     onClose();
   };
 
+  const formatDateForDB = (dateStr: string): string => {
+    if (!dateStr) return '';
+
+    if (dateStr.includes('.')) {
+      const parts = dateStr.split('.');
+      if (parts.length === 3) {
+        const [day, month, year] = parts;
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
+    }
+
+    return dateStr;
+  };
+
   const handleSubmit = () => {
     if (!leaveType || !startDate || !endDate || !duration) {
       console.log('Form validation failed:', { leaveType, startDate, endDate, duration });
@@ -65,8 +79,8 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
     console.log('Submitting leave request from modal');
     onSubmit({
       leaveType,
-      startDate,
-      endDate,
+      startDate: formatDateForDB(startDate),
+      endDate: formatDateForDB(endDate),
       duration: parseInt(duration),
       notes: notes || undefined,
     });
@@ -120,7 +134,7 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
                 style={styles.input}
                 value={startDate}
                 onChangeText={setStartDate}
-                placeholder="GG.AA.YYYY"
+                placeholder="GG.AA.YYYY veya YYYY-MM-DD"
                 placeholderTextColor="#999"
               />
             </View>
@@ -131,7 +145,7 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
                 style={styles.input}
                 value={endDate}
                 onChangeText={setEndDate}
-                placeholder="GG.AA.YYYY"
+                placeholder="GG.AA.YYYY veya YYYY-MM-DD"
                 placeholderTextColor="#999"
               />
             </View>
