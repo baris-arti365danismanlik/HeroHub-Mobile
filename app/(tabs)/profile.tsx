@@ -208,6 +208,10 @@ export default function ProfileScreen() {
     postponementReason: '',
   });
 
+  const [shiftChangeModalVisible, setShiftChangeModalVisible] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(new Date(2025, 2, 1));
+  const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
+
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
   const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
 
@@ -1413,6 +1417,107 @@ export default function ProfileScreen() {
     }
   };
 
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = (firstDay.getDay() + 6) % 7;
+
+    return { daysInMonth, startingDayOfWeek };
+  };
+
+  const handleDateToggle = (dateStr: string) => {
+    const newSelected = new Set(selectedDates);
+    if (newSelected.has(dateStr)) {
+      newSelected.delete(dateStr);
+    } else {
+      newSelected.add(dateStr);
+    }
+    setSelectedDates(newSelected);
+  };
+
+  const changeMonth = (direction: 'prev' | 'next') => {
+    const newMonth = new Date(calendarMonth);
+    if (direction === 'prev') {
+      newMonth.setMonth(newMonth.getMonth() - 1);
+    } else {
+      newMonth.setMonth(newMonth.getMonth() + 1);
+    }
+    setCalendarMonth(newMonth);
+  };
+
+  const renderCalendar = () => {
+    const { daysInMonth, startingDayOfWeek } = getDaysInMonth(calendarMonth);
+    const monthName = calendarMonth.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+    const formattedMonthName = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+    const days = [];
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(<View key={`empty-${i}`} style={styles.calendarDay} />);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${calendarMonth.getFullYear()}-${String(calendarMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const isSelected = selectedDates.has(dateStr);
+      const dayOfWeek = (startingDayOfWeek + day - 1) % 7;
+      const isWeekend = dayOfWeek === 5 || dayOfWeek === 6;
+
+      days.push(
+        <TouchableOpacity
+          key={day}
+          style={[
+            styles.calendarDay,
+            isSelected && styles.calendarDaySelected,
+          ]}
+          onPress={() => handleDateToggle(dateStr)}
+        >
+          <Text
+            style={[
+              styles.calendarDayText,
+              isWeekend && styles.calendarDayWeekend,
+              isSelected && styles.calendarDayTextSelected,
+            ]}
+          >
+            {day}
+          </Text>
+        </TouchableOpacity>
+      );
+    }
+
+    return (
+      <View style={styles.calendarContainer}>
+        <View style={styles.calendarHeader}>
+          <TouchableOpacity onPress={() => changeMonth('prev')}>
+            <Text style={styles.calendarNavButton}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.calendarMonthTitle}>{formattedMonthName}</Text>
+          <TouchableOpacity onPress={() => changeMonth('next')}>
+            <Text style={styles.calendarNavButton}>→</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.calendarDayNames}>
+          {dayNames.map((name, index) => (
+            <Text
+              key={name}
+              style={[
+                styles.calendarDayName,
+                (index === 5 || index === 6) && styles.calendarDayNameWeekend,
+              ]}
+            >
+              {name}
+            </Text>
+          ))}
+        </View>
+
+        <View style={styles.calendarGrid}>{days}</View>
+      </View>
+    );
+  };
+
   const renderPDKSSection = () => {
     if (pdksLoading) {
       return (
@@ -1452,7 +1557,10 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.pdksChangeShiftButton}>
+          <TouchableOpacity
+            style={styles.pdksChangeShiftButton}
+            onPress={() => setShiftChangeModalVisible(true)}
+          >
             <Text style={styles.pdksChangeShiftButtonText}>Vardiya Değiştir</Text>
           </TouchableOpacity>
         </View>
@@ -2396,6 +2504,51 @@ export default function ProfileScreen() {
           onUnreadCountChange={setUnreadCount}
         />
       )}
+
+      <Modal
+        visible={shiftChangeModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShiftChangeModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.shiftChangeModal}>
+            <View style={styles.shiftChangeModalHeader}>
+              <Text style={styles.shiftChangeModalTitle}>Vardiya Değiştir</Text>
+              <TouchableOpacity
+                onPress={() => setShiftChangeModalVisible(false)}
+                style={styles.modalCloseButton}
+              >
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {renderCalendar()}
+            </ScrollView>
+
+            <View style={styles.shiftChangeModalFooter}>
+              <TouchableOpacity
+                style={styles.shiftChangeCancelButton}
+                onPress={() => {
+                  setSelectedDates(new Set());
+                  setShiftChangeModalVisible(false);
+                }}
+              >
+                <Text style={styles.shiftChangeCancelButtonText}>İptal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.shiftChangeSaveButton}
+                onPress={() => {
+                  setShiftChangeModalVisible(false);
+                }}
+              >
+                <Text style={styles.shiftChangeSaveButtonText}>Kaydet</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {selectedFile && (
         <FileActionDropdown
@@ -4274,6 +4427,120 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 14,
     paddingVertical: 20,
+  },
+  shiftChangeModal: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    width: '90%',
+    maxWidth: 400,
+    maxHeight: '80%',
+  },
+  shiftChangeModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  shiftChangeModalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  shiftChangeModalFooter: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  shiftChangeCancelButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    alignItems: 'center',
+  },
+  shiftChangeCancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
+  },
+  shiftChangeSaveButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 8,
+    backgroundColor: '#7C3AED',
+    alignItems: 'center',
+  },
+  shiftChangeSaveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  calendarContainer: {
+    padding: 20,
+  },
+  calendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  calendarMonthTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    textTransform: 'capitalize',
+  },
+  calendarNavButton: {
+    fontSize: 24,
+    color: '#7C3AED',
+    fontWeight: '600',
+    paddingHorizontal: 12,
+  },
+  calendarDayNames: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 12,
+  },
+  calendarDayName: {
+    width: 40,
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666',
+  },
+  calendarDayNameWeekend: {
+    color: '#FF3B30',
+  },
+  calendarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  calendarDay: {
+    width: '14.28%',
+    aspectRatio: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 4,
+  },
+  calendarDaySelected: {
+    backgroundColor: '#10B981',
+    borderRadius: 8,
+  },
+  calendarDayText: {
+    fontSize: 14,
+    color: '#1a1a1a',
+  },
+  calendarDayWeekend: {
+    color: '#FF3B30',
+  },
+  calendarDayTextSelected: {
+    color: '#fff',
+    fontWeight: '600',
   },
   renameModalContainer: {
     backgroundColor: '#fff',
