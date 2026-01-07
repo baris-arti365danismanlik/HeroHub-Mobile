@@ -445,7 +445,7 @@ export default function ProfileScreen() {
       <Accordion
         title="İZİN BİLGİLERİ"
         icon={<Umbrella size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
       >
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>YILLIK İZİN</Text>
@@ -463,7 +463,7 @@ export default function ProfileScreen() {
       <Accordion
         title="PLANLANAN İZİNLER"
         icon={<Umbrella size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
       >
         {leaveLoading ? (
           <View style={styles.loadingContainer}>
@@ -530,7 +530,7 @@ export default function ProfileScreen() {
       <Accordion
         title="GEÇMİŞ İZİNLER"
         icon={<Umbrella size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
       >
         <View style={styles.filtersRow}>
           <View style={styles.filterColumn}>
@@ -624,7 +624,7 @@ export default function ProfileScreen() {
       <Accordion
         title="ÇALIŞAN BİLGİLERİ"
         icon={<UserIcon size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
       >
         <InfoRow label="İşe Giriş Tarihi" value="05.09.2012" />
         <InfoRow label="Çalışma Şekli" value="Tam Zamanlı" isLast />
@@ -633,7 +633,7 @@ export default function ProfileScreen() {
       <Accordion
         title="POZİSYON BİLGİLERİ"
         icon={<Briefcase size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
       >
         <WorkInfoCard
           title="Şube Müdürü"
@@ -664,7 +664,7 @@ export default function ProfileScreen() {
       <Accordion
         title="MAAŞ BİLGİLERİ"
         icon={<DollarSign size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
       >
         <WorkInfoCard
           title="80.000 ₺"
@@ -689,7 +689,7 @@ export default function ProfileScreen() {
       <Accordion
         title="BAĞLI ÇALIŞANLAR"
         icon={<Users2 size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
       >
         <WorkInfoCard
           title="Görkem Çağlayan"
@@ -995,7 +995,7 @@ export default function ProfileScreen() {
       <Accordion
         title="PROFİL BİLGİLERİ"
         icon={<UserIcon size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('profile')}
       >
         <InfoRow label="Personel No" value="1203354" />
@@ -1010,7 +1010,7 @@ export default function ProfileScreen() {
       <Accordion
         title="İLETİŞİM BİLGİLERİ"
         icon={<Phone size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('contact')}
       >
         <InfoRow label="İç Hat Telefon" value="0 312 754 24 07" />
@@ -1023,7 +1023,7 @@ export default function ProfileScreen() {
       <Accordion
         title="ADRES BİLGİLERİ"
         icon={<MapPin size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('address')}
       >
         <InfoRow label="Mahalle" value="Yaşadığı Evvel Mah. Mağ... Ne İle 33/2 P1/C 34870..." />
@@ -1034,7 +1034,7 @@ export default function ProfileScreen() {
       <Accordion
         title="EĞİTİM BİLGİLERİ"
         icon={<GraduationCap size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('education')}
       >
         <WorkInfoCard
@@ -1058,7 +1058,7 @@ export default function ProfileScreen() {
       <Accordion
         title="BANKA BİLGİLERİ"
         icon={<CreditCard size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('bank')}
       >
         <WorkInfoCard
@@ -1084,7 +1084,7 @@ export default function ProfileScreen() {
       <Accordion
         title="İŞ TECRÜBELERİ"
         icon={<Briefcase size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('experience')}
       >
         <WorkInfoCard
@@ -1101,7 +1101,7 @@ export default function ProfileScreen() {
       <Accordion
         title="YETKİNLİKLER"
         icon={<Award size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('skills')}
       >
         <InfoRow label="Cinsiyet" value="218" isLast />
@@ -1110,7 +1110,7 @@ export default function ProfileScreen() {
       <Accordion
         title="SOSYAL LİNKLER"
         icon={<Globe size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('social')}
       >
         <InfoRow label="Instagram" value="www.instagram.com/company" />
@@ -1120,7 +1120,7 @@ export default function ProfileScreen() {
       <Accordion
         title="DİL BİLGİLERİ"
         icon={<Languages size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('languages')}
       >
         <InfoRow label="Seviye" value="Orta Seviye" />
@@ -1130,7 +1130,7 @@ export default function ProfileScreen() {
       <Accordion
         title="SERTİFİKALAR"
         icon={<Award size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('certificates')}
       >
         <WorkInfoCard
@@ -1146,7 +1146,7 @@ export default function ProfileScreen() {
       <Accordion
         title="PASAPORT BİLGİLERİ"
         icon={<CreditCard size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('passport')}
       >
         <WorkInfoCard
@@ -1176,7 +1176,7 @@ export default function ProfileScreen() {
       <Accordion
         title="VİZE BİLGİLERİ"
         icon={<FileText size={18} color="#7C3AED" />}
-        defaultExpanded={true}
+        defaultExpanded={false}
         onEdit={() => handleEdit('visa')}
       >
         <View style={styles.emptyState}>
@@ -1391,7 +1391,7 @@ export default function ProfileScreen() {
         <Accordion
           title="İŞE BAŞLAMA GÖREVLERİ"
           icon={<AlignJustify size={18} color="#7C3AED" />}
-          defaultExpanded={true}
+          defaultExpanded={false}
         >
           {onboardingData.tasks.map((task) => {
             const userTask = onboardingData.userTasks.find((ut) => ut.task_id === task.id);
@@ -1436,7 +1436,7 @@ export default function ProfileScreen() {
         <Accordion
           title="SENİ TANIYALIM"
           icon={<UserIcon size={18} color="#7C3AED" />}
-          defaultExpanded={true}
+          defaultExpanded={false}
         >
           <View style={styles.questionsContainer}>
             <Text style={styles.questionsSubtitle}>Seni Tanıyalım Soruları</Text>
