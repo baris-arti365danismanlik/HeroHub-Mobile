@@ -139,6 +139,8 @@ class HttpClient {
       });
     }
 
+    console.log(`[HTTP GET] ${url.toString()}`);
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
