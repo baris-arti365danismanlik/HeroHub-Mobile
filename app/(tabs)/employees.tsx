@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,13 +8,20 @@ import {
   TextInput,
   SafeAreaView,
 } from 'react-native';
-import { Menu, Search, Users as UsersIcon } from 'lucide-react-native';
+import { Menu, Search, Users as UsersIcon, MoreVertical } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
+import { EmployeeDropdown } from '@/components/EmployeeDropdown';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function EmployeesScreen() {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<{
+    id: number;
+    name: string;
+    position: { x: number; y: number };
+  } | null>(null);
   const { user } = useAuth();
 
   const employees = [
@@ -72,11 +79,7 @@ export default function EmployeesScreen() {
 
         <View style={styles.listContainer}>
           {filteredEmployees.map((employee) => (
-            <TouchableOpacity
-              key={employee.id}
-              style={styles.employeeCard}
-              activeOpacity={0.7}
-            >
+            <View key={employee.id} style={styles.employeeCard}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>
                   {employee.name
@@ -90,12 +93,40 @@ export default function EmployeesScreen() {
                 <Text style={styles.employeePosition}>{employee.position}</Text>
                 <Text style={styles.employeeDepartment}>{employee.department}</Text>
               </View>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.moreButton}
+                activeOpacity={0.7}
+                onPress={(e) => {
+                  const target = e.nativeEvent;
+                  setSelectedEmployee({
+                    id: employee.id,
+                    name: employee.name,
+                    position: { x: target.pageX, y: target.pageY },
+                  });
+                  setDropdownVisible(true);
+                }}
+              >
+                <MoreVertical size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
           ))}
         </View>
       </ScrollView>
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
+
+      {selectedEmployee && (
+        <EmployeeDropdown
+          visible={dropdownVisible}
+          onClose={() => {
+            setDropdownVisible(false);
+            setSelectedEmployee(null);
+          }}
+          employeeId={selectedEmployee.id}
+          employeeName={selectedEmployee.name}
+          position={selectedEmployee.position}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -195,6 +226,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 2,
+  },
+  moreButton: {
+    padding: 8,
+    marginLeft: 8,
   },
   avatar: {
     width: 48,
