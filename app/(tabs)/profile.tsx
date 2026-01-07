@@ -235,6 +235,39 @@ export default function ProfileScreen() {
     expiryDate: '11.08.2020',
   });
 
+  const [healthEditModalVisible, setHealthEditModalVisible] = useState(false);
+  const [healthEditForm, setHealthEditForm] = useState({
+    bloodType: 'A Rh+',
+    chronicDiseases: '',
+    allergies: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+  });
+
+  const [driverLicenseEditModalVisible, setDriverLicenseEditModalVisible] = useState(false);
+  const [driverLicenseEditForm, setDriverLicenseEditForm] = useState({
+    licenseType: 'B',
+    licenseNo: '',
+    issueDate: '',
+    expiryDate: '',
+  });
+
+  const [militaryEditModalVisible, setMilitaryEditModalVisible] = useState(false);
+  const [militaryEditForm, setMilitaryEditForm] = useState({
+    status: 'Yapıldı',
+    startDate: '',
+    endDate: '',
+    postponementReason: '',
+  });
+
+  const [familyEditModalVisible, setFamilyEditModalVisible] = useState(false);
+  const [familyEditForm, setFamilyEditForm] = useState({
+    memberName: '',
+    relation: '',
+    birthDate: '',
+    occupation: '',
+  });
+
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
   const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
 
@@ -253,6 +286,18 @@ export default function ProfileScreen() {
         break;
       case 'address':
         setAddressEditModalVisible(true);
+        break;
+      case 'health':
+        setHealthEditModalVisible(true);
+        break;
+      case 'driverLicense':
+        setDriverLicenseEditModalVisible(true);
+        break;
+      case 'military':
+        setMilitaryEditModalVisible(true);
+        break;
+      case 'family':
+        setFamilyEditModalVisible(true);
         break;
       case 'education':
       case 'education-1':
@@ -381,6 +426,26 @@ export default function ProfileScreen() {
   const savePassportInfo = () => {
     console.log('Save passport info:', passportEditForm);
     setPassportEditModalVisible(false);
+  };
+
+  const saveHealthInfo = () => {
+    console.log('Save health info:', healthEditForm);
+    setHealthEditModalVisible(false);
+  };
+
+  const saveDriverLicenseInfo = () => {
+    console.log('Save driver license info:', driverLicenseEditForm);
+    setDriverLicenseEditModalVisible(false);
+  };
+
+  const saveMilitaryInfo = () => {
+    console.log('Save military info:', militaryEditForm);
+    setMilitaryEditModalVisible(false);
+  };
+
+  const saveFamilyInfo = () => {
+    console.log('Save family info:', familyEditForm);
+    setFamilyEditModalVisible(false);
   };
 
   useEffect(() => {
@@ -1255,6 +1320,55 @@ export default function ProfileScreen() {
         <InfoRow label="Mahalle" value="Yaşadığı Evvel Mah. Mağ... Ne İle 33/2 P1/C 34870..." />
         <InfoRow label="İkamet" value="İstanbul" />
         <InfoRow label="Ülke" value="Türkiye" isLast />
+      </Accordion>
+
+      <Accordion
+        title="SAĞLIK BİLGİLERİ"
+        icon={<Heart size={18} color="#7C3AED" />}
+        defaultExpanded={false}
+        onEdit={() => handleEdit('health')}
+      >
+        <InfoRow label="Kan Grubu" value="A Rh+" />
+        <InfoRow label="Kronik Hastalıklar" value="-" />
+        <InfoRow label="Alerjiler" value="-" />
+        <InfoRow label="Acil Durum İletişim" value="-" />
+        <InfoRow label="Acil Durum Telefon" value="-" isLast />
+      </Accordion>
+
+      <Accordion
+        title="EHLİYET BİLGİLERİ"
+        icon={<CreditCard size={18} color="#7C3AED" />}
+        defaultExpanded={false}
+        onEdit={() => handleEdit('driverLicense')}
+      >
+        <InfoRow label="Ehliyet Tipi" value="B" />
+        <InfoRow label="Ehliyet No" value="-" />
+        <InfoRow label="Veriliş Tarihi" value="-" />
+        <InfoRow label="Son Geçerlilik Tarihi" value="-" isLast />
+      </Accordion>
+
+      <Accordion
+        title="ASKERLİK BİLGİLERİ"
+        icon={<Award size={18} color="#7C3AED" />}
+        defaultExpanded={false}
+        onEdit={() => handleEdit('military')}
+      >
+        <InfoRow label="Durum" value="Yapıldı" />
+        <InfoRow label="Başlangıç Tarihi" value="-" />
+        <InfoRow label="Bitiş Tarihi" value="-" />
+        <InfoRow label="Tecil Nedeni" value="-" isLast />
+      </Accordion>
+
+      <Accordion
+        title="AİLE BİLGİLERİ"
+        icon={<Users2 size={18} color="#7C3AED" />}
+        defaultExpanded={false}
+        onEdit={() => handleEdit('family')}
+      >
+        <InfoRow label="Aile Üyesi" value="-" />
+        <InfoRow label="Yakınlık Derecesi" value="-" />
+        <InfoRow label="Doğum Tarihi" value="-" />
+        <InfoRow label="Meslek" value="-" isLast />
       </Accordion>
 
       <Accordion
@@ -3005,6 +3119,214 @@ export default function ProfileScreen() {
               </View>
             </ScrollView>
             <TouchableOpacity style={styles.saveButton} onPress={savePassportInfo}>
+              <Text style={styles.saveButtonText}>Kaydet</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={healthEditModalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Sağlık Bilgilerini Düzenle</Text>
+              <TouchableOpacity onPress={() => setHealthEditModalVisible(false)} style={styles.modalCloseButton}>
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalContent}>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Kan Grubu</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={healthEditForm.bloodType}
+                  onChangeText={(text) => setHealthEditForm({ ...healthEditForm, bloodType: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Kronik Hastalıklar</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={healthEditForm.chronicDiseases}
+                  onChangeText={(text) => setHealthEditForm({ ...healthEditForm, chronicDiseases: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Alerjiler</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={healthEditForm.allergies}
+                  onChangeText={(text) => setHealthEditForm({ ...healthEditForm, allergies: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Acil Durum İletişim</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={healthEditForm.emergencyContactName}
+                  onChangeText={(text) => setHealthEditForm({ ...healthEditForm, emergencyContactName: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Acil Durum Telefon</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={healthEditForm.emergencyContactPhone}
+                  onChangeText={(text) => setHealthEditForm({ ...healthEditForm, emergencyContactPhone: text })}
+                />
+              </View>
+            </ScrollView>
+            <TouchableOpacity style={styles.saveButton} onPress={saveHealthInfo}>
+              <Text style={styles.saveButtonText}>Kaydet</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={driverLicenseEditModalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Ehliyet Bilgilerini Düzenle</Text>
+              <TouchableOpacity onPress={() => setDriverLicenseEditModalVisible(false)} style={styles.modalCloseButton}>
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalContent}>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Ehliyet Tipi</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={driverLicenseEditForm.licenseType}
+                  onChangeText={(text) => setDriverLicenseEditForm({ ...driverLicenseEditForm, licenseType: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Ehliyet No</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={driverLicenseEditForm.licenseNo}
+                  onChangeText={(text) => setDriverLicenseEditForm({ ...driverLicenseEditForm, licenseNo: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Veriliş Tarihi</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={driverLicenseEditForm.issueDate}
+                  onChangeText={(text) => setDriverLicenseEditForm({ ...driverLicenseEditForm, issueDate: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Son Geçerlilik Tarihi</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={driverLicenseEditForm.expiryDate}
+                  onChangeText={(text) => setDriverLicenseEditForm({ ...driverLicenseEditForm, expiryDate: text })}
+                />
+              </View>
+            </ScrollView>
+            <TouchableOpacity style={styles.saveButton} onPress={saveDriverLicenseInfo}>
+              <Text style={styles.saveButtonText}>Kaydet</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={militaryEditModalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Askerlik Bilgilerini Düzenle</Text>
+              <TouchableOpacity onPress={() => setMilitaryEditModalVisible(false)} style={styles.modalCloseButton}>
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalContent}>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Durum</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={militaryEditForm.status}
+                  onChangeText={(text) => setMilitaryEditForm({ ...militaryEditForm, status: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Başlangıç Tarihi</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={militaryEditForm.startDate}
+                  onChangeText={(text) => setMilitaryEditForm({ ...militaryEditForm, startDate: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Bitiş Tarihi</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={militaryEditForm.endDate}
+                  onChangeText={(text) => setMilitaryEditForm({ ...militaryEditForm, endDate: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Tecil Nedeni</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={militaryEditForm.postponementReason}
+                  onChangeText={(text) => setMilitaryEditForm({ ...militaryEditForm, postponementReason: text })}
+                />
+              </View>
+            </ScrollView>
+            <TouchableOpacity style={styles.saveButton} onPress={saveMilitaryInfo}>
+              <Text style={styles.saveButtonText}>Kaydet</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={familyEditModalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Aile Bilgilerini Düzenle</Text>
+              <TouchableOpacity onPress={() => setFamilyEditModalVisible(false)} style={styles.modalCloseButton}>
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalContent}>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Aile Üyesi</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={familyEditForm.memberName}
+                  onChangeText={(text) => setFamilyEditForm({ ...familyEditForm, memberName: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Yakınlık Derecesi</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={familyEditForm.relation}
+                  onChangeText={(text) => setFamilyEditForm({ ...familyEditForm, relation: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Doğum Tarihi</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={familyEditForm.birthDate}
+                  onChangeText={(text) => setFamilyEditForm({ ...familyEditForm, birthDate: text })}
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Meslek</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={familyEditForm.occupation}
+                  onChangeText={(text) => setFamilyEditForm({ ...familyEditForm, occupation: text })}
+                />
+              </View>
+            </ScrollView>
+            <TouchableOpacity style={styles.saveButton} onPress={saveFamilyInfo}>
               <Text style={styles.saveButtonText}>Kaydet</Text>
             </TouchableOpacity>
           </View>
