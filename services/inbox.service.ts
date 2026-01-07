@@ -1,20 +1,45 @@
 import { supabase } from './api.client';
-import { InboxMessage } from '@/types/backend';
+import { InboxMessage, InboxAttachment } from '@/types/backend';
 
 export const inboxService = {
   async getUserMessages(userId: string): Promise<InboxMessage[]> {
-    const { data, error } = await supabase
+    const { data: messages, error: messagesError } = await supabase
       .from('inbox_messages')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching inbox messages:', error);
-      throw error;
+    if (messagesError) {
+      console.error('Error fetching inbox messages:', messagesError);
+      throw messagesError;
     }
 
-    return data || [];
+    if (!messages || messages.length === 0) {
+      return [];
+    }
+
+    const messageIds = messages.map(m => m.id);
+    const { data: attachments, error: attachmentsError } = await supabase
+      .from('inbox_attachments')
+      .select('*')
+      .in('message_id', messageIds);
+
+    if (attachmentsError) {
+      console.error('Error fetching attachments:', attachmentsError);
+    }
+
+    const attachmentsByMessage = (attachments || []).reduce((acc, att) => {
+      if (!acc[att.message_id]) {
+        acc[att.message_id] = [];
+      }
+      acc[att.message_id].push(att);
+      return acc;
+    }, {} as Record<string, InboxAttachment[]>);
+
+    return messages.map(message => ({
+      ...message,
+      attachments: attachmentsByMessage[message.id] || [],
+    }));
   },
 
   async getUnreadCount(userId: string): Promise<number> {

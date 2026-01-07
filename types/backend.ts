@@ -205,11 +205,23 @@ export interface InboxMessage {
   id: string;
   user_id: string;
   sender_name: string;
+  sender_photo?: string;
   subject: string;
   message?: string;
+  title?: string;
+  location?: string;
+  document_date?: string;
+  attachments?: InboxAttachment[];
   is_read: boolean;
   created_at: string;
   updated_at?: string;
+}
+
+export interface InboxAttachment {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
 }
 
 export interface LoginRequest {
