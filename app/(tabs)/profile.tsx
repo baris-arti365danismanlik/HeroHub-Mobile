@@ -1220,13 +1220,13 @@ export default function ProfileScreen() {
           defaultExpanded={false}
           onEdit={canEditProfile ? () => handleEdit('profile') : undefined}
         >
-          <InfoRow label="Personel No" value={personalInformation.personnelNumber || '-'} />
-          <InfoRow label="TCKN" value={personalInformation.tckn || '-'} />
-          <InfoRow label="Adı Soyadı" value={`${personalInformation.firstName} ${personalInformation.lastName}`} />
-          <InfoRow label="Doğum Yeri" value={personalInformation.birthPlace || '-'} />
-          <InfoRow label="Doğum Tarihi" value={formatDate(personalInformation.birthdate)} />
-          <InfoRow label="Cinsiyet" value={formatGender(personalInformation.gender)} />
-          <InfoRow label="Medeni Hal" value={formatMaritalStatus(personalInformation.maritalStatus)} isLast />
+          <InfoRow label="Personel No" value={personalInformation?.personnelNumber || '-'} />
+          <InfoRow label="TCKN" value={personalInformation?.tckn || '-'} />
+          <InfoRow label="Adı Soyadı" value={personalInformation ? `${personalInformation.firstName} ${personalInformation.lastName}` : '-'} />
+          <InfoRow label="Doğum Yeri" value={personalInformation?.birthPlace || '-'} />
+          <InfoRow label="Doğum Tarihi" value={personalInformation?.birthdate ? formatDate(personalInformation.birthdate) : '-'} />
+          <InfoRow label="Cinsiyet" value={personalInformation?.gender !== undefined ? formatGender(personalInformation.gender) : '-'} />
+          <InfoRow label="Medeni Hal" value={personalInformation?.maritalStatus !== undefined ? formatMaritalStatus(personalInformation.maritalStatus) : '-'} isLast />
         </Accordion>
 
         <Accordion
@@ -1235,12 +1235,12 @@ export default function ProfileScreen() {
           defaultExpanded={false}
           onEdit={canEditProfile ? () => handleEdit('contact') : undefined}
         >
-          <InfoRow label="Cep Telefonu" value={formatPhone(userContact.phoneNumber) || '-'} />
-          <InfoRow label="Ev Telefonu" value={formatPhone(userContact.homePhone) || '-'} />
-          <InfoRow label="İş Telefonu" value={formatPhone(userContact.businessPhone) || '-'} />
-          <InfoRow label="E-Posta" value={userContact.email || '-'} />
-          <InfoRow label="İş E-Posta" value={userContact.businessEmail || '-'} />
-          <InfoRow label="Diğer E-Posta" value={userContact.otherEmail || '-'} isLast />
+          <InfoRow label="Cep Telefonu" value={userContact?.phoneNumber ? formatPhone(userContact.phoneNumber) : '-'} />
+          <InfoRow label="Ev Telefonu" value={userContact?.homePhone ? formatPhone(userContact.homePhone) : '-'} />
+          <InfoRow label="İş Telefonu" value={userContact?.businessPhone ? formatPhone(userContact.businessPhone) : '-'} />
+          <InfoRow label="E-Posta" value={userContact?.email || '-'} />
+          <InfoRow label="İş E-Posta" value={userContact?.businessEmail || '-'} />
+          <InfoRow label="Diğer E-Posta" value={userContact?.otherEmail || '-'} isLast />
         </Accordion>
 
         <Accordion
@@ -1249,10 +1249,10 @@ export default function ProfileScreen() {
           defaultExpanded={false}
           onEdit={canEditProfile ? () => handleEdit('address') : undefined}
         >
-          <InfoRow label="Adres" value={userAddress.address || '-'} />
-          <InfoRow label="İlçe" value={userAddress.districtName || '-'} />
-          <InfoRow label="İl" value={userAddress.cityName || '-'} />
-          <InfoRow label="Ülke" value={userAddress.countryName || '-'} isLast />
+          <InfoRow label="Adres" value={userAddress?.address || '-'} />
+          <InfoRow label="İlçe" value={userAddress?.districtName || '-'} />
+          <InfoRow label="İl" value={userAddress?.cityName || '-'} />
+          <InfoRow label="Ülke" value={userAddress?.countryName || '-'} isLast />
         </Accordion>
 
         <Accordion
@@ -1261,11 +1261,11 @@ export default function ProfileScreen() {
           defaultExpanded={false}
           onEdit={canEditProfile ? () => handleEdit('health') : undefined}
         >
-          <InfoRow label="Kan Grubu" value={formatBloodType(userHealth.bloodType)} />
-          <InfoRow label="Boy (cm)" value={userHealth.height > 0 ? userHealth.height.toString() : '-'} />
-          <InfoRow label="Kilo (kg)" value={userHealth.weight > 0 ? userHealth.weight.toString() : '-'} />
-          <InfoRow label="Alerjiler" value={userHealth.allergies || '-'} />
-          <InfoRow label="Kullanılan İlaçlar" value={userHealth.drugs || '-'} isLast />
+          <InfoRow label="Kan Grubu" value={userHealth?.bloodType ? formatBloodType(userHealth.bloodType) : '-'} />
+          <InfoRow label="Boy (cm)" value={userHealth?.height && userHealth.height > 0 ? userHealth.height.toString() : '-'} />
+          <InfoRow label="Kilo (kg)" value={userHealth?.weight && userHealth.weight > 0 ? userHealth.weight.toString() : '-'} />
+          <InfoRow label="Alerjiler" value={userHealth?.allergies || '-'} />
+          <InfoRow label="Kullanılan İlaçlar" value={userHealth?.drugs || '-'} isLast />
         </Accordion>
 
         <Accordion
@@ -1296,10 +1296,10 @@ export default function ProfileScreen() {
         >
           <InfoRow
             label="Durum"
-            value={userMilitary.militaryStatus === 0 ? 'Yapıldı' : userMilitary.militaryStatus === 1 ? 'Ertelendi' : userMilitary.militaryStatus === 2 ? 'Muaf' : 'Uygulanmaz'}
+            value={userMilitary?.militaryStatus === 0 ? 'Yapıldı' : userMilitary?.militaryStatus === 1 ? 'Ertelendi' : userMilitary?.militaryStatus === 2 ? 'Muaf' : 'Uygulanmaz'}
           />
-          <InfoRow label="Erteleme Nedeni" value={userMilitary.militaryPostpone || '-'} />
-          <InfoRow label="Not" value={userMilitary.militaryNote || '-'} isLast />
+          <InfoRow label="Erteleme Nedeni" value={userMilitary?.militaryPostpone || '-'} />
+          <InfoRow label="Not" value={userMilitary?.militaryNote || '-'} isLast />
         </Accordion>
 
         <Accordion
@@ -1371,7 +1371,7 @@ export default function ProfileScreen() {
             profileDetails.userLanguages.map((lang, index) => (
               <View key={lang.id}>
                 <InfoRow label="Dil" value={lang.language} />
-                <InfoRow label="Seviye" value={lang.level.toString()} isLast={index === profileDetails.userLanguages.length - 1} />
+                <InfoRow label="Seviye" value={lang.level?.toString() || '-'} isLast={index === profileDetails.userLanguages.length - 1} />
               </View>
             ))
           ) : (
@@ -1406,9 +1406,9 @@ export default function ProfileScreen() {
           icon={<CreditCard size={18} color="#7C3AED" />}
           defaultExpanded={false}
         >
-          <InfoRow label="Pasaport Tipi" value={profileDetails.userPassport.passportType.toString()} />
-          <InfoRow label="Pasaport No" value={profileDetails.userPassport.passportNumber || '-'} />
-          <InfoRow label="Geçerlilik Tarihi" value={formatDate(profileDetails.userPassport.passportValidityDate)} isLast />
+          <InfoRow label="Pasaport Tipi" value={profileDetails.userPassport?.passportType?.toString() || '-'} />
+          <InfoRow label="Pasaport No" value={profileDetails.userPassport?.passportNumber || '-'} />
+          <InfoRow label="Geçerlilik Tarihi" value={profileDetails.userPassport?.passportValidityDate ? formatDate(profileDetails.userPassport.passportValidityDate) : '-'} isLast />
         </Accordion>
 
         <Accordion
