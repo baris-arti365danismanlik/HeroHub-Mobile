@@ -50,11 +50,15 @@ export const leaveService = {
         status: LeaveRequestStatus.Pending,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error creating leave request:', error);
       throw error;
+    }
+
+    if (!data) {
+      throw new Error('Failed to create leave request');
     }
 
     return data;
@@ -72,11 +76,15 @@ export const leaveService = {
       })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error updating leave request:', error);
       throw error;
+    }
+
+    if (!data) {
+      throw new Error('Failed to update leave request');
     }
 
     return data;

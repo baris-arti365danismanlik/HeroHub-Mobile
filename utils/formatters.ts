@@ -74,3 +74,23 @@ export const formatPhone = (phone?: string): string => {
 
   return phone;
 };
+
+export const parseDateToISO = (dateString: string): string => {
+  if (!dateString) return '';
+
+  if (dateString.includes('.')) {
+    const parts = dateString.split('.');
+    if (parts.length === 3) {
+      const day = parts[0].padStart(2, '0');
+      const month = parts[1].padStart(2, '0');
+      const year = parts[2];
+      return `${year}-${month}-${day}`;
+    }
+  }
+
+  if (dateString.includes('-') && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return dateString;
+  }
+
+  return dateString;
+};

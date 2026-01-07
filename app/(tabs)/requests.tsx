@@ -7,6 +7,7 @@ import { Plus, Menu } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { LeaveRequestModal, LeaveRequestData } from '@/components/LeaveRequestModal';
 import { SuccessModal } from '@/components/SuccessModal';
+import { parseDateToISO } from '@/utils/formatters';
 import type { UserRequest } from '@/types/backend';
 
 const STATUS_LABELS: Record<number, string> = {
@@ -56,11 +57,20 @@ export default function RequestsScreen() {
 
     try {
       console.log('Creating leave request:', data);
+
+      const startDateISO = parseDateToISO(data.startDate);
+      const endDateISO = parseDateToISO(data.endDate);
+
+      if (!startDateISO || !endDateISO) {
+        console.error('Invalid date format');
+        return;
+      }
+
       await leaveService.createLeaveRequest({
         user_id: user.id,
         leave_type: data.leaveType,
-        start_date: data.startDate,
-        end_date: data.endDate,
+        start_date: startDateISO,
+        end_date: endDateISO,
         duration: data.duration,
         notes: data.notes,
       });

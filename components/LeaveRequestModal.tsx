@@ -67,7 +67,7 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
       leaveType,
       startDate,
       endDate,
-      duration: parseInt(duration),
+      duration: parseFloat(duration),
       notes: notes || undefined,
     });
 
@@ -142,9 +142,9 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
                 style={styles.input}
                 value={duration}
                 onChangeText={setDuration}
-                placeholder="Gün sayısı"
+                placeholder="Örn: 1 veya 0.5"
                 placeholderTextColor="#999"
-                keyboardType="numeric"
+                keyboardType="decimal-pad"
               />
             </View>
 
