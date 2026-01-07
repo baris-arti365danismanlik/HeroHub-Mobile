@@ -86,14 +86,14 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
       route: '/(tabs)',
     },
     {
-      id: 'members',
+      id: 'employees',
       label: 'Üyeler',
       icon: <Users size={18} color="#666" />,
       route: '/(tabs)/employees',
       roles: ['Admin', 'Manager', 'HR'],
     },
     {
-      id: 'employees',
+      id: 'workers',
       label: 'Çalışanlar',
       icon: <Users size={18} color="#666" />,
       route: '/(tabs)/employees',
