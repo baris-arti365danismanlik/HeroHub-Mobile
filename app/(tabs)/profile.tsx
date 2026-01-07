@@ -49,6 +49,7 @@ import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { WorkInfoCard } from '@/components/WorkInfoCard';
+import { FileActionDropdown } from '@/components/FileActionDropdown';
 import { assetService } from '@/services/asset.service';
 import { leaveService } from '@/services/leave.service';
 import { inboxService } from '@/services/inbox.service';
@@ -144,6 +145,15 @@ export default function ProfileScreen() {
   const [pdksLoading, setPdksLoading] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [fileDropdownVisible, setFileDropdownVisible] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<{
+    id: string;
+    name: string;
+    type: 'folder' | 'file';
+    position: { x: number; y: number };
+  } | null>(null);
+  const [renameModalVisible, setRenameModalVisible] = useState(false);
+  const [renameInput, setRenameInput] = useState('');
 
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
   const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
@@ -155,6 +165,40 @@ export default function ProfileScreen() {
 
   const handleEdit = (section: string) => {
     console.log('Edit section:', section);
+  };
+
+  const handleFileRename = () => {
+    if (selectedFile) {
+      setRenameInput(selectedFile.name);
+      setRenameModalVisible(true);
+    }
+  };
+
+  const handleFileCopy = () => {
+    if (selectedFile) {
+      console.log('Copy file:', selectedFile.name);
+    }
+  };
+
+  const handleFileDownload = () => {
+    if (selectedFile) {
+      console.log('Download file:', selectedFile.name);
+    }
+  };
+
+  const handleFileDelete = () => {
+    if (selectedFile) {
+      console.log('Delete file:', selectedFile.name);
+    }
+  };
+
+  const confirmRename = () => {
+    if (selectedFile && renameInput.trim()) {
+      console.log('Rename', selectedFile.name, 'to', renameInput);
+      setRenameModalVisible(false);
+      setRenameInput('');
+      setSelectedFile(null);
+    }
   };
 
   useEffect(() => {
@@ -1564,20 +1608,32 @@ export default function ProfileScreen() {
 
         <View style={styles.filesContainer}>
           {files.map((item, index) => (
-            <TouchableOpacity
+            <View
               key={item.id}
               style={[
                 styles.fileItem,
                 index === files.length - 1 && styles.fileItemLast
               ]}
-              activeOpacity={0.7}
             >
               <View style={styles.fileItemLeft}>
-                <View style={styles.fileItemDots}>
+                <TouchableOpacity
+                  style={styles.fileItemDots}
+                  activeOpacity={0.7}
+                  onPress={(e) => {
+                    const target = e.nativeEvent;
+                    setSelectedFile({
+                      id: item.id,
+                      name: item.name,
+                      type: item.type as 'folder' | 'file',
+                      position: { x: target.pageX, y: target.pageY },
+                    });
+                    setFileDropdownVisible(true);
+                  }}
+                >
                   <View style={styles.dot} />
                   <View style={styles.dot} />
                   <View style={styles.dot} />
-                </View>
+                </TouchableOpacity>
                 <View style={styles.fileItemIcon}>
                   {getFileIcon(item.icon)}
                 </View>
@@ -1589,7 +1645,7 @@ export default function ProfileScreen() {
                 </View>
               </View>
               <ChevronRight size={20} color="#CCC" />
-            </TouchableOpacity>
+            </View>
           ))}
         </View>
       </>
@@ -2213,6 +2269,76 @@ export default function ProfileScreen() {
           onUnreadCountChange={setUnreadCount}
         />
       )}
+
+      {selectedFile && (
+        <FileActionDropdown
+          visible={fileDropdownVisible}
+          onClose={() => {
+            setFileDropdownVisible(false);
+            setSelectedFile(null);
+          }}
+          fileName={selectedFile.name}
+          fileType={selectedFile.type}
+          position={selectedFile.position}
+          onRename={handleFileRename}
+          onCopy={handleFileCopy}
+          onDownload={handleFileDownload}
+          onDelete={handleFileDelete}
+        />
+      )}
+
+      <Modal
+        visible={renameModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setRenameModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.renameModalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Yeniden Adlandır</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setRenameModalVisible(false);
+                  setRenameInput('');
+                }}
+                style={styles.modalCloseButton}
+              >
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.renameModalContent}>
+              <Text style={styles.formLabel}>Yeni İsim</Text>
+              <TextInput
+                style={styles.formInput}
+                value={renameInput}
+                onChangeText={setRenameInput}
+                placeholder="Dosya adı girin..."
+                autoFocus
+              />
+
+              <View style={styles.renameModalButtons}>
+                <TouchableOpacity
+                  style={styles.renameCancelButton}
+                  onPress={() => {
+                    setRenameModalVisible(false);
+                    setRenameInput('');
+                  }}
+                >
+                  <Text style={styles.renameCancelButtonText}>İptal</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.renameConfirmButton}
+                  onPress={confirmRename}
+                >
+                  <Text style={styles.renameConfirmButtonText}>Kaydet</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -3709,5 +3835,43 @@ const styles = StyleSheet.create({
   pdksRecordDuration: {
     color: '#7C3AED',
     fontWeight: '600',
+  },
+  renameModalContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    width: '85%',
+    maxWidth: 400,
+  },
+  renameModalContent: {
+    padding: 24,
+  },
+  renameModalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+  },
+  renameCancelButton: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  renameCancelButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  renameConfirmButton: {
+    flex: 1,
+    backgroundColor: '#7C3AED',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  renameConfirmButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
