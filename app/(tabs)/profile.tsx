@@ -56,6 +56,7 @@ import { inboxService } from '@/services/inbox.service';
 import { onboardingService } from '@/services/onboarding.service';
 import { pdksService } from '@/services/pdks.service';
 import { userService } from '@/services/user.service';
+import { supabase } from '@/services/api.client';
 import {
   Asset,
   AssetStatus,
@@ -224,15 +225,52 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (!user?.backend_user_id) return;
+      console.log('User object:', user);
+      console.log('Backend user ID:', user?.backend_user_id);
+
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      let backendUserId = user.backend_user_id;
+
+      if (!backendUserId) {
+        console.warn('Backend user ID is missing, fetching from database...');
+        try {
+          const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+          if (supabaseUser) {
+            const { data: profile } = await supabase
+              .from('user_profiles')
+              .select('backend_user_id')
+              .eq('id', supabaseUser.id)
+              .maybeSingle();
+
+            if (profile?.backend_user_id) {
+              backendUserId = parseInt(profile.backend_user_id);
+              console.log('Backend user ID from database:', backendUserId);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching backend_user_id:', error);
+        }
+      }
+
+      if (!backendUserId) {
+        console.warn('Backend user ID still missing, cannot fetch profile');
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
+        console.log('Fetching profile for user ID:', backendUserId);
         const [profile, countriesList] = await Promise.all([
-          userService.getUserProfile(user.backend_user_id),
+          userService.getUserProfile(backendUserId),
           userService.getCountries(),
         ]);
 
+        console.log('Profile fetched:', profile);
         setProfileDetails(profile);
         setCountries(countriesList);
         setModulePermissions(profile.modulePermissions);
@@ -244,7 +282,7 @@ export default function ProfileScreen() {
     };
 
     fetchProfileData();
-  }, [user?.backend_user_id]);
+  }, [user?.backend_user_id, user?.id]);
 
   const hasModulePermission = (moduleId: number, permission: 'read' | 'write' | 'delete'): boolean => {
     const module = modulePermissions.find(m => m.moduleId === moduleId);

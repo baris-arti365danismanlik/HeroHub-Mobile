@@ -164,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: response.email,
         isActive: true,
         createdAt: new Date().toISOString(),
+        backend_user_id: response.id,
       };
       setUser(userData);
       await loadUserProfile(userData.id);
