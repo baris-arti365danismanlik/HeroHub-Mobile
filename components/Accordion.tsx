@@ -1,6 +1,6 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ChevronDown } from 'lucide-react-native';
+import { ChevronDown, Pencil } from 'lucide-react-native';
 
 interface AccordionProps {
   title: string;
@@ -28,8 +28,22 @@ export function Accordion({ title, icon, children, defaultExpanded = false, onEd
           {icon}
           <Text style={styles.title}>{title}</Text>
         </View>
-        <View style={[styles.chevron, isExpanded && styles.chevronExpanded]}>
-          <ChevronDown size={20} color="#666" />
+        <View style={styles.headerRight}>
+          {onEdit && (
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              style={styles.editButton}
+              activeOpacity={0.7}
+            >
+              <Pencil size={16} color="#7C3AED" />
+            </TouchableOpacity>
+          )}
+          <View style={[styles.chevron, isExpanded && styles.chevronExpanded]}>
+            <ChevronDown size={20} color="#666" />
+          </View>
         </View>
       </TouchableOpacity>
 
@@ -59,12 +73,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flex: 1,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   title: {
     fontSize: 14,
     fontWeight: '700',
     color: '#1a1a1a',
     letterSpacing: 0.3,
+  },
+  editButton: {
+    padding: 4,
   },
   chevron: {
     transform: [{ rotate: '0deg' }],
