@@ -43,8 +43,7 @@ import {
   Instagram,
   Clock,
   Smartphone,
-  Check,
-  Trash2
+  Check
 } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
@@ -73,7 +72,6 @@ import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
 import { LeaveRequestModal, LeaveRequestData } from '@/components/LeaveRequestModal';
 import { SuccessModal } from '@/components/SuccessModal';
-import { ConfirmationModal } from '@/components/ConfirmationModal';
 import {
   formatGender,
   formatBloodType,
@@ -113,9 +111,6 @@ export default function ProfileScreen() {
   const [leaveSuccessModalVisible, setLeaveSuccessModalVisible] = useState(false);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [leaveLoading, setLeaveLoading] = useState(false);
-  const [editingLeaveRequest, setEditingLeaveRequest] = useState<LeaveRequest | null>(null);
-  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
-  const [deletingLeaveRequestId, setDeletingLeaveRequestId] = useState<string | null>(null);
   const [inboxVisible, setInboxVisible] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [onboardingData, setOnboardingData] = useState<{
@@ -412,7 +407,7 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSubmitLeaveRequest = async (data: LeaveRequestData, requestId?: string) => {
+  const handleSubmitLeaveRequest = async (data: LeaveRequestData) => {
     if (!user?.id) {
       return;
     }
@@ -420,58 +415,21 @@ export default function ProfileScreen() {
     try {
       setLeaveLoading(true);
 
-      if (requestId) {
-        await leaveService.updateLeaveRequest(requestId, {
-          leave_type: data.leaveType,
-          start_date: data.startDate,
-          end_date: data.endDate,
-          duration: data.duration,
-          notes: data.notes,
-        });
-      } else {
-        await leaveService.createLeaveRequest({
-          user_id: user.id,
-          leave_type: data.leaveType,
-          start_date: data.startDate,
-          end_date: data.endDate,
-          duration: data.duration,
-          notes: data.notes,
-        });
-      }
+      await leaveService.createLeaveRequest({
+        user_id: user.id,
+        leave_type: data.leaveType,
+        start_date: data.startDate,
+        end_date: data.endDate,
+        duration: data.duration,
+        notes: data.notes,
+      });
 
       setLeaveModalVisible(false);
-      setEditingLeaveRequest(null);
       setLeaveSuccessModalVisible(true);
 
       await loadLeaveRequests();
     } catch (error) {
       console.error('Error submitting leave request:', error);
-    } finally {
-      setLeaveLoading(false);
-    }
-  };
-
-  const handleEditLeaveRequest = (request: LeaveRequest) => {
-    setEditingLeaveRequest(request);
-    setLeaveModalVisible(true);
-  };
-
-  const handleDeleteLeaveRequest = (requestId: string) => {
-    setDeletingLeaveRequestId(requestId);
-    setDeleteConfirmVisible(true);
-  };
-
-  const confirmDeleteLeaveRequest = async () => {
-    if (!deletingLeaveRequestId) return;
-
-    try {
-      setLeaveLoading(true);
-      await leaveService.deleteLeaveRequest(deletingLeaveRequestId);
-      setDeleteConfirmVisible(false);
-      setDeletingLeaveRequestId(null);
-      await loadLeaveRequests();
-    } catch (error) {
-      console.error('Error deleting leave request:', error);
     } finally {
       setLeaveLoading(false);
     }
@@ -673,20 +631,9 @@ export default function ProfileScreen() {
                       <Umbrella size={16} color="#666" />
                       <Text style={styles.dayOffType}>{request.leave_type}</Text>
                     </View>
-                    <View style={styles.dayOffActions}>
-                      <TouchableOpacity
-                        onPress={() => handleEditLeaveRequest(request)}
-                        style={styles.actionButton}
-                      >
-                        <Pencil size={16} color="#666" />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => handleDeleteLeaveRequest(request.id)}
-                        style={styles.actionButton}
-                      >
-                        <Trash2 size={16} color="#EF4444" />
-                      </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity onPress={() => console.log('Edit', request.id)}>
+                      <Pencil size={16} color="#666" />
+                    </TouchableOpacity>
                   </View>
                   <View style={styles.dayOffDays}>
                     <Text style={styles.dayOffDaysText}>{request.duration} Gün</Text>
@@ -2186,38 +2133,8 @@ export default function ProfileScreen() {
 
       <LeaveRequestModal
         visible={leaveModalVisible}
-        onClose={() => {
-          setLeaveModalVisible(false);
-          setEditingLeaveRequest(null);
-        }}
+        onClose={() => setLeaveModalVisible(false)}
         onSubmit={handleSubmitLeaveRequest}
-        userName={user ? `${user.firstName} ${user.lastName}` : undefined}
-        userRole={userProfile?.role?.name}
-        userPhoto={user?.profilePictureUrl}
-        leaveBalance="125,5 Gün"
-        editMode={!!editingLeaveRequest}
-        requestId={editingLeaveRequest?.id}
-        initialData={editingLeaveRequest ? {
-          leaveType: editingLeaveRequest.leave_type,
-          startDate: editingLeaveRequest.start_date,
-          endDate: editingLeaveRequest.end_date,
-          duration: editingLeaveRequest.duration,
-          notes: editingLeaveRequest.notes || '',
-        } : undefined}
-      />
-
-      <ConfirmationModal
-        visible={deleteConfirmVisible}
-        title="İzin Talebini Sil"
-        message="Bu izin talebini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
-        confirmText="Sil"
-        cancelText="İptal"
-        onConfirm={confirmDeleteLeaveRequest}
-        onCancel={() => {
-          setDeleteConfirmVisible(false);
-          setDeletingLeaveRequestId(null);
-        }}
-        confirmColor="#EF4444"
       />
 
       <SuccessModal
@@ -3064,14 +2981,6 @@ const styles = StyleSheet.create({
   dayOffType: {
     fontSize: 14,
     color: '#666',
-  },
-  dayOffActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  actionButton: {
-    padding: 4,
   },
   dayOffDays: {
     backgroundColor: '#fff',
