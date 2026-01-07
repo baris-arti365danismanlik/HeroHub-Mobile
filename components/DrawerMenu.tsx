@@ -43,7 +43,7 @@ interface MenuItem {
 export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const translateX = useSharedValue(-180);
+  const translateX = useSharedValue(-280);
   const opacity = useSharedValue(0);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
         duration: 300,
       });
     } else {
-      translateX.value = withTiming(-180, {
+      translateX.value = withTiming(-280, {
         duration: 250,
         easing: Easing.in(Easing.cubic),
       });
@@ -82,34 +82,39 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
     {
       id: 'home',
       label: 'Anasayfa',
-      icon: <Home size={18} color="#666" />,
+      icon: <Home size={20} color="#7C3AED" />,
       route: '/(tabs)',
     },
     {
-      id: 'employees',
-      label: 'Üyeler',
-      icon: <Users size={18} color="#666" />,
-      route: '/(tabs)/employees',
-      roles: ['Admin', 'Manager', 'HR'],
+      id: 'profile',
+      label: 'Profilim',
+      icon: <User size={20} color="#7C3AED" />,
+      route: '/(tabs)/profile',
     },
     {
-      id: 'workers',
+      id: 'requests',
+      label: 'Talepler',
+      icon: <FileText size={20} color="#7C3AED" />,
+      route: '/(tabs)/requests',
+    },
+    {
+      id: 'employees',
       label: 'Çalışanlar',
-      icon: <Users size={18} color="#666" />,
+      icon: <Users size={20} color="#7C3AED" />,
       route: '/(tabs)/employees',
       roles: ['Admin', 'Manager', 'HR'],
     },
     {
       id: 'admin',
       label: 'Admin',
-      icon: <Settings size={18} color="#666" />,
+      icon: <Settings size={20} color="#7C3AED" />,
       route: '/(tabs)/admin',
       roles: ['Admin'],
     },
     {
       id: 'plus-admin',
-      label: 'Alt Admin',
-      icon: <Settings size={18} color="#666" />,
+      label: 'Artı Admin',
+      icon: <Plus size={20} color="#7C3AED" />,
       route: '/(tabs)/plus-admin',
       roles: ['SuperAdmin'],
     },
@@ -149,9 +154,22 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                 </View>
               </View>
 
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <X size={20} color="#666" />
-              </TouchableOpacity>
+              <View style={styles.headerRight}>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <X size={24} color="#666" />
+                </TouchableOpacity>
+
+                {user?.profilePictureUrl ? (
+                  <Image
+                    source={{ uri: user.profilePictureUrl }}
+                    style={styles.avatar}
+                  />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <UserIcon size={20} color="#7C3AED" />
+                  </View>
+                )}
+              </View>
             </View>
 
             <View style={styles.menuItems}>
@@ -196,7 +214,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    width: 180,
+    width: 280,
     backgroundColor: '#fff',
   },
   drawer: {
@@ -206,8 +224,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
@@ -216,41 +234,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoText: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#7C3AED',
   },
   logoBadge: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: '#7C3AED',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 3,
+    marginLeft: 4,
   },
   logoBadgeText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#fff',
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
   closeButton: {
     padding: 4,
   },
   avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   avatarPlaceholder: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#F0E7FF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -261,18 +279,18 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    gap: 16,
   },
   menuItemIcon: {
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
   menuItemText: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#1a1a1a',
     fontWeight: '500',
   },
