@@ -295,10 +295,7 @@ export default function ProfileScreen() {
       });
 
       setLeaveModalVisible(false);
-
-      setTimeout(() => {
-        setLeaveSuccessModalVisible(true);
-      }, 300);
+      setLeaveSuccessModalVisible(true);
 
       await loadLeaveRequests();
     } catch (error) {

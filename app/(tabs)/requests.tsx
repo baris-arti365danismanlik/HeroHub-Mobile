@@ -67,10 +67,7 @@ export default function RequestsScreen() {
 
       console.log('Leave request created successfully');
       setLeaveModalVisible(false);
-
-      setTimeout(() => {
-        setSuccessModalVisible(true);
-      }, 300);
+      setSuccessModalVisible(true);
 
       loadRequests();
     } catch (error) {
