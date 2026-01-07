@@ -1,5 +1,15 @@
 import { apiHttpClient as apiClient } from './http.client';
-import type { User, UserDayOff, UserDayOffBalance, UserEmployment, UserRequest, ApiResponse, PaginatedResponse } from '@/types/backend';
+import type {
+  User,
+  UserDayOff,
+  UserDayOffBalance,
+  UserEmployment,
+  UserRequest,
+  ApiResponse,
+  PaginatedResponse,
+  UserProfileDetails,
+  Country
+} from '@/types/backend';
 
 class UserService {
   async getUserById(id: string): Promise<User> {
@@ -68,6 +78,19 @@ class UserService {
       throw new Error('Failed to create request');
     }
     return response.data;
+  }
+
+  async getUserProfile(backendUserId: number): Promise<UserProfileDetails> {
+    const response = await apiClient.get<UserProfileDetails>(`/Profile/get-userprofile/${backendUserId}`);
+    if (!response.data) {
+      throw new Error('User profile not found');
+    }
+    return response.data;
+  }
+
+  async getCountries(): Promise<Country[]> {
+    const response = await apiClient.get<Country[]>('/Profile/countries');
+    return response.data || [];
   }
 }
 

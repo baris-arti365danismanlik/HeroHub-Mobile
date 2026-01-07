@@ -108,6 +108,7 @@ export interface User {
   updatedAt?: string;
   role?: string;
   position?: string;
+  backend_user_id?: number;
 }
 
 export interface UserDayOffBalance {
@@ -386,4 +387,185 @@ export interface AttendanceRecord {
   notes?: string;
   created_at: string;
   updated_at?: string;
+}
+
+export interface Country {
+  name: string;
+  areaCode: string | null;
+  code: string | null;
+  id: number;
+  unique: string;
+  createdAt: string;
+  deletedAt: string | null;
+  updatedAt: string | null;
+  createdBy: string;
+  deletedBy: string | null;
+  updatedBy: string | null;
+  isActive: boolean;
+}
+
+export interface PersonalInformation {
+  tckn: string;
+  firstName: string;
+  lastName: string;
+  birthdate: string;
+  birthPlace: string;
+  nationality: number;
+  maritalStatus: number;
+  gender: number;
+  personnelNumber: string;
+  jobStartDate: string;
+  title: string | null;
+  department: string | null;
+  currentShiftHours: string;
+  workPlace: string | null;
+  workType: number;
+}
+
+export interface DriverLicense {
+  id: number;
+  userId: number;
+  licenseType: string;
+  licenseNumber: string;
+  issueDate: string;
+  expiryDate: string;
+}
+
+export interface Education {
+  educationId: number;
+  level: number;
+  schoolName: string;
+  department: string;
+  gpa: number;
+  gpaSystem: number;
+  language: number;
+  startDate: string;
+  endDate: string;
+}
+
+export interface Certificate {
+  id: number;
+  userId: number;
+  name: string;
+  issuer: string;
+  issueDate: string;
+  expiryDate?: string;
+}
+
+export interface SocialMedia {
+  linkedin?: string;
+  twitter?: string;
+  facebook?: string;
+  instagram?: string;
+}
+
+export interface UserContact {
+  email: string;
+  phoneNumber: string;
+  businessEmail: string;
+  otherEmail: string;
+  businessPhone: string;
+  homePhone: string;
+}
+
+export interface UserAddress {
+  userId: number;
+  address: string;
+  districtId: number | null;
+  districtName: string | null;
+  cityId: number | null;
+  cityName: string | null;
+  countryId: number | null;
+  countryName: string | null;
+}
+
+export interface UserHealth {
+  height: number;
+  weight: number;
+  size: number;
+  bloodType: number;
+  allergies: string;
+  drugs: string;
+}
+
+export interface UserFamily {
+  id: number;
+  userId: number;
+  relation: string;
+  firstName: string;
+  lastName: string;
+  birthDate: string;
+  phoneNumber?: string;
+}
+
+export interface UserMilitary {
+  militaryStatus: number;
+  militaryPostpone: string | null;
+  militaryNote: string;
+}
+
+export interface UserLanguage {
+  id: number;
+  userId: number;
+  language: string;
+  level: number;
+}
+
+export interface UserPassport {
+  passportType: number;
+  passportValidityDate: string;
+  passportNumber: string | null;
+}
+
+export interface UserVisa {
+  id: number;
+  userId: number;
+  country: string;
+  visaType: string;
+  issueDate: string;
+  expiryDate: string;
+}
+
+export interface ModulePermission {
+  moduleId: number;
+  canRead: boolean;
+  canWrite: boolean;
+  canDelete: boolean;
+}
+
+export interface Colleague {
+  profilePhoto: string;
+  title: string | null;
+  fullName: string;
+  id: number;
+}
+
+export interface UserProfileDetails {
+  id: number;
+  profilePhoto: string;
+  organizationId: number;
+  organizationName: string;
+  dayOffBalance: number;
+  currentTitle: string | null;
+  jobStartDate: string;
+  department: string | null;
+  currentShiftHours: string;
+  personalInformation: PersonalInformation;
+  driverLicenses: DriverLicense[];
+  educations: Education[];
+  certificates: Certificate[];
+  socialMedia: SocialMedia | null;
+  userContact: UserContact;
+  userAddress: UserAddress;
+  userHealth: UserHealth;
+  userFamilies: UserFamily[];
+  userMilitary: UserMilitary;
+  userLanguages: UserLanguage[];
+  userPassport: UserPassport;
+  userVisas: UserVisa[];
+  modulePermissions: ModulePermission[];
+  reportsTo: any | null;
+  colleagues: Colleague[];
+  dayOffs: any[];
+  userStatus: number;
 }

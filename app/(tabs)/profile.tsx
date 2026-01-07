@@ -55,6 +55,7 @@ import { leaveService } from '@/services/leave.service';
 import { inboxService } from '@/services/inbox.service';
 import { onboardingService } from '@/services/onboarding.service';
 import { pdksService } from '@/services/pdks.service';
+import { userService } from '@/services/user.service';
 import {
   Asset,
   AssetStatus,
@@ -67,6 +68,9 @@ import {
   UserOnboardingTask,
   UserOnboardingAnswer,
   AttendanceRecord,
+  UserProfileDetails,
+  Country,
+  ModulePermission,
 } from '@/types/backend';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
@@ -85,6 +89,9 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedSection, setSelectedSection] = useState('Özet');
+  const [profileDetails, setProfileDetails] = useState<UserProfileDetails | null>(null);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [modulePermissions, setModulePermissions] = useState<ModulePermission[]>([]);
   const [assetModalVisible, setAssetModalVisible] = useState(false);
   const [assetForm, setAssetForm] = useState({
     category: 'Bilgisayar',
@@ -214,6 +221,46 @@ export default function ProfileScreen() {
 
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
   const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (!user?.backend_user_id) return;
+
+      try {
+        setLoading(true);
+        const [profile, countriesList] = await Promise.all([
+          userService.getUserProfile(user.backend_user_id),
+          userService.getCountries(),
+        ]);
+
+        setProfileDetails(profile);
+        setCountries(countriesList);
+        setModulePermissions(profile.modulePermissions);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, [user?.backend_user_id]);
+
+  const hasModulePermission = (moduleId: number, permission: 'read' | 'write' | 'delete'): boolean => {
+    const module = modulePermissions.find(m => m.moduleId === moduleId);
+    if (!module) return false;
+
+    switch (permission) {
+      case 'read':
+        return module.canRead;
+      case 'write':
+        return module.canWrite;
+      case 'delete':
+        return module.canDelete;
+      default:
+        return false;
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -1142,238 +1189,252 @@ export default function ProfileScreen() {
     </>
   );
 
-  const renderProfileInfoSection = () => (
-    <>
-      <Accordion
-        title="PROFİL BİLGİLERİ"
-        icon={<UserIcon size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-        onEdit={() => handleEdit('profile')}
-      >
-        <InfoRow label="Personel No" value="1203354" />
-        <InfoRow label="TCKN" value={user.identityNumber || '-'} />
-        <InfoRow label="Adı Soyadı" value="Selin Yeşilce" />
-        <InfoRow label="Doğum Yeri" value="Balıkesir" />
-        <InfoRow label="Doğum Tarihi" value="12.10.1982" />
-        <InfoRow label="Cinsiyet" value="Kadın" />
-        <InfoRow label="Medeni Hal" value="Bekar" isLast />
-      </Accordion>
-
-      <Accordion
-        title="İLETİŞİM BİLGİLERİ"
-        icon={<Phone size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-        onEdit={() => handleEdit('contact')}
-      >
-        <InfoRow label="İç Hat Telefon" value="0 312 754 24 07" />
-        <InfoRow label="Cep Telefonu" value="0 532 754 24 07" />
-        <InfoRow label="Cep Telefonu" value="0 212 754 24 07" />
-        <InfoRow label="İş E-Posta" value="selin.yesilce@gmail.com" />
-        <InfoRow label="Diğer E-Posta" value="yesilce@gmail.com" isLast />
-      </Accordion>
-
-      <Accordion
-        title="ADRES BİLGİLERİ"
-        icon={<MapPin size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-        onEdit={() => handleEdit('address')}
-      >
-        <InfoRow label="Mahalle" value="Yaşadığı Evvel Mah. Mağ... Ne İle 33/2 P1/C 34870..." />
-        <InfoRow label="İkamet" value="İstanbul" />
-        <InfoRow label="Ülke" value="Türkiye" isLast />
-      </Accordion>
-
-      <Accordion
-        title="SAĞLIK BİLGİLERİ"
-        icon={<Heart size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-        onEdit={() => handleEdit('health')}
-      >
-        <InfoRow label="Kan Grubu" value="A Rh+" />
-        <InfoRow label="Kronik Hastalıklar" value="-" />
-        <InfoRow label="Alerjiler" value="-" />
-        <InfoRow label="Acil Durum İletişim" value="-" />
-        <InfoRow label="Acil Durum Telefon" value="-" isLast />
-      </Accordion>
-
-      <Accordion
-        title="EHLİYET BİLGİLERİ"
-        icon={<CreditCard size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-        onEdit={() => handleEdit('driverLicense')}
-      >
-        <InfoRow label="Ehliyet Tipi" value="B" />
-        <InfoRow label="Ehliyet No" value="-" />
-        <InfoRow label="Veriliş Tarihi" value="-" />
-        <InfoRow label="Son Geçerlilik Tarihi" value="-" isLast />
-      </Accordion>
-
-      <Accordion
-        title="ASKERLİK BİLGİLERİ"
-        icon={<Award size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-        onEdit={() => handleEdit('military')}
-      >
-        <InfoRow label="Durum" value="Yapıldı" />
-        <InfoRow label="Başlangıç Tarihi" value="-" />
-        <InfoRow label="Bitiş Tarihi" value="-" />
-        <InfoRow label="Tecil Nedeni" value="-" isLast />
-      </Accordion>
-
-      <Accordion
-        title="AİLE BİLGİLERİ"
-        icon={<Users2 size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <InfoRow label="Aile Üyesi" value="-" />
-        <InfoRow label="Yakınlık Derecesi" value="-" />
-        <InfoRow label="Doğum Tarihi" value="-" />
-        <InfoRow label="Meslek" value="-" isLast />
-      </Accordion>
-
-      <Accordion
-        title="EĞİTİM BİLGİLERİ"
-        icon={<GraduationCap size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <WorkInfoCard
-          title="1. Eğitim"
-          details={[
-            { label: 'Bölüm', value: 'Kimya' },
-            { label: 'Üniversite', value: 'İstanbul Üniversitesi' },
-            { label: 'Başlangıç Tarihi', value: '01' },
-          ]}
-        />
-        <WorkInfoCard
-          title="2. Eğitim"
-          details={[
-            { label: 'Güneydoğu Tarihi', value: '12.30.2020' },
-          ]}
-        />
-      </Accordion>
-
-      <Accordion
-        title="BANKA BİLGİLERİ"
-        icon={<CreditCard size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <WorkInfoCard
-          title="1. Banka"
-          details={[
-            { label: 'Banka Adı', value: 'Akbank' },
-            { label: 'IBAN', value: 'TR63 0011 1000 0000 0084 5959 70' },
-            { label: 'Hesap No', value: 'Türkiye Cumhuriyet' },
-          ]}
-        />
-        <WorkInfoCard
-          title="2. Banka"
-          details={[
-            { label: 'Banka Adı', value: 'Akbank Ödenmesi' },
-            { label: 'Hesap No', value: 'Yapılır' },
-            { label: 'İban/TR', value: 'TR63 0011 1000 0000 0084 5959 70' },
-          ]}
-        />
-      </Accordion>
-
-      <Accordion
-        title="İŞ TECRÜBELERİ"
-        icon={<Briefcase size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <WorkInfoCard
-          title="Okan Abal"
-          details={[
-            { label: 'Görev', value: 'Satış Müdürü' },
-            { label: 'İşe Giriş Tarihi', value: 'Orta Satış' },
-            { label: 'İşten Ayrılma Nedeni', value: 'Farklı İlçede Yaşamak İstiyorum' },
-          ]}
-        />
-      </Accordion>
-
-      <Accordion
-        title="YETKİNLİKLER"
-        icon={<Award size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <InfoRow label="Cinsiyet" value="218" isLast />
-      </Accordion>
-
-      <Accordion
-        title="SOSYAL LİNKLER"
-        icon={<Globe size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <InfoRow label="Instagram" value="www.instagram.com/company" />
-        <InfoRow label="Facebook" value="www.facebook.com/company" isLast />
-      </Accordion>
-
-      <Accordion
-        title="DİL BİLGİLERİ"
-        icon={<Languages size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <InfoRow label="Seviye" value="Orta Seviye" />
-        <InfoRow label="Seviye" value="C1" isLast />
-      </Accordion>
-
-      <Accordion
-        title="SERTİFİKALAR"
-        icon={<Award size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <WorkInfoCard
-          title="Marketing Eğitimi"
-          details={[
-            { label: 'Bölge İl', value: 'Marketing Eğitimi' },
-            { label: 'Almaya Tarihi', value: '12.12.2020' },
-          ]}
-        />
-      </Accordion>
-
-      <Accordion
-        title="PASAPORT BİLGİLERİ"
-        icon={<CreditCard size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <WorkInfoCard
-          title="1. Pasaport"
-          details={[
-            { label: 'Ülçesiyle Tarihi', value: '12.11.2017' },
-            { label: 'Veriliş', value: 'Seri Referans İdentitesi' },
-            { label: 'İşlem Tarihi', value: '11.08.2020' },
-          ]}
-        />
-        <WorkInfoCard
-          title="2. Pasaport"
-          details={[
-            { label: 'Kimlik Tarihi', value: 'Permanent Resident' },
-            { label: 'Veriliş Tarihi', value: '22.08.2021' },
-            { label: 'Doğum Tarihi', value: '22.08.2025' },
-            { label: 'İşlem Tarihi', value: 'Permanent Resident' },
-            { label: 'Aylık Tarihi', value: '22.08.2025' },
-            { label: 'Doğum', value: 'İsveçlik' },
-            { label: 'Almak İçin', value: '11.08.2038' },
-          ]}
-        />
-      </Accordion>
-
-      <Accordion
-        title="VİZE BİLGİLERİ"
-        icon={<FileText size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>Henüz vize bilgisi eklenmemiş</Text>
+  const renderProfileInfoSection = () => {
+    if (!profileDetails) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#7C3AED" />
+          <Text style={styles.loadingText}>Profil bilgileri yükleniyor...</Text>
         </View>
-        <TouchableOpacity
-          style={styles.visaRequestButton}
-          onPress={() => setVisaModalVisible(true)}
+      );
+    }
+
+    const { personalInformation, userContact, userAddress, userHealth, driverLicenses, userMilitary } = profileDetails;
+    const canEditProfile = hasModulePermission(1, 'write');
+
+    return (
+      <>
+        <Accordion
+          title="PROFİL BİLGİLERİ"
+          icon={<UserIcon size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+          onEdit={canEditProfile ? () => handleEdit('profile') : undefined}
         >
-          <Text style={styles.visaRequestButtonText}>Vize Başvuru Evrak Talebi</Text>
-        </TouchableOpacity>
-      </Accordion>
-    </>
-  );
+          <InfoRow label="Personel No" value={personalInformation.personnelNumber || '-'} />
+          <InfoRow label="TCKN" value={personalInformation.tckn || '-'} />
+          <InfoRow label="Adı Soyadı" value={`${personalInformation.firstName} ${personalInformation.lastName}`} />
+          <InfoRow label="Doğum Yeri" value={personalInformation.birthPlace || '-'} />
+          <InfoRow label="Doğum Tarihi" value={formatDate(personalInformation.birthdate)} />
+          <InfoRow label="Cinsiyet" value={formatGender(personalInformation.gender)} />
+          <InfoRow label="Medeni Hal" value={formatMaritalStatus(personalInformation.maritalStatus)} isLast />
+        </Accordion>
+
+        <Accordion
+          title="İLETİŞİM BİLGİLERİ"
+          icon={<Phone size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+          onEdit={canEditProfile ? () => handleEdit('contact') : undefined}
+        >
+          <InfoRow label="Cep Telefonu" value={formatPhone(userContact.phoneNumber) || '-'} />
+          <InfoRow label="Ev Telefonu" value={formatPhone(userContact.homePhone) || '-'} />
+          <InfoRow label="İş Telefonu" value={formatPhone(userContact.businessPhone) || '-'} />
+          <InfoRow label="E-Posta" value={userContact.email || '-'} />
+          <InfoRow label="İş E-Posta" value={userContact.businessEmail || '-'} />
+          <InfoRow label="Diğer E-Posta" value={userContact.otherEmail || '-'} isLast />
+        </Accordion>
+
+        <Accordion
+          title="ADRES BİLGİLERİ"
+          icon={<MapPin size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+          onEdit={canEditProfile ? () => handleEdit('address') : undefined}
+        >
+          <InfoRow label="Adres" value={userAddress.address || '-'} />
+          <InfoRow label="İlçe" value={userAddress.districtName || '-'} />
+          <InfoRow label="İl" value={userAddress.cityName || '-'} />
+          <InfoRow label="Ülke" value={userAddress.countryName || '-'} isLast />
+        </Accordion>
+
+        <Accordion
+          title="SAĞLIK BİLGİLERİ"
+          icon={<Heart size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+          onEdit={canEditProfile ? () => handleEdit('health') : undefined}
+        >
+          <InfoRow label="Kan Grubu" value={formatBloodType(userHealth.bloodType)} />
+          <InfoRow label="Boy (cm)" value={userHealth.height > 0 ? userHealth.height.toString() : '-'} />
+          <InfoRow label="Kilo (kg)" value={userHealth.weight > 0 ? userHealth.weight.toString() : '-'} />
+          <InfoRow label="Alerjiler" value={userHealth.allergies || '-'} />
+          <InfoRow label="Kullanılan İlaçlar" value={userHealth.drugs || '-'} isLast />
+        </Accordion>
+
+        <Accordion
+          title="EHLİYET BİLGİLERİ"
+          icon={<CreditCard size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+          onEdit={canEditProfile ? () => handleEdit('driverLicense') : undefined}
+        >
+          {driverLicenses.length > 0 ? (
+            driverLicenses.map((license, index) => (
+              <View key={license.id}>
+                <InfoRow label="Ehliyet Tipi" value={license.licenseType || '-'} />
+                <InfoRow label="Ehliyet No" value={license.licenseNumber || '-'} />
+                <InfoRow label="Veriliş Tarihi" value={formatDate(license.issueDate)} />
+                <InfoRow label="Son Geçerlilik Tarihi" value={formatDate(license.expiryDate)} isLast={index === driverLicenses.length - 1} />
+              </View>
+            ))
+          ) : (
+            <InfoRow label="Ehliyet" value="Bilgi yok" isLast />
+          )}
+        </Accordion>
+
+        <Accordion
+          title="ASKERLİK BİLGİLERİ"
+          icon={<Award size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+          onEdit={canEditProfile ? () => handleEdit('military') : undefined}
+        >
+          <InfoRow
+            label="Durum"
+            value={userMilitary.militaryStatus === 0 ? 'Yapıldı' : userMilitary.militaryStatus === 1 ? 'Ertelendi' : userMilitary.militaryStatus === 2 ? 'Muaf' : 'Uygulanmaz'}
+          />
+          <InfoRow label="Erteleme Nedeni" value={userMilitary.militaryPostpone || '-'} />
+          <InfoRow label="Not" value={userMilitary.militaryNote || '-'} isLast />
+        </Accordion>
+
+        <Accordion
+          title="AİLE BİLGİLERİ"
+          icon={<Users2 size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+        >
+          {profileDetails.userFamilies.length > 0 ? (
+            profileDetails.userFamilies.map((family, index) => (
+              <View key={family.id}>
+                <InfoRow label="Ad Soyad" value={`${family.firstName} ${family.lastName}`} />
+                <InfoRow label="Yakınlık" value={family.relation || '-'} />
+                <InfoRow label="Doğum Tarihi" value={formatDate(family.birthDate)} />
+                <InfoRow label="Telefon" value={formatPhone(family.phoneNumber) || '-'} isLast={index === profileDetails.userFamilies.length - 1} />
+              </View>
+            ))
+          ) : (
+            <InfoRow label="Aile Üyesi" value="Bilgi yok" isLast />
+          )}
+        </Accordion>
+
+        <Accordion
+          title="EĞİTİM BİLGİLERİ"
+          icon={<GraduationCap size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+        >
+          {profileDetails.educations.length > 0 ? (
+            profileDetails.educations.map((education, index) => (
+              <WorkInfoCard
+                key={education.educationId}
+                title={`${index + 1}. Eğitim`}
+                details={[
+                  { label: 'Okul', value: education.schoolName },
+                  { label: 'Bölüm', value: education.department },
+                  { label: 'Başlangıç', value: formatDate(education.startDate) },
+                  { label: 'Bitiş', value: formatDate(education.endDate) },
+                  { label: 'Not Ortalaması', value: `${education.gpa}/${education.gpaSystem}` },
+                ]}
+              />
+            ))
+          ) : (
+            <InfoRow label="Eğitim" value="Bilgi yok" isLast />
+          )}
+        </Accordion>
+
+        <Accordion
+          title="SOSYAL LİNKLER"
+          icon={<Globe size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+        >
+          {profileDetails.socialMedia ? (
+            <>
+              <InfoRow label="LinkedIn" value={profileDetails.socialMedia.linkedin || '-'} />
+              <InfoRow label="Twitter" value={profileDetails.socialMedia.twitter || '-'} />
+              <InfoRow label="Facebook" value={profileDetails.socialMedia.facebook || '-'} />
+              <InfoRow label="Instagram" value={profileDetails.socialMedia.instagram || '-'} isLast />
+            </>
+          ) : (
+            <InfoRow label="Sosyal Medya" value="Bilgi yok" isLast />
+          )}
+        </Accordion>
+
+        <Accordion
+          title="DİL BİLGİLERİ"
+          icon={<Languages size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+        >
+          {profileDetails.userLanguages.length > 0 ? (
+            profileDetails.userLanguages.map((lang, index) => (
+              <View key={lang.id}>
+                <InfoRow label="Dil" value={lang.language} />
+                <InfoRow label="Seviye" value={lang.level.toString()} isLast={index === profileDetails.userLanguages.length - 1} />
+              </View>
+            ))
+          ) : (
+            <InfoRow label="Dil" value="Bilgi yok" isLast />
+          )}
+        </Accordion>
+
+        <Accordion
+          title="SERTİFİKALAR"
+          icon={<Award size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+        >
+          {profileDetails.certificates.length > 0 ? (
+            profileDetails.certificates.map((cert, index) => (
+              <WorkInfoCard
+                key={cert.id}
+                title={cert.name}
+                details={[
+                  { label: 'Veren Kurum', value: cert.issuer },
+                  { label: 'Veriliş Tarihi', value: formatDate(cert.issueDate) },
+                  { label: 'Geçerlilik Tarihi', value: cert.expiryDate ? formatDate(cert.expiryDate) : 'Süresiz' },
+                ]}
+              />
+            ))
+          ) : (
+            <InfoRow label="Sertifika" value="Bilgi yok" isLast />
+          )}
+        </Accordion>
+
+        <Accordion
+          title="PASAPORT BİLGİLERİ"
+          icon={<CreditCard size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+        >
+          <InfoRow label="Pasaport Tipi" value={profileDetails.userPassport.passportType.toString()} />
+          <InfoRow label="Pasaport No" value={profileDetails.userPassport.passportNumber || '-'} />
+          <InfoRow label="Geçerlilik Tarihi" value={formatDate(profileDetails.userPassport.passportValidityDate)} isLast />
+        </Accordion>
+
+        <Accordion
+          title="VİZE BİLGİLERİ"
+          icon={<FileText size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+        >
+          {profileDetails.userVisas.length > 0 ? (
+            profileDetails.userVisas.map((visa, index) => (
+              <WorkInfoCard
+                key={visa.id}
+                title={`${visa.country} Vizesi`}
+                details={[
+                  { label: 'Vize Tipi', value: visa.visaType },
+                  { label: 'Veriliş Tarihi', value: formatDate(visa.issueDate) },
+                  { label: 'Geçerlilik Tarihi', value: formatDate(visa.expiryDate) },
+                ]}
+              />
+            ))
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>Henüz vize bilgisi eklenmemiş</Text>
+            </View>
+          )}
+          {canEditProfile && (
+            <TouchableOpacity
+              style={styles.visaRequestButton}
+              onPress={() => setVisaModalVisible(true)}
+            >
+              <Text style={styles.visaRequestButtonText}>Vize Başvuru Evrak Talebi</Text>
+            </TouchableOpacity>
+          )}
+        </Accordion>
+      </>
+    );
+  };
 
   const formatTime = (dateString?: string) => {
     if (!dateString) return '-';
@@ -2002,10 +2063,12 @@ export default function ProfileScreen() {
                     {user.position || 'Management Trainee'}
                   </Text>
                 </View>
-                <View style={styles.profileDetailRow}>
-                  <Building2 size={16} color="#666" />
-                  <Text style={styles.profileDetailText}>Art365 Danışmanlık</Text>
-                </View>
+                {profileDetails?.organizationName && (
+                  <View style={styles.profileDetailRow}>
+                    <Building2 size={16} color="#666" />
+                    <Text style={styles.profileDetailText}>{profileDetails.organizationName}</Text>
+                  </View>
+                )}
               </View>
             </View>
           </View>
@@ -2967,6 +3030,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F8F9FA',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#666',
   },
   header: {
     flexDirection: 'row',

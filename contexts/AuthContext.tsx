@@ -73,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: session.user.email || '',
           isActive: true,
           createdAt: session.user.created_at,
+          backend_user_id: profile?.backend_user_id,
         };
         setUser(userData);
         await loadUserProfile(userData.id);
