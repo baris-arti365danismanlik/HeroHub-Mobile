@@ -1,4 +1,4 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { ChevronDown } from 'lucide-react-native';
 
@@ -12,6 +12,10 @@ interface AccordionProps {
 
 export function Accordion({ title, icon, children, defaultExpanded = false, onEdit }: AccordionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  useEffect(() => {
+    setIsExpanded(defaultExpanded);
+  }, [defaultExpanded]);
 
   return (
     <View style={styles.container}>
