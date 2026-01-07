@@ -70,6 +70,8 @@ import {
 } from '@/types/backend';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
+import { LeaveRequestModal, LeaveRequestData } from '@/components/LeaveRequestModal';
+import { SuccessModal } from '@/components/SuccessModal';
 import {
   formatGender,
   formatBloodType,
@@ -107,17 +109,8 @@ export default function ProfileScreen() {
   });
   const [leaveModalVisible, setLeaveModalVisible] = useState(false);
   const [leaveSuccessModalVisible, setLeaveSuccessModalVisible] = useState(false);
-  const [leaveForm, setLeaveForm] = useState({
-    leaveType: 'Yıllık İzin',
-    startDate: '',
-    endDate: '',
-    duration: 0.5,
-    notes: '',
-  });
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [leaveLoading, setLeaveLoading] = useState(false);
-  const [showLeaveTypeDropdown, setShowLeaveTypeDropdown] = useState(false);
-  const [showDurationDropdown, setShowDurationDropdown] = useState(false);
   const [inboxVisible, setInboxVisible] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [onboardingData, setOnboardingData] = useState<{
@@ -207,9 +200,6 @@ export default function ProfileScreen() {
     endDate: '',
     postponementReason: '',
   });
-
-  const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
-  const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
 
   const handleLogout = async () => {
     await logout();
@@ -417,8 +407,8 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSubmitLeaveRequest = async () => {
-    if (!user?.id || !leaveForm.startDate || !leaveForm.endDate) {
+  const handleSubmitLeaveRequest = async (data: LeaveRequestData) => {
+    if (!user?.id) {
       return;
     }
 
@@ -427,19 +417,11 @@ export default function ProfileScreen() {
 
       await leaveService.createLeaveRequest({
         user_id: user.id,
-        leave_type: leaveForm.leaveType,
-        start_date: leaveForm.startDate,
-        end_date: leaveForm.endDate,
-        duration: leaveForm.duration,
-        notes: leaveForm.notes,
-      });
-
-      setLeaveForm({
-        leaveType: 'Yıllık İzin',
-        startDate: '',
-        endDate: '',
-        duration: 0.5,
-        notes: '',
+        leave_type: data.leaveType,
+        start_date: data.startDate,
+        end_date: data.endDate,
+        duration: data.duration,
+        notes: data.notes,
       });
 
       setLeaveModalVisible(false);
@@ -2149,187 +2131,18 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      <Modal
+      <LeaveRequestModal
         visible={leaveModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setLeaveModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>İzin Talebi Gir</Text>
-              <TouchableOpacity
-                onPress={() => setLeaveModalVisible(false)}
-                style={styles.modalCloseButton}
-              >
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
+        onClose={() => setLeaveModalVisible(false)}
+        onSubmit={handleSubmitLeaveRequest}
+      />
 
-            <ScrollView style={styles.modalContent}>
-              <View style={styles.leaveUserCard}>
-                {user.profilePictureUrl ? (
-                  <Image
-                    source={{ uri: user.profilePictureUrl }}
-                    style={styles.leaveUserImage}
-                  />
-                ) : (
-                  <View style={styles.leaveUserPlaceholder}>
-                    <UserIcon size={24} color="#7C3AED" />
-                  </View>
-                )}
-                <View style={styles.leaveUserInfo}>
-                  <Text style={styles.leaveUserName}>{user.firstName} {user.lastName}</Text>
-                  <Text style={styles.leaveUserRole}>{userProfile?.role?.name || 'Management Trainee'}</Text>
-                </View>
-                <View style={styles.leaveBalanceBox}>
-                  <Text style={styles.leaveBalanceLabel}>İZİN BAKİYESİ</Text>
-                  <Text style={styles.leaveBalanceValue}>125,5 Gün</Text>
-                </View>
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>İzin Türü</Text>
-                <TouchableOpacity
-                  style={styles.formDropdown}
-                  onPress={() => setShowLeaveTypeDropdown(!showLeaveTypeDropdown)}
-                >
-                  <Text style={styles.formDropdownText}>{leaveForm.leaveType}</Text>
-                  <ChevronDown size={20} color="#666" />
-                </TouchableOpacity>
-                {showLeaveTypeDropdown && (
-                  <View style={styles.dropdownList}>
-                    {leaveTypes.map((type) => (
-                      <TouchableOpacity
-                        key={type}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setLeaveForm({ ...leaveForm, leaveType: type });
-                          setShowLeaveTypeDropdown(false);
-                        }}
-                      >
-                        <Text style={styles.dropdownItemText}>{type}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Başlangıç Tarihi</Text>
-                <View style={styles.formDatePicker}>
-                  <TextInput
-                    style={styles.formDateInput}
-                    placeholder="YYYY-MM-DD"
-                    value={leaveForm.startDate}
-                    onChangeText={(text) => setLeaveForm({ ...leaveForm, startDate: text })}
-                  />
-                  <Calendar size={20} color="#7C3AED" />
-                </View>
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Bitiş Tarihi</Text>
-                <View style={styles.formDatePicker}>
-                  <TextInput
-                    style={styles.formDateInput}
-                    placeholder="YYYY-MM-DD"
-                    value={leaveForm.endDate}
-                    onChangeText={(text) => setLeaveForm({ ...leaveForm, endDate: text })}
-                  />
-                  <Calendar size={20} color="#7C3AED" />
-                </View>
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Süre</Text>
-                <TouchableOpacity
-                  style={styles.formDropdown}
-                  onPress={() => setShowDurationDropdown(!showDurationDropdown)}
-                >
-                  <Text style={styles.formDropdownText}>{leaveForm.duration} Gün</Text>
-                  <ChevronDown size={20} color="#666" />
-                </TouchableOpacity>
-                {showDurationDropdown && (
-                  <View style={styles.dropdownList}>
-                    <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
-                      {durations.map((dur) => (
-                        <TouchableOpacity
-                          key={dur}
-                          style={styles.dropdownItem}
-                          onPress={() => {
-                            setLeaveForm({ ...leaveForm, duration: dur });
-                            setShowDurationDropdown(false);
-                          }}
-                        >
-                          <Text style={styles.dropdownItemText}>{dur} Gün</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Not</Text>
-                <TextInput
-                  style={[styles.formInput, styles.formTextarea]}
-                  placeholder="Varsa iletmek istediği detayları çalışan bu alandan gönderebilir."
-                  multiline
-                  numberOfLines={4}
-                  value={leaveForm.notes}
-                  onChangeText={(text) => setLeaveForm({...leaveForm, notes: text})}
-                  textAlignVertical="top"
-                />
-              </View>
-            </ScrollView>
-
-            <View style={styles.modalFooter}>
-              <TouchableOpacity
-                style={styles.modalCancelButton}
-                onPress={() => setLeaveModalVisible(false)}
-              >
-                <Text style={styles.modalCancelText}>Vazgeç</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalSubmitButton}
-                onPress={handleSubmitLeaveRequest}
-                disabled={leaveLoading}
-              >
-                {leaveLoading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.modalSubmitText}>Devam Et</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
+      <SuccessModal
         visible={leaveSuccessModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setLeaveSuccessModalVisible(false)}
-      >
-        <View style={styles.successModalOverlay}>
-          <View style={styles.successModalContainer}>
-            <Text style={styles.successTitle}>İzin Talebi Gir</Text>
-            <View style={styles.successIconContainer}>
-              <Check size={70} color="#34C759" strokeWidth={4} />
-            </View>
-            <Text style={styles.successMessage}>Talebiniz başarı ile iletildi.</Text>
-            <TouchableOpacity
-              style={styles.successButton}
-              onPress={() => setLeaveSuccessModalVisible(false)}
-            >
-              <Text style={styles.successButtonText}>Kapat</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setLeaveSuccessModalVisible(false)}
+        title="İzin Talebi Gir"
+        message="Talebiniz başarı ile iletildi."
+      />
 
       <Modal
         visible={welcomePackageModalVisible}
