@@ -295,7 +295,10 @@ export default function ProfileScreen() {
       });
 
       setLeaveModalVisible(false);
-      setLeaveSuccessModalVisible(true);
+
+      setTimeout(() => {
+        setLeaveSuccessModalVisible(true);
+      }, 300);
 
       await loadLeaveRequests();
     } catch (error) {
@@ -2125,10 +2128,9 @@ export default function ProfileScreen() {
       >
         <View style={styles.successModalOverlay}>
           <View style={styles.successModalContainer}>
+            <Text style={styles.successTitle}>İzin Talebi Gir</Text>
             <View style={styles.successIconContainer}>
-              <View style={styles.successIcon}>
-                <Check size={48} color="#fff" strokeWidth={3} />
-              </View>
+              <Check size={70} color="#34C759" strokeWidth={4} />
             </View>
             <Text style={styles.successMessage}>Talebiniz başarı ile iletildi.</Text>
             <TouchableOpacity
@@ -3169,42 +3171,53 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   successModalContainer: {
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 32,
     alignItems: 'center',
-    maxWidth: 320,
-    width: '85%',
+    maxWidth: 340,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  successTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 32,
+    textAlign: 'center',
   },
   successIconContainer: {
-    marginBottom: 24,
-  },
-  successIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#10B981',
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 32,
   },
   successMessage: {
     fontSize: 16,
     color: '#1a1a1a',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
+    lineHeight: 24,
   },
   successButton: {
     backgroundColor: '#7C3AED',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 48,
-    borderRadius: 10,
+    borderRadius: 12,
+    width: '100%',
   },
   successButtonText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+    textAlign: 'center',
   },
   onboardingHeader: {
     flexDirection: 'row',
