@@ -22,8 +22,7 @@ import {
   Settings,
   Plus,
   UserIcon,
-  FileText,
-  Clock
+  FileText
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -91,12 +90,6 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
       label: 'Profilim',
       icon: <User size={20} color="#7C3AED" />,
       route: '/(tabs)/profile',
-    },
-    {
-      id: 'pdks',
-      label: 'PDKS',
-      icon: <Clock size={20} color="#7C3AED" />,
-      route: '/(tabs)/pdks',
     },
     {
       id: 'requests',

@@ -1422,97 +1422,89 @@ export default function ProfileScreen() {
       );
     }
 
-    const totalWorkHours = attendanceRecords.reduce((sum, r) => sum + r.work_duration, 0);
-    const avgWorkHours = attendanceRecords.length > 0 ? totalWorkHours / attendanceRecords.length : 0;
+    const getWorkHours = (duration: number | null) => {
+      if (!duration) return '00:00 - 00:00';
+      const hours = Math.floor(duration / 60);
+      const minutes = duration % 60;
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    };
 
     return (
       <>
-        <View style={styles.pdksHeader}>
-          <Clock size={18} color="#7C3AED" />
-          <Text style={styles.pdksHeaderTitle}>PDKS</Text>
-        </View>
+        <View style={styles.pdksSection}>
+          <View style={styles.pdksSectionHeader}>
+            <AlignJustify size={20} color="#1a1a1a" />
+            <Text style={styles.pdksSectionTitle}>VARDİYA BİLGİSİ</Text>
+          </View>
 
-        <View style={styles.pdksQuickActions}>
-          <TouchableOpacity
-            style={[styles.pdksActionButton, todayRecord?.check_in_time && styles.pdksActionButtonDisabled]}
-            onPress={handleCheckIn}
-            disabled={!!todayRecord?.check_in_time}
-          >
-            <Text style={styles.pdksActionButtonText}>
-              {todayRecord?.check_in_time ? 'Giriş Yapıldı' : 'Giriş Yap'}
-            </Text>
-            {todayRecord?.check_in_time && (
-              <Text style={styles.pdksActionButtonTime}>{formatTime(todayRecord.check_in_time)}</Text>
-            )}
-          </TouchableOpacity>
+          <View style={styles.pdksInfoGrid}>
+            <View style={styles.pdksInfoRow}>
+              <Text style={styles.pdksInfoLabel}>Mevcut Vardiya</Text>
+              <Text style={styles.pdksInfoValue}>Vardiya Grup-1</Text>
+            </View>
+            <View style={styles.pdksInfoRow}>
+              <Text style={styles.pdksInfoLabel}>Mevcut Tip</Text>
+              <Text style={styles.pdksInfoValue}>Sabah Vardiyası</Text>
+            </View>
+            <View style={styles.pdksInfoRow}>
+              <Text style={styles.pdksInfoLabel}>Çalışma Saatleri</Text>
+              <Text style={styles.pdksInfoValue}>08:00 - 19:00</Text>
+            </View>
+          </View>
 
-          <TouchableOpacity
-            style={[
-              styles.pdksActionButton,
-              styles.pdksCheckoutButton,
-              (!todayRecord?.check_in_time || todayRecord?.check_out_time) && styles.pdksActionButtonDisabled,
-            ]}
-            onPress={handleCheckOut}
-            disabled={!todayRecord?.check_in_time || !!todayRecord?.check_out_time}
-          >
-            <Text style={styles.pdksActionButtonText}>
-              {todayRecord?.check_out_time ? 'Çıkış Yapıldı' : 'Çıkış Yap'}
-            </Text>
-            {todayRecord?.check_out_time && (
-              <Text style={styles.pdksActionButtonTime}>{formatTime(todayRecord.check_out_time)}</Text>
-            )}
+          <TouchableOpacity style={styles.pdksChangeShiftButton}>
+            <Text style={styles.pdksChangeShiftButtonText}>Vardiya Değiştir</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.pdksStats}>
-          <View style={styles.pdksStatCard}>
-            <Text style={styles.pdksStatValue}>{attendanceRecords.length}</Text>
-            <Text style={styles.pdksStatLabel}>Toplam Gün</Text>
+        <View style={styles.pdksSection}>
+          <View style={styles.pdksSectionHeader}>
+            <Text style={styles.pdksSectionTitle}>VARDİYA GEÇMİŞİ</Text>
           </View>
-          <View style={styles.pdksStatCard}>
-            <Text style={styles.pdksStatValue}>{formatDuration(Math.floor(totalWorkHours))}</Text>
-            <Text style={styles.pdksStatLabel}>Toplam Süre</Text>
-          </View>
-          <View style={styles.pdksStatCard}>
-            <Text style={styles.pdksStatValue}>{formatDuration(Math.floor(avgWorkHours))}</Text>
-            <Text style={styles.pdksStatLabel}>Ortalama</Text>
-          </View>
-        </View>
 
-        <Accordion title="AYLIK KAYITLAR" icon={<Calendar size={18} color="#7C3AED" />} defaultExpanded={true}>
-          <View style={styles.pdksRecordsContainer}>
-            {attendanceRecords.length === 0 ? (
-              <Text style={styles.pdksNoRecords}>Bu ay için kayıt bulunamadı</Text>
-            ) : (
-              attendanceRecords.map((record) => (
-                <View key={record.id} style={styles.pdksRecordCard}>
-                  <View style={styles.pdksRecordHeader}>
-                    <Text style={styles.pdksRecordDate}>{formatDate(record.date)}</Text>
-                    <View style={[styles.pdksStatusBadge, { backgroundColor: getStatusColor(record.status) }]}>
-                      <Text style={styles.pdksStatusBadgeText}>{getStatusText(record.status)}</Text>
-                    </View>
+          {attendanceRecords.length === 0 ? (
+            <Text style={styles.pdksEmptyText}>Vardiya geçmişi bulunamadı</Text>
+          ) : (
+            attendanceRecords.map((record) => (
+              <View key={record.id} style={styles.pdksHistoryCard}>
+                <View style={styles.pdksHistoryHeader}>
+                  <Text style={styles.pdksHistoryDate}>{formatDate(record.date)}</Text>
+                  <Text
+                    style={[
+                      styles.pdksHistoryTime,
+                      record.work_duration
+                        ? styles.pdksHistoryTimeNormal
+                        : styles.pdksHistoryTimeWarning,
+                    ]}
+                  >
+                    {record.work_duration
+                      ? getWorkHours(record.work_duration)
+                      : '08:00 - 16:00'}
+                  </Text>
+                </View>
+
+                <View style={styles.pdksHistoryDetails}>
+                  <View style={styles.pdksHistoryRow}>
+                    <Text style={styles.pdksHistoryLabel}>Giriş</Text>
+                    <Text style={styles.pdksHistoryValue}>
+                      {formatTime(record.check_in_time)}
+                    </Text>
                   </View>
-                  <View style={styles.pdksRecordBody}>
-                    <View style={styles.pdksRecordRow}>
-                      <Text style={styles.pdksRecordLabel}>Giriş:</Text>
-                      <Text style={styles.pdksRecordValue}>{formatTime(record.check_in_time)}</Text>
-                    </View>
-                    <View style={styles.pdksRecordRow}>
-                      <Text style={styles.pdksRecordLabel}>Çıkış:</Text>
-                      <Text style={styles.pdksRecordValue}>{formatTime(record.check_out_time)}</Text>
-                    </View>
-                    <View style={styles.pdksRecordRow}>
-                      <Text style={styles.pdksRecordLabel}>Süre:</Text>
-                      <Text style={[styles.pdksRecordValue, styles.pdksRecordDuration]}>
-                        {formatDuration(record.work_duration)}
-                      </Text>
-                    </View>
+                  <View style={styles.pdksHistoryRow}>
+                    <Text style={styles.pdksHistoryLabel}>Çıkış</Text>
+                    <Text style={styles.pdksHistoryValue}>
+                      {formatTime(record.check_out_time)}
+                    </Text>
                   </View>
                 </View>
-              ))
-            )}
-          </View>
-        </Accordion>
+              </View>
+            ))
+          )}
+
+          <TouchableOpacity style={styles.pdksViewAllButton}>
+            <Text style={styles.pdksViewAllButtonText}>Görevi Tamamla</Text>
+          </TouchableOpacity>
+        </View>
       </>
     );
   };
@@ -4169,141 +4161,119 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9CA3AF',
   },
-  pdksHeader: {
+  pdksSection: {
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  pdksSectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    marginBottom: 16,
   },
-  pdksHeaderTitle: {
-    fontSize: 13,
+  pdksSectionTitle: {
+    fontSize: 14,
     fontWeight: '600',
     color: '#1a1a1a',
     letterSpacing: 0.5,
   },
-  pdksQuickActions: {
-    flexDirection: 'row',
+  pdksInfoGrid: {
     gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#F9FAFB',
+    marginBottom: 16,
   },
-  pdksActionButton: {
-    flex: 1,
+  pdksInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pdksInfoLabel: {
+    fontSize: 14,
+    color: '#666',
+  },
+  pdksInfoValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1a1a1a',
+  },
+  pdksChangeShiftButton: {
     backgroundColor: '#7C3AED',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    padding: 14,
     borderRadius: 8,
     alignItems: 'center',
   },
-  pdksCheckoutButton: {
-    backgroundColor: '#EF4444',
-  },
-  pdksActionButtonDisabled: {
-    backgroundColor: '#E5E7EB',
-  },
-  pdksActionButtonText: {
-    fontSize: 14,
+  pdksChangeShiftButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
-    marginBottom: 4,
   },
-  pdksActionButtonTime: {
-    fontSize: 12,
-    color: '#fff',
-  },
-  pdksStats: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
-  },
-  pdksStatCard: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  pdksStatValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#7C3AED',
-    marginBottom: 4,
-  },
-  pdksStatLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  pdksRecordsContainer: {
-    paddingTop: 8,
-  },
-  pdksNoRecords: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    textAlign: 'center',
-    paddingVertical: 24,
-  },
-  pdksRecordCard: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  pdksRecordHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-    paddingBottom: 12,
+  pdksHistoryCard: {
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#F0F0F0',
+    paddingVertical: 16,
   },
-  pdksRecordDate: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1a1a1a',
-  },
-  pdksStatusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  pdksStatusBadgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  pdksRecordBody: {
-    gap: 8,
-  },
-  pdksRecordRow: {
+  pdksHistoryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
   },
-  pdksRecordLabel: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  pdksRecordValue: {
-    fontSize: 13,
+  pdksHistoryDate: {
+    fontSize: 14,
+    fontWeight: '500',
     color: '#1a1a1a',
+  },
+  pdksHistoryTime: {
+    fontSize: 14,
     fontWeight: '500',
   },
-  pdksRecordDuration: {
+  pdksHistoryTimeNormal: {
+    color: '#666',
+  },
+  pdksHistoryTimeWarning: {
+    color: '#FF3B30',
+  },
+  pdksHistoryDetails: {
+    gap: 8,
+  },
+  pdksHistoryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pdksHistoryLabel: {
+    fontSize: 14,
+    color: '#666',
+  },
+  pdksHistoryValue: {
+    fontSize: 14,
+    color: '#1a1a1a',
+  },
+  pdksViewAllButton: {
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  pdksViewAllButtonText: {
     color: '#7C3AED',
+    fontSize: 16,
     fontWeight: '600',
+  },
+  pdksEmptyText: {
+    textAlign: 'center',
+    color: '#666',
+    fontSize: 14,
+    paddingVertical: 20,
   },
   renameModalContainer: {
     backgroundColor: '#fff',

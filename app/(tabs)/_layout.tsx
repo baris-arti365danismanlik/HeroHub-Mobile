@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, FileText, User, Users, Settings, Plus, Clock } from 'lucide-react-native';
+import { Home, FileText, User, Users, Settings, Plus } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -18,13 +18,6 @@ export default function TabLayout() {
         options={{
           title: 'Ana Sayfa',
           tabBarIcon: ({ size, color }) => <Home size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="pdks"
-        options={{
-          title: 'PDKS',
-          tabBarIcon: ({ size, color }) => <Clock size={size} color={color} />,
         }}
       />
       <Tabs.Screen
