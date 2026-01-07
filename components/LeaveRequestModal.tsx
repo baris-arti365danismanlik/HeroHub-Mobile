@@ -42,6 +42,38 @@ const LEAVE_TYPES = [
   'Ücretsiz İzin',
 ];
 
+const formatDateForDisplay = (dateStr: string): string => {
+  if (!dateStr) return '';
+
+  if (dateStr.includes('-')) {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      return `${day.padStart(2, '0')} / ${month.padStart(2, '0')} / ${year}`;
+    }
+  }
+
+  return dateStr;
+};
+
+const formatDateForDB = (dateStr: string): string => {
+  if (!dateStr) return '';
+
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/').map(p => p.trim());
+    if (parts.length === 3) {
+      const [day, month, year] = parts;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+  }
+
+  if (dateStr.includes('-')) {
+    return dateStr;
+  }
+
+  return dateStr;
+};
+
 export function LeaveRequestModal({
   visible,
   onClose,
@@ -62,14 +94,23 @@ export function LeaveRequestModal({
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
 
   React.useEffect(() => {
-    if (initialData && editMode) {
-      setLeaveType(initialData.leaveType);
-      setStartDate(formatDateForDisplay(initialData.startDate));
-      setEndDate(formatDateForDisplay(initialData.endDate));
-      setDuration(initialData.duration.toString());
-      setNotes(initialData.notes || '');
+    if (visible) {
+      if (initialData && editMode) {
+        setLeaveType(initialData.leaveType);
+        setStartDate(formatDateForDisplay(initialData.startDate));
+        setEndDate(formatDateForDisplay(initialData.endDate));
+        setDuration(initialData.duration.toString());
+        setNotes(initialData.notes || '');
+      } else {
+        setLeaveType('');
+        setStartDate('');
+        setEndDate('');
+        setDuration('');
+        setNotes('');
+      }
+      setShowTypeDropdown(false);
     }
-  }, [initialData, editMode]);
+  }, [visible, initialData, editMode]);
 
   const resetForm = () => {
     setLeaveType('');
@@ -81,40 +122,7 @@ export function LeaveRequestModal({
   };
 
   const handleClose = () => {
-    resetForm();
     onClose();
-  };
-
-  const formatDateForDisplay = (dateStr: string): string => {
-    if (!dateStr) return '';
-
-    if (dateStr.includes('-')) {
-      const parts = dateStr.split('-');
-      if (parts.length === 3) {
-        const [year, month, day] = parts;
-        return `${day.padStart(2, '0')} / ${month.padStart(2, '0')} / ${year}`;
-      }
-    }
-
-    return dateStr;
-  };
-
-  const formatDateForDB = (dateStr: string): string => {
-    if (!dateStr) return '';
-
-    if (dateStr.includes('/')) {
-      const parts = dateStr.split('/').map(p => p.trim());
-      if (parts.length === 3) {
-        const [day, month, year] = parts;
-        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-      }
-    }
-
-    if (dateStr.includes('-')) {
-      return dateStr;
-    }
-
-    return dateStr;
   };
 
   const handleSubmit = () => {
@@ -131,8 +139,6 @@ export function LeaveRequestModal({
       duration: parseInt(duration),
       notes: notes || undefined,
     }, requestId);
-
-    resetForm();
   };
 
   return (
