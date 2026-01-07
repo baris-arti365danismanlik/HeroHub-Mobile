@@ -14,11 +14,14 @@ import { X, ChevronDown, Calendar, User as UserIcon } from 'lucide-react-native'
 interface LeaveRequestModalProps {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (data: LeaveRequestData) => void;
+  onSubmit: (data: LeaveRequestData, requestId?: string) => void;
   userName?: string;
   userRole?: string;
   userPhoto?: string;
   leaveBalance?: string;
+  editMode?: boolean;
+  requestId?: string;
+  initialData?: LeaveRequestData;
 }
 
 export interface LeaveRequestData {
@@ -46,7 +49,10 @@ export function LeaveRequestModal({
   userName = 'Kullanıcı',
   userRole = 'Çalışan',
   userPhoto,
-  leaveBalance = '125,5 Gün'
+  leaveBalance = '125,5 Gün',
+  editMode = false,
+  requestId,
+  initialData,
 }: LeaveRequestModalProps) {
   const [leaveType, setLeaveType] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -54,6 +60,16 @@ export function LeaveRequestModal({
   const [duration, setDuration] = useState('');
   const [notes, setNotes] = useState('');
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+
+  React.useEffect(() => {
+    if (initialData && editMode) {
+      setLeaveType(initialData.leaveType);
+      setStartDate(formatDateForDisplay(initialData.startDate));
+      setEndDate(formatDateForDisplay(initialData.endDate));
+      setDuration(initialData.duration.toString());
+      setNotes(initialData.notes || '');
+    }
+  }, [initialData, editMode]);
 
   const resetForm = () => {
     setLeaveType('');
@@ -69,15 +85,33 @@ export function LeaveRequestModal({
     onClose();
   };
 
+  const formatDateForDisplay = (dateStr: string): string => {
+    if (!dateStr) return '';
+
+    if (dateStr.includes('-')) {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const [year, month, day] = parts;
+        return `${day.padStart(2, '0')} / ${month.padStart(2, '0')} / ${year}`;
+      }
+    }
+
+    return dateStr;
+  };
+
   const formatDateForDB = (dateStr: string): string => {
     if (!dateStr) return '';
 
-    if (dateStr.includes('.')) {
-      const parts = dateStr.split('.');
+    if (dateStr.includes('/')) {
+      const parts = dateStr.split('/').map(p => p.trim());
       if (parts.length === 3) {
         const [day, month, year] = parts;
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
       }
+    }
+
+    if (dateStr.includes('-')) {
+      return dateStr;
     }
 
     return dateStr;
@@ -96,7 +130,7 @@ export function LeaveRequestModal({
       endDate: formatDateForDB(endDate),
       duration: parseInt(duration),
       notes: notes || undefined,
-    });
+    }, requestId);
 
     resetForm();
   };
@@ -106,7 +140,9 @@ export function LeaveRequestModal({
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>İzin Talebi Gir</Text>
+            <Text style={styles.headerTitle}>
+              {editMode ? 'İzin Talebini Düzenle' : 'İzin Talebi Gir'}
+            </Text>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
               <X size={24} color="#666" />
             </TouchableOpacity>
@@ -236,7 +272,9 @@ export function LeaveRequestModal({
               onPress={handleSubmit}
               disabled={!leaveType || !startDate || !endDate || !duration}
             >
-              <Text style={styles.submitButtonText}>Devam Et</Text>
+              <Text style={styles.submitButtonText}>
+                {editMode ? 'Güncelle' : 'Devam Et'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
