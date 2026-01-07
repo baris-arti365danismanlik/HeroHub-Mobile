@@ -2135,6 +2135,10 @@ export default function ProfileScreen() {
         visible={leaveModalVisible}
         onClose={() => setLeaveModalVisible(false)}
         onSubmit={handleSubmitLeaveRequest}
+        userName={user ? `${user.firstName} ${user.lastName}` : undefined}
+        userRole={userProfile?.role?.name}
+        userPhoto={user?.profilePictureUrl}
+        leaveBalance="125,5 Gün"
       />
 
       <SuccessModal
