@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,12 @@ import {
   Image,
   SafeAreaView,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import {
   X,
   Home,
@@ -37,6 +43,40 @@ interface MenuItem {
 export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const translateX = useSharedValue(-280);
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (visible) {
+      translateX.value = withTiming(0, {
+        duration: 300,
+        easing: Easing.out(Easing.cubic),
+      });
+      opacity.value = withTiming(1, {
+        duration: 300,
+      });
+    } else {
+      translateX.value = withTiming(-280, {
+        duration: 250,
+        easing: Easing.in(Easing.cubic),
+      });
+      opacity.value = withTiming(0, {
+        duration: 250,
+      });
+    }
+  }, [visible]);
+
+  const drawerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: translateX.value }],
+    };
+  });
+
+  const overlayAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+    };
+  });
 
   const menuItems: MenuItem[] = [
     {
@@ -94,18 +134,18 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="none"
       transparent={true}
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
+      <Animated.View style={[styles.overlay, overlayAnimatedStyle]}>
         <TouchableOpacity
           style={styles.overlayTouchable}
           activeOpacity={1}
           onPress={onClose}
         />
-        <SafeAreaView style={styles.drawerContainer}>
-          <View style={styles.drawer}>
+        <Animated.View style={[styles.drawerContainer, drawerAnimatedStyle]}>
+          <SafeAreaView style={styles.drawer}>
             <View style={styles.header}>
               <View style={styles.logoContainer}>
                 <Text style={styles.logoText}>hero</Text>
@@ -149,9 +189,9 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                 );
               })}
             </View>
-          </View>
-        </SafeAreaView>
-      </View>
+          </SafeAreaView>
+        </Animated.View>
+      </Animated.View>
     </Modal>
   );
 }
@@ -159,19 +199,26 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    flexDirection: 'row-reverse',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-start',
   },
   overlayTouchable: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   drawerContainer: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
     width: 280,
     backgroundColor: '#fff',
   },
   drawer: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
