@@ -1,11 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import { apiConfig, tokenStorage } from './api.config';
 import type { ApiResponse } from '@/types/backend';
-
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 class ApiClient {
   private baseURL: string;
