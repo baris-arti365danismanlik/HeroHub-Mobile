@@ -159,7 +159,7 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   overlayTouchable: {
