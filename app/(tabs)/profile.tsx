@@ -123,6 +123,9 @@ export default function ProfileScreen() {
   });
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [leaveLoading, setLeaveLoading] = useState(false);
+  const [dayOffBalance, setDayOffBalance] = useState<number>(0);
+  const [incomingDayOffs, setIncomingDayOffs] = useState<any[]>([]);
+  const [pastDayOffs, setPastDayOffs] = useState<any[]>([]);
   const [showLeaveTypeDropdown, setShowLeaveTypeDropdown] = useState(false);
   const [showDurationDropdown, setShowDurationDropdown] = useState(false);
   const [inboxVisible, setInboxVisible] = useState(false);
@@ -255,6 +258,36 @@ export default function ProfileScreen() {
 
     fetchProfileData();
   }, [user?.backend_user_id]);
+
+  useEffect(() => {
+    const fetchLeaveData = async () => {
+      if (!user?.backend_user_id) {
+        return;
+      }
+
+      try {
+        setLeaveLoading(true);
+
+        const [balance, incoming, past] = await Promise.all([
+          leaveService.getDayOffBalance(user.backend_user_id),
+          leaveService.getIncomingDayOffs(user.backend_user_id),
+          leaveService.getPastDayOffs(user.backend_user_id),
+        ]);
+
+        setDayOffBalance(balance.reamainingDays);
+        setIncomingDayOffs(incoming);
+        setPastDayOffs(past);
+      } catch (error) {
+        console.error('Error fetching leave data:', error);
+      } finally {
+        setLeaveLoading(false);
+      }
+    };
+
+    if (selectedSection === 'İzin Bilgileri') {
+      fetchLeaveData();
+    }
+  }, [user?.backend_user_id, selectedSection]);
 
   const hasModulePermission = (moduleId: number, permission: 'read' | 'write' | 'delete'): boolean => {
     const module = modulePermissions.find(m => m.moduleId === moduleId);
@@ -658,7 +691,7 @@ export default function ProfileScreen() {
       >
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>YILLIK İZİN</Text>
-          <Text style={styles.balanceValue}>-4 Gün</Text>
+          <Text style={styles.balanceValue}>{dayOffBalance} Gün</Text>
         </View>
 
         <TouchableOpacity
@@ -678,12 +711,26 @@ export default function ProfileScreen() {
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="small" color="#7C3AED" />
           </View>
-        ) : leaveRequests.length > 0 ? (
-          leaveRequests.map((request) => {
-            const getLeaveColor = (type: string) => {
-              if (type.includes('Yıllık')) return '#7C3AED';
-              if (type.includes('Doğum Günü') || type.includes('Karne')) return '#F59E0B';
+        ) : incomingDayOffs.length > 0 ? (
+          incomingDayOffs.map((request) => {
+            const getLeaveColor = (type: number) => {
+              if (type === 1) return '#7C3AED';
+              if (type === 6) return '#F59E0B';
               return '#10B981';
+            };
+
+            const getLeaveTypeName = (type: number) => {
+              const types: Record<number, string> = {
+                1: 'Yıllık İzin',
+                2: 'Hastalık İzni',
+                3: 'Doğum İzni',
+                4: 'Babalık İzni',
+                5: 'Evlilik İzni',
+                6: 'Ölüm İzni',
+                7: 'Doğum Günü İzni',
+                8: 'Ücretsiz İzin',
+              };
+              return types[type] || 'Diğer';
             };
 
             const formatLeaveDate = (dateStr: string) => {
@@ -697,34 +744,37 @@ export default function ProfileScreen() {
             };
 
             return (
-              <View key={request.id} style={styles.dayOffItem}>
+              <View key={request.userDayOffId} style={styles.dayOffItem}>
                 <View
                   style={[
                     styles.dayOffLeftBorder,
-                    { backgroundColor: getLeaveColor(request.leave_type) },
+                    { backgroundColor: getLeaveColor(request.dayOffType) },
                   ]}
                 />
                 <View style={styles.dayOffContent}>
                   <View style={styles.dayOffHeader}>
                     <View style={styles.dayOffTitleRow}>
                       <Umbrella size={16} color="#666" />
-                      <Text style={styles.dayOffType}>{request.leave_type}</Text>
+                      <Text style={styles.dayOffType}>{getLeaveTypeName(request.dayOffType)}</Text>
                     </View>
-                    <TouchableOpacity onPress={() => console.log('Edit', request.id)}>
+                    <TouchableOpacity onPress={() => console.log('Edit', request.userDayOffId)}>
                       <Pencil size={16} color="#666" />
                     </TouchableOpacity>
                   </View>
                   <View style={styles.dayOffDays}>
-                    <Text style={styles.dayOffDaysText}>{request.duration} Gün</Text>
+                    <Text style={styles.dayOffDaysText}>{request.countOfDays} Gün</Text>
                   </View>
                   <View style={styles.dayOffDates}>
                     <Text style={styles.dayOffDateText}>
-                      {formatLeaveDate(request.start_date)}
+                      {formatLeaveDate(request.startDate)}
                     </Text>
                     <Text style={styles.dayOffDateText}>
-                      {formatLeaveDate(request.end_date)}
+                      {formatLeaveDate(request.endDate)}
                     </Text>
                   </View>
+                  {request.reason && (
+                    <Text style={styles.dayOffReason}>{request.reason}</Text>
+                  )}
                 </View>
               </View>
             );
@@ -741,89 +791,84 @@ export default function ProfileScreen() {
         icon={<Umbrella size={18} color="#7C3AED" />}
         defaultExpanded={false}
       >
-        <View style={styles.filtersRow}>
-          <View style={styles.filterColumn}>
-            <Text style={styles.filterLabel}>İzin Türü</Text>
-            <TouchableOpacity style={styles.filterDropdown}>
-              <Text style={styles.filterDropdownText}>{selectedType}</Text>
-              <ChevronDown size={16} color="#666" />
-            </TouchableOpacity>
+        {leaveLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color="#7C3AED" />
           </View>
+        ) : pastDayOffs.length > 0 ? (
+          pastDayOffs.map((request) => {
+            const getLeaveColor = (status: number) => {
+              if (status === 1) return '#10B981';
+              if (status === 2) return '#EF4444';
+              return '#F59E0B';
+            };
 
-          <View style={styles.filterColumn}>
-            <Text style={styles.filterLabel}>Yıl</Text>
-            <TouchableOpacity style={styles.filterDropdown}>
-              <Text style={styles.filterDropdownText}>{selectedYear}</Text>
-              <ChevronDown size={16} color="#666" />
-            </TouchableOpacity>
-          </View>
-        </View>
+            const getLeaveTypeName = (type: number) => {
+              const types: Record<number, string> = {
+                1: 'Yıllık İzin',
+                2: 'Hastalık İzni',
+                3: 'Doğum İzni',
+                4: 'Babalık İzni',
+                5: 'Evlilik İzni',
+                6: 'Ölüm İzni',
+                7: 'Doğum Günü İzni',
+                8: 'Ücretsiz İzin',
+              };
+              return types[type] || 'Diğer';
+            };
 
-        <View style={styles.dayOffItem}>
-          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#EF4444' }]} />
-          <View style={styles.dayOffContent}>
-            <View style={styles.dayOffHeader}>
-              <View style={styles.dayOffTitleRow}>
-                <Umbrella size={16} color="#666" />
-                <Text style={styles.dayOffType}>Yıllık İzin</Text>
+            const formatLeaveDate = (dateStr: string) => {
+              const date = new Date(dateStr);
+              const day = date.getDate().toString().padStart(2, '0');
+              const month = (date.getMonth() + 1).toString().padStart(2, '0');
+              const year = date.getFullYear();
+              const days = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+              const dayName = days[date.getDay()];
+              return `${day}.${month}.${year} ${dayName}`;
+            };
+
+            const statusColor = getLeaveColor(request.status);
+
+            return (
+              <View key={request.userDayOffId} style={styles.dayOffItem}>
+                <View
+                  style={[
+                    styles.dayOffLeftBorder,
+                    { backgroundColor: statusColor },
+                  ]}
+                />
+                <View style={styles.dayOffContent}>
+                  <View style={styles.dayOffHeader}>
+                    <View style={styles.dayOffTitleRow}>
+                      <Umbrella size={16} color="#666" />
+                      <Text style={styles.dayOffType}>{getLeaveTypeName(request.dayOffType)}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.dayOffDays}>
+                    <Text style={[styles.dayOffDaysText, { color: statusColor }]}>
+                      {request.status === 1 ? '+' : ''}{request.countOfDays} Gün
+                    </Text>
+                  </View>
+                  <View style={styles.dayOffDates}>
+                    <Text style={styles.dayOffDateText}>
+                      {formatLeaveDate(request.startDate)}
+                    </Text>
+                    <Text style={styles.dayOffDateText}>
+                      {formatLeaveDate(request.endDate)}
+                    </Text>
+                  </View>
+                  {request.reason && (
+                    <Text style={styles.dayOffReason}>{request.reason}</Text>
+                  )}
+                </View>
               </View>
-              <TouchableOpacity onPress={() => console.log('Edit')}>
-                <Pencil size={16} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.dayOffDays}>
-              <Text style={[styles.dayOffDaysText, { color: '#EF4444' }]}>-5 Gün</Text>
-            </View>
-            <View style={styles.dayOffDates}>
-              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
-              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
-            </View>
+            );
+          })
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Geçmiş izin bulunmuyor</Text>
           </View>
-        </View>
-
-        <View style={styles.dayOffItem}>
-          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#EF4444' }]} />
-          <View style={styles.dayOffContent}>
-            <View style={styles.dayOffHeader}>
-              <View style={styles.dayOffTitleRow}>
-                <Umbrella size={16} color="#666" />
-                <Text style={styles.dayOffType}>Yıllık İzin</Text>
-              </View>
-              <TouchableOpacity onPress={() => console.log('Edit')}>
-                <Pencil size={16} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.dayOffDays}>
-              <Text style={[styles.dayOffDaysText, { color: '#EF4444' }]}>-3 Gün</Text>
-            </View>
-            <View style={styles.dayOffDates}>
-              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
-              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.dayOffItem}>
-          <View style={[styles.dayOffLeftBorder, { backgroundColor: '#10B981' }]} />
-          <View style={styles.dayOffContent}>
-            <View style={styles.dayOffHeader}>
-              <View style={styles.dayOffTitleRow}>
-                <Umbrella size={16} color="#666" />
-                <Text style={styles.dayOffType}>Yıllık İzin</Text>
-              </View>
-              <TouchableOpacity onPress={() => console.log('Edit')}>
-                <Pencil size={16} color="#666" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.dayOffDays}>
-              <Text style={[styles.dayOffDaysText, { color: '#10B981' }]}>+14 Gün</Text>
-            </View>
-            <View style={styles.dayOffDates}>
-              <Text style={styles.dayOffDateText}>05.09.2021 Pzt</Text>
-              <Text style={styles.dayOffDateText}>26.10.2024 Pzt</Text>
-            </View>
-          </View>
-        </View>
+        )}
       </Accordion>
     </>
   );
@@ -3412,6 +3457,12 @@ const styles = StyleSheet.create({
   dayOffDateText: {
     fontSize: 13,
     color: '#666',
+  },
+  dayOffReason: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
   filtersRow: {
     flexDirection: 'row',

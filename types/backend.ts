@@ -122,6 +122,12 @@ export interface UserDayOffBalance {
   updatedAt?: string;
 }
 
+export interface DayOffBalanceResponse {
+  userId: number;
+  dayOffType: number;
+  reamainingDays: number;
+}
+
 export interface UserDayOff {
   id: string;
   userId: string;
@@ -136,6 +142,21 @@ export interface UserDayOff {
   rejectionReason?: string;
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface DayOffRecord {
+  userDayOffId: number;
+  userId: number;
+  dayOffType: number;
+  startDate: string;
+  endDate: string;
+  countOfDays: number;
+  requesterUserId: number;
+  approverUserId: number | null;
+  approverMemo: string | null;
+  requestedDate: string;
+  status: number;
+  reason: string;
 }
 
 export interface UserEmployment {
