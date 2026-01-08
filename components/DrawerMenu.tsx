@@ -20,7 +20,7 @@ import {
   Settings,
   Plus,
   UserIcon,
-  Calendar,
+  ContactRound,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -97,10 +97,10 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
       roles: ['Admin', 'Manager', 'HR', '365 Admin'],
     },
     {
-      id: 'calendar',
-      label: 'Calendar',
-      icon: <Calendar size={18} color="#333" />,
-      route: '/(tabs)',
+      id: 'employees-alt',
+      label: 'Çalışanlar',
+      icon: <ContactRound size={18} color="#333" />,
+      route: '/(tabs)/employees',
     },
     {
       id: 'admin',
