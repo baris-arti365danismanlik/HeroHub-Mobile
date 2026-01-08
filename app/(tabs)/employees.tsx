@@ -129,37 +129,57 @@ export default function EmployeesScreen() {
 
   const filteredGroupedEmployees = getProcessedEmployees();
 
-  const renderTreeEmployee = (employee: TreeEmployee, depth: number = 0) => {
+  const renderTreeEmployee = (employee: TreeEmployee, depth: number = 0, isLast: boolean = false) => {
+    const hasChildren = employee.children && employee.children.length > 0;
+
     return (
-      <View key={employee.id} style={{ marginLeft: depth * 20 }}>
+      <View key={employee.id} style={styles.treeNodeContainer}>
         <View style={styles.treeEmployeeCard}>
-          <View style={styles.avatar}>
-            {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
-              <Image source={{ uri: employee.profilePhoto }} style={styles.avatarImage} />
-            ) : (
-              <Text style={styles.avatarText}>
-                {employee.name
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .substring(0, 2)}
-              </Text>
-            )}
-          </View>
-          <View style={styles.treeEmployeeInfo}>
-            <Text style={styles.employeeName}>{employee.name}</Text>
-            {employee.attributes.title && (
-              <View style={styles.infoRow}>
-                <Briefcase size={14} color="#666" />
-                <Text style={styles.infoText}>{employee.attributes.title}</Text>
-              </View>
-            )}
+          <View style={styles.treeCardContent}>
+            <View style={styles.treeAvatar}>
+              {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
+                <Image source={{ uri: employee.profilePhoto }} style={styles.treeAvatarImage} />
+              ) : (
+                <Text style={styles.treeAvatarText}>
+                  {employee.name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .substring(0, 2)}
+                </Text>
+              )}
+            </View>
+            <View style={styles.treeEmployeeInfo}>
+              <Text style={styles.treeEmployeeName}>{employee.name}</Text>
+              {employee.attributes.title && (
+                <Text style={styles.treeEmployeeTitle}>{employee.attributes.title}</Text>
+              )}
+            </View>
           </View>
         </View>
-        {employee.children && employee.children.length > 0 && (
-          <View style={styles.childrenContainer}>
-            {employee.children.map((child) => renderTreeEmployee(child, depth + 1))}
-          </View>
+
+        {hasChildren && (
+          <>
+            <View style={styles.verticalConnector} />
+            <View style={styles.childrenRow}>
+              <View style={styles.childrenContainer}>
+                {employee.children!.map((child, index) => (
+                  <View key={child.id} style={styles.childWrapper}>
+                    <View style={styles.childVerticalLine} />
+                    {renderTreeEmployee(child, depth + 1, index === employee.children!.length - 1)}
+                  </View>
+                ))}
+              </View>
+              {employee.children!.length > 1 && (
+                <View style={[
+                  styles.horizontalConnector,
+                  {
+                    width: (employee.children!.length - 1) * 260 + 40,
+                  }
+                ]} />
+              )}
+            </View>
+          </>
         )}
       </View>
     );
@@ -236,7 +256,7 @@ export default function EmployeesScreen() {
           />
         </View>
 
-        {viewMode === 'list' && (
+        {viewMode === 'list' ? (
           <View style={styles.filterRow}>
             <View style={styles.dropdownWrapper}>
               <TouchableOpacity
@@ -353,12 +373,23 @@ export default function EmployeesScreen() {
               )}
             </View>
           </View>
+        ) : (
+          <View style={styles.treeHeaderRow}>
+            <TouchableOpacity
+              style={styles.addTreeButton}
+              activeOpacity={0.7}
+              onPress={() => setAddEmployeeModalVisible(true)}
+            >
+              <UserPlus size={18} color="#fff" />
+              <Text style={styles.addTreeButtonText}>Yeni Çalışan Ekle</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {viewMode === 'list' ? (
-          filteredGroupedEmployees.map((group) => (
+      {viewMode === 'list' ? (
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {filteredGroupedEmployees.map((group) => (
             <View key={group.key} style={styles.groupContainer}>
               <View style={styles.letterHeader}>
                 <Text style={styles.letterText}>{group.key}</Text>
@@ -398,13 +429,18 @@ export default function EmployeesScreen() {
                 </View>
               ))}
             </View>
-          ))
-        ) : (
-          <View style={styles.treeContainer}>
-            {treeEmployees.map((employee) => renderTreeEmployee(employee, 0))}
-          </View>
-        )}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      ) : (
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.treeContainer}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+        >
+          {treeEmployees.map((employee) => renderTreeEmployee(employee, 0))}
+        </ScrollView>
+      )}
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
       <AddEmployeeModal
@@ -629,22 +665,119 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   treeContainer: {
-    padding: 16,
-    backgroundColor: '#fff',
+    padding: 20,
+    backgroundColor: '#F9FAFB',
+    alignItems: 'center',
+    minWidth: '100%',
+  },
+  treeNodeContainer: {
+    alignItems: 'center',
   },
   treeEmployeeCard: {
     backgroundColor: '#fff',
-    padding: 12,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    minWidth: 220,
+    maxWidth: 280,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  treeCardContent: {
     flexDirection: 'row',
-    borderRadius: 8,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
+    alignItems: 'center',
+    gap: 12,
+  },
+  treeAvatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#F3E8FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  treeAvatarImage: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+  },
+  treeAvatarText: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#7C3AED',
   },
   treeEmployeeInfo: {
     flex: 1,
   },
+  treeEmployeeName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 3,
+  },
+  treeEmployeeTitle: {
+    fontSize: 13,
+    color: '#666',
+  },
+  verticalConnector: {
+    width: 2,
+    height: 40,
+    backgroundColor: '#9333EA',
+    marginVertical: 0,
+  },
+  childrenRow: {
+    position: 'relative',
+    alignItems: 'center',
+  },
+  horizontalConnector: {
+    position: 'absolute',
+    height: 2,
+    backgroundColor: '#9333EA',
+    top: 0,
+    alignSelf: 'center',
+  },
   childrenContainer: {
-    marginTop: 4,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 40,
+    paddingHorizontal: 20,
+  },
+  childWrapper: {
+    alignItems: 'center',
+  },
+  childVerticalLine: {
+    width: 2,
+    height: 40,
+    backgroundColor: '#9333EA',
+    marginBottom: 0,
+  },
+  treeHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addTreeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#7C3AED',
+    borderRadius: 8,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  addTreeButtonText: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '600',
   },
 });
