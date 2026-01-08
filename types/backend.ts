@@ -771,3 +771,37 @@ export interface City {
   updatedBy: string | null;
   isActive: boolean;
 }
+
+export interface EmployeeWorker {
+  id: number;
+  name: string;
+  position: string | null;
+  startDate: string;
+  endDate: string | null;
+  workPlaceName: string;
+  organizationName: string;
+  status: string;
+  profilePhoto: string;
+}
+
+export interface GroupedEmployees {
+  key: string;
+  workers: EmployeeWorker[];
+}
+
+export interface TreeEmployeeAttributes {
+  title: string | null;
+  team: string;
+}
+
+export interface TreeEmployee {
+  name: string;
+  position: string | null;
+  startDate: string | null;
+  organizationName: string | null;
+  status: string | null;
+  id: number;
+  attributes: TreeEmployeeAttributes;
+  profilePhoto: string;
+  children: TreeEmployee[];
+}

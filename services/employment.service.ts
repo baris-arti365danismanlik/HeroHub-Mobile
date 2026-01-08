@@ -41,9 +41,9 @@ export const employmentService = {
     }
   },
 
-  async getUserTitles(organizationId: number): Promise<UserTitle[]> {
+  async getUserTitles(): Promise<UserTitle[]> {
     const response = await apiClient.get<UserTitle[]>(
-      `/userEmployment/get-userTitles?organizationId=${organizationId}`
+      '/userEmployment/get-userTitles'
     );
     return response.data || [];
   },

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,94 +8,129 @@ import {
   TextInput,
   SafeAreaView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import {
   Menu,
   Search,
   Users as UsersIcon,
-  MoreVertical,
   UserPlus,
   ChevronDown,
   Briefcase,
   Calendar,
-  Clock,
-  Building2
+  Building2,
+  Network,
 } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
-import { EmployeeDropdown } from '@/components/EmployeeDropdown';
 import { useAuth } from '@/contexts/AuthContext';
-
-interface Employee {
-  id: number;
-  name: string;
-  position: string;
-  department: string;
-  startDate: string;
-  workType: string;
-  company: string;
-  avatar?: string;
-}
+import { userService } from '@/services/user.service';
+import { employmentService } from '@/services/employment.service';
+import type {
+  GroupedEmployees,
+  TreeEmployee,
+  UserTitle,
+  Department,
+} from '@/types/backend';
+import { formatDate } from '@/utils/formatters';
 
 export default function EmployeesScreen() {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [sortType, setSortType] = useState('Alfabetik');
-  const [filterType, setFilterType] = useState('Tüm Çalışanlar');
-  const [selectedEmployee, setSelectedEmployee] = useState<{
-    id: number;
-    name: string;
-    position: { x: number; y: number };
-  } | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'tree'>('list');
+  const [loading, setLoading] = useState(true);
+  const [groupedEmployees, setGroupedEmployees] = useState<GroupedEmployees[]>([]);
+  const [treeEmployees, setTreeEmployees] = useState<TreeEmployee[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [titles, setTitles] = useState<UserTitle[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState<number | null>(null);
+  const [selectedTitle, setSelectedTitle] = useState<number | null>(null);
   const { user } = useAuth();
 
-  const employees: Employee[] = [
-    {
-      id: 1,
-      name: 'Abba Jaxson Lipshutz',
-      position: 'Management Trainee',
-      department: 'Yönetim',
-      startDate: '31 Aralık 2023',
-      workType: 'Tam Zamanlı',
-      company: 'Artı365 Danışmanlık',
-    },
-    {
-      id: 2,
-      name: 'Ayşe Demir',
-      position: 'İK Uzmanı',
-      department: 'İnsan Kaynakları',
-      startDate: '15 Ocak 2023',
-      workType: 'Tam Zamanlı',
-      company: 'Artı365 Danışmanlık',
-    },
-    {
-      id: 3,
-      name: 'Dabba Jaxson Lipshutz',
-      position: 'Management Trainee',
-      department: 'Yönetim',
-      startDate: '31 Aralık 2023',
-      workType: 'Tam Zamanlı',
-      company: 'Artı365 Danışmanlık',
-    },
-  ];
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const filteredEmployees = employees.filter(
-    (emp) =>
-      emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      emp.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      emp.department.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const organizationId = user?.organization_id || 2;
 
-  const groupedEmployees = filteredEmployees.reduce((groups, employee) => {
-    const firstLetter = employee.name.charAt(0).toUpperCase();
-    if (!groups[firstLetter]) {
-      groups[firstLetter] = [];
+      const [groupedData, treeData, departmentsData, titlesData] = await Promise.all([
+        userService.getGroupedByUsers(organizationId),
+        userService.getTreeByUsers(organizationId),
+        employmentService.getOrganizationDepartments(),
+        employmentService.getUserTitles(),
+      ]);
+
+      setGroupedEmployees(groupedData);
+      setTreeEmployees(treeData);
+      setDepartments(departmentsData);
+      setTitles(titlesData);
+    } catch (error) {
+      console.error('Error loading employees:', error);
+    } finally {
+      setLoading(false);
     }
-    groups[firstLetter].push(employee);
-    return groups;
-  }, {} as Record<string, Employee[]>);
+  };
 
-  const sortedGroups = Object.keys(groupedEmployees).sort();
+  const filteredGroupedEmployees = groupedEmployees
+    .map((group) => ({
+      ...group,
+      workers: group.workers.filter((worker) => {
+        const matchesSearch =
+          worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (worker.position && worker.position.toLowerCase().includes(searchQuery.toLowerCase()));
+
+        return matchesSearch;
+      }),
+    }))
+    .filter((group) => group.workers.length > 0);
+
+  const renderTreeEmployee = (employee: TreeEmployee, depth: number = 0) => {
+    return (
+      <View key={employee.id} style={{ marginLeft: depth * 20 }}>
+        <View style={styles.treeEmployeeCard}>
+          <View style={styles.avatar}>
+            {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
+              <Image source={{ uri: employee.profilePhoto }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>
+                {employee.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .substring(0, 2)}
+              </Text>
+            )}
+          </View>
+          <View style={styles.treeEmployeeInfo}>
+            <Text style={styles.employeeName}>{employee.name}</Text>
+            {employee.attributes.title && (
+              <View style={styles.infoRow}>
+                <Briefcase size={14} color="#666" />
+                <Text style={styles.infoText}>{employee.attributes.title}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+        {employee.children && employee.children.length > 0 && (
+          <View style={styles.childrenContainer}>
+            {employee.children.map((child) => renderTreeEmployee(child, depth + 1))}
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#7C3AED" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -119,8 +154,16 @@ export default function EmployeesScreen() {
             >
               <Menu size={24} color="#666" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-              <UsersIcon size={24} color="#666" />
+            <TouchableOpacity
+              onPress={() => setViewMode(viewMode === 'list' ? 'tree' : 'list')}
+              style={styles.iconButton}
+              activeOpacity={0.7}
+            >
+              {viewMode === 'list' ? (
+                <Network size={24} color="#666" />
+              ) : (
+                <UsersIcon size={24} color="#666" />
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -136,78 +179,71 @@ export default function EmployeesScreen() {
           />
         </View>
 
-        <View style={styles.filterRow}>
-          <TouchableOpacity style={styles.filterButton} activeOpacity={0.7}>
-            <Text style={styles.filterButtonText}>{sortType}</Text>
-            <ChevronDown size={16} color="#666" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.filterButton} activeOpacity={0.7}>
-            <Text style={styles.filterButtonText}>{filterType}</Text>
-            <ChevronDown size={16} color="#666" />
-          </TouchableOpacity>
-        </View>
+        {viewMode === 'list' && (
+          <View style={styles.filterRow}>
+            <TouchableOpacity style={styles.filterButton} activeOpacity={0.7}>
+              <Text style={styles.filterButtonText}>Alfabetik</Text>
+              <ChevronDown size={16} color="#666" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.filterButton} activeOpacity={0.7}>
+              <Text style={styles.filterButtonText}>Tüm Çalışanlar</Text>
+              <ChevronDown size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {sortedGroups.map((letter) => (
-          <View key={letter} style={styles.groupContainer}>
-            <View style={styles.letterHeader}>
-              <Text style={styles.letterText}>{letter}</Text>
-            </View>
-            {groupedEmployees[letter].map((employee) => (
-              <View key={employee.id} style={styles.employeeCard}>
-                <View style={styles.avatar}>
-                  {employee.avatar ? (
-                    <Image source={{ uri: employee.avatar }} style={styles.avatarImage} />
-                  ) : (
-                    <Text style={styles.avatarText}>
-                      {employee.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .substring(0, 2)}
-                    </Text>
-                  )}
-                </View>
-                <View style={styles.employeeInfo}>
-                  <Text style={styles.employeeName}>{employee.name}</Text>
-                  <View style={styles.infoRow}>
-                    <Briefcase size={14} color="#666" />
-                    <Text style={styles.infoText}>{employee.position}</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Calendar size={14} color="#666" />
-                    <Text style={styles.infoText}>{employee.startDate}</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Clock size={14} color="#666" />
-                    <Text style={styles.infoText}>{employee.workType}</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Building2 size={14} color="#666" />
-                    <Text style={styles.infoText}>{employee.company}</Text>
-                  </View>
-                </View>
+        {viewMode === 'list' ? (
+          filteredGroupedEmployees.map((group) => (
+            <View key={group.key} style={styles.groupContainer}>
+              <View style={styles.letterHeader}>
+                <Text style={styles.letterText}>{group.key}</Text>
               </View>
-            ))}
+              {group.workers.map((worker) => (
+                <View key={worker.id} style={styles.employeeCard}>
+                  <View style={styles.avatar}>
+                    {worker.profilePhoto && worker.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
+                      <Image source={{ uri: worker.profilePhoto }} style={styles.avatarImage} />
+                    ) : (
+                      <Text style={styles.avatarText}>
+                        {worker.name
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')
+                          .substring(0, 2)}
+                      </Text>
+                    )}
+                  </View>
+                  <View style={styles.employeeInfo}>
+                    <Text style={styles.employeeName}>{worker.name}</Text>
+                    {worker.position && (
+                      <View style={styles.infoRow}>
+                        <Briefcase size={14} color="#666" />
+                        <Text style={styles.infoText}>{worker.position}</Text>
+                      </View>
+                    )}
+                    <View style={styles.infoRow}>
+                      <Calendar size={14} color="#666" />
+                      <Text style={styles.infoText}>{formatDate(worker.startDate)}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                      <Building2 size={14} color="#666" />
+                      <Text style={styles.infoText}>{worker.workPlaceName}</Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ))
+        ) : (
+          <View style={styles.treeContainer}>
+            {treeEmployees.map((employee) => renderTreeEmployee(employee, 0))}
           </View>
-        ))}
+        )}
       </ScrollView>
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
-
-      {selectedEmployee && (
-        <EmployeeDropdown
-          visible={dropdownVisible}
-          onClose={() => {
-            setDropdownVisible(false);
-            setSelectedEmployee(null);
-          }}
-          employeeId={selectedEmployee.id}
-          employeeName={selectedEmployee.name}
-          position={selectedEmployee.position}
-        />
-      )}
     </SafeAreaView>
   );
 }
@@ -216,6 +252,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   topSection: {
     backgroundColor: '#fff',
@@ -363,5 +404,24 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 13,
     color: '#666',
+  },
+  treeContainer: {
+    padding: 16,
+    backgroundColor: '#fff',
+  },
+  treeEmployeeCard: {
+    backgroundColor: '#fff',
+    padding: 12,
+    flexDirection: 'row',
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+  },
+  treeEmployeeInfo: {
+    flex: 1,
+  },
+  childrenContainer: {
+    marginTop: 4,
   },
 });

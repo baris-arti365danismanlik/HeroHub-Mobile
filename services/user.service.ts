@@ -11,7 +11,9 @@ import type {
   UserProfileDetails,
   Country,
   BadgeCardInfo,
-  GroupedDepartmentUsers
+  GroupedDepartmentUsers,
+  GroupedEmployees,
+  TreeEmployee
 } from '@/types/backend';
 
 class UserService {
@@ -121,6 +123,31 @@ class UserService {
     } catch (error) {
       console.error('Error fetching grouped departments:', error);
       return null;
+    }
+  }
+
+  async getGroupedByUsers(organizationId: number): Promise<GroupedEmployees[]> {
+    const response = await newApiClient.get<GroupedEmployees[]>(
+      `/user/grouped-by-users?organizationId=${organizationId}`
+    );
+    return response.data || [];
+  }
+
+  async getTreeByUsers(organizationId: number): Promise<TreeEmployee[]> {
+    const response = await newApiClient.get<TreeEmployee[]>(
+      `/user/tree-by-users?organizationId=${organizationId}`
+    );
+    return response.data || [];
+  }
+
+  async doesOrganizationHaveHRManager(): Promise<boolean> {
+    try {
+      const response = await newApiClient.get<boolean>(
+        '/User/does-organization-have-hr-manager'
+      );
+      return response.data || false;
+    } catch (error) {
+      return false;
     }
   }
 }
