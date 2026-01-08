@@ -148,22 +148,9 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                 </View>
               </View>
 
-              <View style={styles.headerRight}>
-                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                  <X size={24} color="#666" />
-                </TouchableOpacity>
-
-                {user?.profilePictureUrl ? (
-                  <Image
-                    source={{ uri: user.profilePictureUrl }}
-                    style={styles.avatar}
-                  />
-                ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <UserIcon size={20} color="#7C3AED" />
-                  </View>
-                )}
-              </View>
+              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <X size={24} color="#666" />
+              </TouchableOpacity>
             </View>
 
             <View style={styles.menuItems}>
@@ -182,6 +169,19 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                   </TouchableOpacity>
                 );
               })}
+            </View>
+
+            <View style={styles.footer}>
+              {user?.profilePictureUrl ? (
+                <Image
+                  source={{ uri: user.profilePictureUrl }}
+                  style={styles.avatar}
+                />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <UserIcon size={20} color="#7C3AED" />
+                </View>
+              )}
             </View>
           </SafeAreaView>
         </Animated.View>
@@ -219,74 +219,76 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#E5E5E5',
   },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   logoText: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#7C3AED',
   },
   logoBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: '#7C3AED',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 4,
   },
   logoBadgeText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#fff',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
   },
   closeButton: {
     padding: 4,
   },
+  menuItems: {
+    flex: 1,
+    paddingTop: 4,
+  },
+  footer: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    alignItems: 'flex-end',
+  },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
   },
   avatarPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#F0E7FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  menuItems: {
-    paddingTop: 8,
-  },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 16,
     paddingHorizontal: 20,
-    gap: 14,
+    gap: 16,
     backgroundColor: 'transparent',
   },
   menuItemIcon: {
-    width: 28,
-    height: 28,
+    width: 24,
+    height: 24,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   menuItemText: {
-    fontSize: 15,
-    color: '#333',
+    fontSize: 16,
+    color: '#1a1a1a',
     fontWeight: '400',
   },
 });
