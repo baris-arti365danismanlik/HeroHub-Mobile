@@ -25,7 +25,6 @@ import { useRouter } from 'expo-router';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { AddEmployeeModal, EmployeeFormData } from '@/components/AddEmployeeModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePermissions } from '@/hooks/usePermissions';
 import { userService } from '@/services/user.service';
 import { employmentService } from '@/services/employment.service';
 import type {
@@ -36,12 +35,8 @@ import type {
 } from '@/types/backend';
 import { formatDate } from '@/utils/formatters';
 
-const EMPLOYEES_MODULE_ID = 2;
-
 export default function EmployeesScreen() {
   const router = useRouter();
-  const { user } = useAuth();
-  const { canRead, canWrite } = usePermissions();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [addEmployeeModalVisible, setAddEmployeeModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,9 +52,7 @@ export default function EmployeesScreen() {
   const [filterByTitle, setFilterByTitle] = useState<'all' | number>('all');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showTitleDropdown, setShowTitleDropdown] = useState(false);
-
-  const hasReadPermission = canRead(EMPLOYEES_MODULE_ID);
-  const hasWritePermission = canWrite(EMPLOYEES_MODULE_ID);
+  const { user } = useAuth();
 
   useEffect(() => {
     loadData();
@@ -208,16 +201,6 @@ export default function EmployeesScreen() {
     );
   }
 
-  if (!hasReadPermission) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.permissionText}>Bu sayfayı görüntüleme yetkiniz bulunmamaktadır.</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       {(showSortDropdown || showTitleDropdown) && (
@@ -237,18 +220,16 @@ export default function EmployeesScreen() {
         </View>
 
         <View style={styles.actionRow}>
-          {hasWritePermission && (
-            <TouchableOpacity
-              style={styles.addButton}
-              activeOpacity={0.7}
-              onPress={() => setAddEmployeeModalVisible(true)}
-            >
-              <UserPlus size={20} color="#7C3AED" />
-              <Text style={styles.addButtonText}>Yeni Çalışan Ekle</Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={styles.addButton}
+            activeOpacity={0.7}
+            onPress={() => setAddEmployeeModalVisible(true)}
+          >
+            <UserPlus size={20} color="#7C3AED" />
+            <Text style={styles.addButtonText}>Yeni Çalışan Ekle</Text>
+          </TouchableOpacity>
 
-          <View style={[styles.actionButtons, !hasWritePermission && { marginLeft: 'auto' }]}>
+          <View style={styles.actionButtons}>
             <TouchableOpacity
               onPress={() => setDrawerVisible(true)}
               style={styles.iconButton}
@@ -399,18 +380,16 @@ export default function EmployeesScreen() {
             </View>
           </View>
         ) : (
-          hasWritePermission && (
-            <View style={styles.treeHeaderRow}>
-              <TouchableOpacity
-                style={styles.addTreeButton}
-                activeOpacity={0.7}
-                onPress={() => setAddEmployeeModalVisible(true)}
-              >
-                <UserPlus size={18} color="#fff" />
-                <Text style={styles.addTreeButtonText}>Yeni Çalışan Ekle</Text>
-              </TouchableOpacity>
-            </View>
-          )
+          <View style={styles.treeHeaderRow}>
+            <TouchableOpacity
+              style={styles.addTreeButton}
+              activeOpacity={0.7}
+              onPress={() => setAddEmployeeModalVisible(true)}
+            >
+              <UserPlus size={18} color="#fff" />
+              <Text style={styles.addTreeButtonText}>Yeni Çalışan Ekle</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 
@@ -502,12 +481,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  permissionText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    paddingHorizontal: 24,
   },
   topSection: {
     backgroundColor: '#fff',

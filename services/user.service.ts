@@ -86,7 +86,7 @@ class UserService {
   }
 
   async getUserProfile(backendUserId: number): Promise<UserProfileDetails> {
-    const response = await newApiClient.get<UserProfileDetails>(`/Profile/employee/${backendUserId}`);
+    const response = await apiClient.get<UserProfileDetails>(`/Profile/get-userprofile/${backendUserId}`);
     if (!response.data) {
       throw new Error('User profile not found');
     }
@@ -94,7 +94,7 @@ class UserService {
   }
 
   async getCountries(): Promise<Country[]> {
-    const response = await newApiClient.get<Country[]>('/Profile/countries');
+    const response = await apiClient.get<Country[]>('/Profile/countries');
     return response.data || [];
   }
 
