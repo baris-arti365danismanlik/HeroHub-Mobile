@@ -390,6 +390,50 @@ export interface UserOnboardingAnswer {
   question?: OnboardingQuestion;
 }
 
+export interface WelcomingPackageDefaultValues {
+  departmentId: number;
+  departmentName: string;
+  positionId: number;
+  positionName: string;
+  managerUserId: number;
+  managerUserName: string;
+}
+
+export interface OnboardingQuestionItem {
+  id: number;
+  question: string;
+  answer: string;
+  isRequired: boolean;
+  order: number;
+}
+
+export interface UserOnboardingTaskItem {
+  id: number;
+  title: string;
+  description: string;
+  dueDate: string;
+  isCompleted: boolean;
+  completedAt?: string;
+}
+
+export interface OnboardingProcess {
+  id: number;
+  userId: number;
+  welcomePackageSent: boolean;
+  welcomePackageSentAt?: string;
+  welcomePackageViewed: boolean;
+  welcomePackageViewedAt?: string;
+  employeeInfoFilled: boolean;
+  employeeInfoFilledAt?: string;
+  introQuestionsAnswered: boolean;
+  introQuestionsAnsweredAt?: string;
+  tasksCompleted: boolean;
+  tasksCompletedAt?: string;
+  currentStepNumber: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export enum AttendanceStatus {
   Normal = 'normal',
   Late = 'late',

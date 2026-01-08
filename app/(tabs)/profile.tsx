@@ -50,6 +50,7 @@ import { InfoRow } from '@/components/InfoRow';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { WorkInfoCard } from '@/components/WorkInfoCard';
 import { FileActionDropdown } from '@/components/FileActionDropdown';
+import { OnboardingDropdown } from '@/components/OnboardingDropdown';
 import { assetService } from '@/services/asset.service';
 import { leaveService } from '@/services/leave.service';
 import { inboxService } from '@/services/inbox.service';
@@ -1829,31 +1830,17 @@ export default function ProfileScreen() {
   };
 
   const renderOnboardingSection = () => {
-    if (onboardingLoading) {
+    if (!user?.backend_user_id) {
       return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#7C3AED" />
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>Kullanıcı bilgisi bulunamadı</Text>
         </View>
       );
     }
 
     return (
-      <>
-        <View style={styles.onboardingHeader}>
-          <Package size={18} color="#7C3AED" />
-          <Text style={styles.onboardingHeaderTitle}>İŞE BAŞLAMA (ONBOARDING)</Text>
-        </View>
-
-        <TouchableOpacity
-          style={[
-            styles.welcomePackageButton,
-            onboardingData.userOnboarding?.welcome_package_sent && styles.welcomePackageButtonSent,
-          ]}
-          onPress={handleOpenWelcomePackageModal}
-          disabled={onboardingData.userOnboarding?.welcome_package_sent}
-        >
-          <Text style={styles.welcomePackageButtonText}>Hoşgeldin Paketi Gönder</Text>
-        </TouchableOpacity>
+      <View style={styles.sectionsContainer}>
+        <OnboardingDropdown userId={user.backend_user_id} />
 
         <View style={styles.onboardingStepsContainer}>
           {onboardingData.steps.map((step, index) => {
@@ -1976,7 +1963,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
         </Accordion>
-      </>
+      </View>
     );
   };
 
