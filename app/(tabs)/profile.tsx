@@ -61,6 +61,7 @@ import { employmentService } from '@/services/employment.service';
 import {
   Asset,
   AssetStatus,
+  AssetCategory,
   LeaveRequest,
   OnboardingStep,
   OnboardingTask,
@@ -104,12 +105,14 @@ export default function ProfileScreen() {
   const [modulePermissions, setModulePermissions] = useState<ModulePermission[]>([]);
   const [assetModalVisible, setAssetModalVisible] = useState(false);
   const [assetForm, setAssetForm] = useState({
-    category: 'Bilgisayar',
+    categoryId: 0,
+    categoryName: '',
     serialNo: '',
     description: '',
     deliveryDate: '',
     returnDate: '',
   });
+  const [assetCategories, setAssetCategories] = useState<AssetCategory[]>([]);
   const [selectedYearAssets, setSelectedYearAssets] = useState('2024');
   const [selectedType, setSelectedType] = useState('Tümü');
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -467,6 +470,7 @@ export default function ProfileScreen() {
       loadUnreadCount();
       loadOnboardingData();
       loadPDKSData();
+      loadAssetCategories();
     }
   }, [user?.id, selectedMonth, selectedYear]);
 
@@ -487,16 +491,32 @@ export default function ProfileScreen() {
   };
 
   const loadAssets = async () => {
-    if (!user?.id) return;
+    if (!user?.backend_user_id) return;
 
     try {
       setAssetLoading(true);
-      const data = await assetService.getUserAssets(user.id);
+      const data = await assetService.getUserAssets(Number(user.backend_user_id));
       setAssets(data);
     } catch (error) {
       console.error('Error loading assets:', error);
     } finally {
       setAssetLoading(false);
+    }
+  };
+
+  const loadAssetCategories = async () => {
+    try {
+      const categories = await assetService.getAssetCategories();
+      setAssetCategories(categories);
+      if (categories.length > 0 && !assetForm.categoryId) {
+        setAssetForm(prev => ({
+          ...prev,
+          categoryId: categories[0].id,
+          categoryName: categories[0].name,
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading asset categories:', error);
     }
   };
 
@@ -615,7 +635,7 @@ export default function ProfileScreen() {
   };
 
   const handleAddAsset = async () => {
-    if (!user?.id || !assetForm.serialNo || !assetForm.deliveryDate) {
+    if (!user?.backend_user_id || !assetForm.categoryId || !assetForm.serialNo || !assetForm.deliveryDate) {
       return;
     }
 
@@ -623,17 +643,16 @@ export default function ProfileScreen() {
       setAssetLoading(true);
 
       await assetService.createAsset({
-        user_id: user.id,
-        category: assetForm.category,
-        serial_no: assetForm.serialNo,
+        userId: Number(user.backend_user_id),
+        categoryId: assetForm.categoryId,
+        serialNo: assetForm.serialNo,
         description: assetForm.description,
-        delivery_date: assetForm.deliveryDate,
-        return_date: assetForm.returnDate || undefined,
-        status: AssetStatus.Active,
+        deliveryDate: assetForm.deliveryDate,
       });
 
       setAssetForm({
-        category: 'Bilgisayar',
+        categoryId: assetCategories.length > 0 ? assetCategories[0].id : 0,
+        categoryName: assetCategories.length > 0 ? assetCategories[0].name : '',
         serialNo: '',
         description: '',
         deliveryDate: '',
@@ -1269,7 +1288,7 @@ export default function ProfileScreen() {
                     asset.status === AssetStatus.Returned && styles.assetCardInactiveText,
                   ]}
                 >
-                  {asset.category}
+                  {asset.categoryName}
                 </Text>
                 <TouchableOpacity
                   style={styles.assetEditButton}
@@ -1305,7 +1324,7 @@ export default function ProfileScreen() {
                       asset.status === AssetStatus.Returned && styles.assetCardInactiveText,
                     ]}
                   >
-                    {asset.serial_no}
+                    {asset.serialNo}
                   </Text>
                 </View>
 
@@ -1317,15 +1336,15 @@ export default function ProfileScreen() {
                       asset.status === AssetStatus.Returned && styles.assetCardInactiveText,
                     ]}
                   >
-                    {new Date(asset.delivery_date).toLocaleDateString('tr-TR')}
+                    {new Date(asset.deliveryDate).toLocaleDateString('tr-TR')}
                   </Text>
                 </View>
 
-                {asset.return_date && (
+                {asset.returnDate && (
                   <View style={styles.assetInfoRow}>
                     <Text style={styles.assetInfoLabel}>İade Tarihi</Text>
                     <Text style={[styles.assetInfoValue, styles.assetCardInactiveText]}>
-                      {new Date(asset.return_date).toLocaleDateString('tr-TR')}
+                      {new Date(asset.returnDate).toLocaleDateString('tr-TR')}
                     </Text>
                   </View>
                 )}
@@ -2273,10 +2292,32 @@ export default function ProfileScreen() {
 
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Kategori</Text>
-                <TouchableOpacity style={styles.formDropdown}>
-                  <Text style={styles.formDropdownText}>{assetForm.category}</Text>
-                  <ChevronDown size={20} color="#666" />
-                </TouchableOpacity>
+                <View style={styles.formDropdown}>
+                  {assetCategories.map((category) => (
+                    <TouchableOpacity
+                      key={category.id}
+                      style={[
+                        styles.categoryOption,
+                        assetForm.categoryId === category.id && styles.categoryOptionSelected,
+                      ]}
+                      onPress={() => setAssetForm({
+                        ...assetForm,
+                        categoryId: category.id,
+                        categoryName: category.name,
+                      })}
+                    >
+                      <Text style={[
+                        styles.categoryOptionText,
+                        assetForm.categoryId === category.id && styles.categoryOptionTextSelected,
+                      ]}>
+                        {category.name}
+                      </Text>
+                      {assetForm.categoryId === category.id && (
+                        <Check size={18} color="#7C3AED" />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
 
               <View style={styles.formGroup}>
@@ -4806,5 +4847,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  categoryOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  categoryOptionSelected: {
+    backgroundColor: '#f5f3ff',
+  },
+  categoryOptionText: {
+    fontSize: 15,
+    color: '#333',
+  },
+  categoryOptionTextSelected: {
+    color: '#7C3AED',
+    fontWeight: '600',
   },
 });

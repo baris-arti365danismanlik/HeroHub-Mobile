@@ -192,17 +192,31 @@ export interface UserRequest {
 }
 
 export interface Asset {
-  id: string;
-  user_id: string;
-  category: string;
-  serial_no: string;
+  id: number;
+  userId: number;
+  categoryId: number;
+  categoryName: string;
+  serialNo: string;
   description?: string;
-  delivery_date: string;
-  return_date?: string;
-  file_url?: string;
+  deliveryDate: string;
+  returnDate?: string;
+  fileUrl?: string;
   status: AssetStatus;
-  created_at: string;
-  updated_at?: string;
+}
+
+export interface AssetCategory {
+  id: number;
+  name: string;
+  organizationId: number;
+}
+
+export interface BadgeCardInfo {
+  firstName: string;
+  lastName: string;
+  title: string;
+  fullName: string;
+  profilePhoto: string;
+  dayOffBalance: number;
 }
 
 export enum LeaveRequestStatus {
