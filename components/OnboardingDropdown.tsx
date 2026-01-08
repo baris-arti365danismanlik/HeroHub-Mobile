@@ -48,19 +48,24 @@ export function OnboardingDropdown({ userId, organizationId }: OnboardingDropdow
   };
 
   const handleWelcomePackageSubmit = async (form: WelcomePackageForm) => {
-    const success = await onboardingService.sendWelcomePackage(userId, form);
-    if (success) {
+    const result = await onboardingService.sendWelcomePackage(userId, form);
+    if (result.success) {
       await loadOnboardingProcess();
       setSuccessModalVisible(true);
+    } else {
+      alert(result.error || 'Hoşgeldin paketi gönderilemedi');
     }
   };
 
   const handleResend = async () => {
     setActionLoading(true);
     try {
-      const success = await onboardingService.sendWelcomePackage(userId);
-      if (success) {
+      const result = await onboardingService.sendWelcomePackage(userId);
+      if (result.success) {
         await loadOnboardingProcess();
+        setSuccessModalVisible(true);
+      } else {
+        alert(result.error || 'Hoşgeldin paketi gönderilemedi');
       }
     } finally {
       setActionLoading(false);

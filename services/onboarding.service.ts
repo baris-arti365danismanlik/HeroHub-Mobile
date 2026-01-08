@@ -61,7 +61,7 @@ export const onboardingService = {
   async sendWelcomePackage(
     userId: number,
     formData?: WelcomePackageForm
-  ): Promise<boolean> {
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const requestBody = formData
         ? {
@@ -76,14 +76,27 @@ export const onboardingService = {
           }
         : { userId };
 
+      console.log('Sending welcome package with data:', requestBody);
+
       const response = await apiClient.post(
-        `/OnboardingQuestion/send-welcome-package`,
+        `/userOnboardingTask/send-welcome-package`,
         requestBody
       );
-      return response.succeeded || false;
-    } catch (error) {
+
+      if (response.succeeded) {
+        return { success: true };
+      } else {
+        return {
+          success: false,
+          error: response.friendlyMessage || 'Bir hata oluştu',
+        };
+      }
+    } catch (error: any) {
       console.error('Error sending welcome package:', error);
-      return false;
+      return {
+        success: false,
+        error: error.message || 'Hoşgeldin paketi gönderilemedi',
+      };
     }
   },
 

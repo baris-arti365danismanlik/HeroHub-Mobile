@@ -87,10 +87,32 @@ export function WelcomePackageModal({
   };
 
   const handleSubmit = async () => {
+    if (!form.email || !form.email.includes('@')) {
+      alert('Lütfen geçerli bir e-posta adresi giriniz');
+      return;
+    }
+
+    if (!form.startDate) {
+      alert('Lütfen işe giriş tarihini seçiniz');
+      return;
+    }
+
+    if (!form.arrivalTime) {
+      alert('Lütfen geleceği saati seçiniz');
+      return;
+    }
+
+    if (!form.arrivalAddress || form.arrivalAddress.trim() === '') {
+      alert('Lütfen geleceği adresi giriniz');
+      return;
+    }
+
     setSubmitting(true);
     try {
       await onSubmit(form);
       onClose();
+    } catch (error) {
+      console.error('Submit error:', error);
     } finally {
       setSubmitting(false);
     }
