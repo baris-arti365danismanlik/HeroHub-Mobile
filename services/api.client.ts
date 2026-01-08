@@ -30,7 +30,14 @@ class ApiClient {
         throw new Error('Unauthorized - Please login again');
       }
 
+      if (response.status === 404) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('404 Error - Endpoint not found:', response.url);
+        throw new Error(errorData.message || 'Endpoint bulunamadı. Backend geliştiricisiyle iletişime geçin.');
+      }
+
       const errorData = await response.json().catch(() => ({}));
+      console.error('Error data:', errorData);
       throw new Error(errorData.message || `HTTP Error: ${response.status}`);
     }
 
@@ -74,7 +81,8 @@ class ApiClient {
     try {
       const url = `${this.baseURL}${endpoint}`;
       console.log('POST Request:', url);
-      console.log('Body:', body);
+      console.log('Body:', JSON.stringify(body, null, 2));
+      console.log('Headers:', headers);
 
       const response = await fetch(url, {
         method: 'POST',
@@ -84,6 +92,7 @@ class ApiClient {
       });
 
       console.log('Response status:', response.status);
+
       return await this.handleResponse<T>(response);
     } catch (error: any) {
       console.error('POST Error:', error);

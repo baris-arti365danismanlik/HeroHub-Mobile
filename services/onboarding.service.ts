@@ -63,25 +63,35 @@ export const onboardingService = {
     formData?: WelcomePackageForm
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const requestBody = formData
-        ? {
-            userId,
-            email: formData.email,
-            startDate: formData.startDate,
-            arrivalTime: formData.arrivalTime,
-            arrivalAddress: formData.arrivalAddress,
-            greeterUserId: formData.greeterUserId,
-            managerId: formData.managerId,
-            otherInstructions: formData.otherInstructions,
-          }
-        : { userId };
+      let requestBody: any = { userId };
+
+      if (formData) {
+        let startDateISO = '';
+        if (formData.startDate) {
+          const [day, month, year] = formData.startDate.split('/');
+          startDateISO = `${year}-${month}-${day}T00:00:00`;
+        }
+
+        requestBody = {
+          userId,
+          email: formData.email,
+          startDate: startDateISO || formData.startDate,
+          arrivalTime: formData.arrivalTime,
+          arrivalAddress: formData.arrivalAddress,
+          greeterUserId: formData.greeterUserId,
+          managerId: formData.managerId,
+          otherInstructions: formData.otherInstructions,
+        };
+      }
 
       console.log('Sending welcome package with data:', requestBody);
 
       const response = await apiClient.post(
-        `/userOnboardingTask/send-welcome-package`,
+        `/OnboardingQuestion/send-welcome-package`,
         requestBody
       );
+
+      console.log('Welcome package response:', response);
 
       if (response.succeeded) {
         return { success: true };
