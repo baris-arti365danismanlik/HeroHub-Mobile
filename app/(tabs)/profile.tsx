@@ -86,6 +86,7 @@ import {
 } from '@/types/backend';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
+import { DatePicker } from '@/components/DatePicker';
 import {
   formatGender,
   formatBloodType,
@@ -116,6 +117,8 @@ export default function ProfileScreen() {
   const [assetCategories, setAssetCategories] = useState<AssetCategory[]>([]);
   const [badgeCardInfo, setBadgeCardInfo] = useState<BadgeCardInfo | null>(null);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [deliveryDatePickerVisible, setDeliveryDatePickerVisible] = useState(false);
+  const [returnDatePickerVisible, setReturnDatePickerVisible] = useState(false);
   const [selectedYearAssets, setSelectedYearAssets] = useState('2024');
   const [selectedType, setSelectedType] = useState('Tümü');
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -2438,7 +2441,9 @@ export default function ProfileScreen() {
                     onChangeText={(text) => setAssetForm({...assetForm, deliveryDate: text})}
                     editable={true}
                   />
-                  <Calendar size={20} color="#7C3AED" />
+                  <TouchableOpacity onPress={() => setDeliveryDatePickerVisible(true)}>
+                    <Calendar size={20} color="#7C3AED" />
+                  </TouchableOpacity>
                 </View>
               </View>
 
@@ -2452,7 +2457,9 @@ export default function ProfileScreen() {
                     onChangeText={(text) => setAssetForm({...assetForm, returnDate: text})}
                     editable={true}
                   />
-                  <Calendar size={20} color="#7C3AED" />
+                  <TouchableOpacity onPress={() => setReturnDatePickerVisible(true)}>
+                    <Calendar size={20} color="#7C3AED" />
+                  </TouchableOpacity>
                 </View>
               </View>
             </ScrollView>
@@ -2479,6 +2486,24 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      <DatePicker
+        visible={deliveryDatePickerVisible}
+        onClose={() => setDeliveryDatePickerVisible(false)}
+        onSelectDate={(date) => {
+          setAssetForm({...assetForm, deliveryDate: date});
+        }}
+        initialDate={assetForm.deliveryDate}
+      />
+
+      <DatePicker
+        visible={returnDatePickerVisible}
+        onClose={() => setReturnDatePickerVisible(false)}
+        onSelectDate={(date) => {
+          setAssetForm({...assetForm, returnDate: date});
+        }}
+        initialDate={assetForm.returnDate}
+      />
 
       <Modal
         visible={visaModalVisible}
