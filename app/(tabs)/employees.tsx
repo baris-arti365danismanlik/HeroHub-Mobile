@@ -22,6 +22,7 @@ import {
   Network,
 } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
+import { AddEmployeeModal, EmployeeFormData } from '@/components/AddEmployeeModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
 import { employmentService } from '@/services/employment.service';
@@ -35,6 +36,7 @@ import { formatDate } from '@/utils/formatters';
 
 export default function EmployeesScreen() {
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [addEmployeeModalVisible, setAddEmployeeModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'tree'>('list');
   const [loading, setLoading] = useState(true);
@@ -71,6 +73,11 @@ export default function EmployeesScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveEmployee = (data: EmployeeFormData) => {
+    console.log('Saving employee:', data);
+    loadData();
   };
 
   const filteredGroupedEmployees = groupedEmployees
@@ -141,7 +148,11 @@ export default function EmployeesScreen() {
         </View>
 
         <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.addButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.addButton}
+            activeOpacity={0.7}
+            onPress={() => setAddEmployeeModalVisible(true)}
+          >
             <UserPlus size={20} color="#7C3AED" />
             <Text style={styles.addButtonText}>Yeni Çalışan Ekle</Text>
           </TouchableOpacity>
@@ -244,6 +255,12 @@ export default function EmployeesScreen() {
       </ScrollView>
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
+      <AddEmployeeModal
+        visible={addEmployeeModalVisible}
+        onClose={() => setAddEmployeeModalVisible(false)}
+        onSave={handleSaveEmployee}
+        organizationId={user?.organization_id || 2}
+      />
     </SafeAreaView>
   );
 }

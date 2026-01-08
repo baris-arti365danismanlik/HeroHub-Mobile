@@ -113,7 +113,7 @@ class UserService {
   async getGroupedByDepartments(
     organizationId: number,
     includeHRManagers: boolean,
-    stateKey: 'personToMeet' | 'reportsTo'
+    stateKey: string
   ): Promise<GroupedDepartmentUsers | null> {
     try {
       const response = await newApiClient.get<GroupedDepartmentUsers>(
