@@ -47,7 +47,9 @@ export function OnboardingDropdown({ userId, organizationId }: OnboardingDropdow
     setWelcomeModalVisible(true);
   };
 
-  const handleWelcomePackageSubmit = async (form: WelcomePackageForm) => {
+  const handleWelcomePackageSubmit = async (
+    form: WelcomePackageForm
+  ): Promise<{ success: boolean; error?: string }> => {
     const result = await onboardingService.sendWelcomePackage(userId, form);
     if (result.success) {
       await loadOnboardingProcess();
@@ -55,6 +57,7 @@ export function OnboardingDropdown({ userId, organizationId }: OnboardingDropdow
     } else {
       alert(result.error || 'Hoşgeldin paketi gönderilemedi');
     }
+    return result;
   };
 
   const handleResend = async () => {

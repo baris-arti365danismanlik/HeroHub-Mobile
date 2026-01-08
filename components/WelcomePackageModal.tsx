@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { X, Calendar, Clock, ChevronDown, User as UserIcon } from 'lucide-react-native';
 import { userService } from '@/services/user.service';
+import { onboardingService } from '@/services/onboarding.service';
 import {
   BadgeCardInfo,
   GroupedDepartmentUsers,
@@ -24,7 +25,7 @@ interface WelcomePackageModalProps {
   onClose: () => void;
   userId: number;
   organizationId: number;
-  onSubmit: (form: WelcomePackageForm) => Promise<void>;
+  onSubmit: (form: WelcomePackageForm) => Promise<{ success: boolean; error?: string }>;
 }
 
 export function WelcomePackageModal({
@@ -68,11 +69,21 @@ export function WelcomePackageModal({
   const loadData = async () => {
     setLoading(true);
     try {
-      const [badge, greeterData, managerData] = await Promise.all([
-        userService.getBadgeCardInfo(userId),
-        userService.getGroupedByDepartments(organizationId, false, 'personToMeet'),
-        userService.getGroupedByDepartments(organizationId, true, 'reportsTo'),
-      ]);
+      const [badge, greeterData, managerData, defaultValues, questions, tasks, process] =
+        await Promise.all([
+          userService.getBadgeCardInfo(userId),
+          userService.getGroupedByDepartments(organizationId, false, 'personToMeet'),
+          userService.getGroupedByDepartments(organizationId, true, 'reportsTo'),
+          onboardingService.getWelcomingPackageDefaultValues(userId),
+          onboardingService.getUserOnboardingQuestions(userId),
+          onboardingService.listUserOnboardingTasks(userId),
+          onboardingService.getUserOnboardingProcess(userId),
+        ]);
+
+      console.log('Default values:', defaultValues);
+      console.log('Onboarding questions:', questions);
+      console.log('Onboarding tasks:', tasks);
+      console.log('Onboarding process:', process);
 
       setBadgeInfo(badge);
       setGreeters(greeterData);
@@ -83,6 +94,19 @@ export function WelcomePackageModal({
         const generatedEmail = `${emailParts.join('.')}@company.com`;
         setForm((prev) => ({ ...prev, email: generatedEmail }));
       }
+
+      if (defaultValues && defaultValues.managerUserId) {
+        const manager = managerData?.departmentUsers
+          .flatMap((dept) => dept.users)
+          .find((user) => user.id === defaultValues.managerUserId);
+
+        if (manager) {
+          setSelectedManager(manager);
+          setForm((prev) => ({ ...prev, managerId: manager.id }));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
@@ -111,10 +135,15 @@ export function WelcomePackageModal({
 
     setSubmitting(true);
     try {
-      await onSubmit(form);
-      onClose();
-    } catch (error) {
+      const result = await onSubmit(form);
+      if (result.success) {
+        onClose();
+      } else {
+        alert(`Hata: ${result.error || 'Hoşgeldin paketi gönderilemedi'}`);
+      }
+    } catch (error: any) {
       console.error('Submit error:', error);
+      alert(`Hata: ${error.message || 'Hoşgeldin paketi gönderilemedi'}`);
     } finally {
       setSubmitting(false);
     }

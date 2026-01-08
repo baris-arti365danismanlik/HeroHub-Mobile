@@ -42,6 +42,16 @@ class ApiClient {
     }
 
     const data = await response.json();
+    console.log('Response data:', data);
+
+    if (data && typeof data === 'object' && 'succeeded' in data && !data.succeeded) {
+      const errorMessage = data.friendlyMessage ||
+        (data.errors && Array.isArray(data.errors) && data.errors.length > 0
+          ? data.errors[0]
+          : 'Bir hata oluştu');
+      console.warn('API returned succeeded: false with message:', errorMessage);
+    }
+
     return data as ApiResponse<T>;
   }
 

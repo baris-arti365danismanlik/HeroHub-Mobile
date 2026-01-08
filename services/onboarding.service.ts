@@ -15,7 +15,16 @@ export const onboardingService = {
       const response = await apiClient.get<WelcomingPackageDefaultValues>(
         `/OnboardingQuestion/get-welcoming-package-default-values?UserId=${userId}`
       );
-      return response.data || null;
+
+      if (response.succeeded && response.data) {
+        return response.data;
+      }
+
+      if (!response.succeeded && response.errors && response.errors.length > 0) {
+        console.warn('Failed to fetch welcoming package default values:', response.errors[0]);
+      }
+
+      return null;
     } catch (error) {
       console.error('Error fetching welcoming package default values:', error);
       return null;
@@ -27,7 +36,12 @@ export const onboardingService = {
       const response = await apiClient.get<OnboardingQuestionItem[]>(
         `/OnboardingQuestion/get-user-onboarding-questions?UserId=${userId}`
       );
-      return response.data || [];
+
+      if (response.succeeded && response.data) {
+        return response.data;
+      }
+
+      return [];
     } catch (error) {
       console.error('Error fetching user onboarding questions:', error);
       return [];
@@ -39,7 +53,12 @@ export const onboardingService = {
       const response = await apiClient.get<UserOnboardingTaskItem[]>(
         `/userOnboardingTask/list-userOnboardingTasks?userId=${userId}`
       );
-      return response.data || [];
+
+      if (response.succeeded && response.data) {
+        return response.data;
+      }
+
+      return [];
     } catch (error) {
       console.error('Error fetching user onboarding tasks:', error);
       return [];
@@ -51,7 +70,16 @@ export const onboardingService = {
       const response = await apiClient.get<OnboardingProcess>(
         `/userOnboardingTask/get-userOnboardingProcess?userId=${userId}`
       );
-      return response.data || null;
+
+      if (response.succeeded && response.data) {
+        return response.data;
+      }
+
+      if (!response.succeeded && response.errors && response.errors.length > 0) {
+        console.warn('Failed to fetch user onboarding process:', response.errors[0]);
+      }
+
+      return null;
     } catch (error) {
       console.error('Error fetching user onboarding process:', error);
       return null;
@@ -96,9 +124,12 @@ export const onboardingService = {
       if (response.succeeded) {
         return { success: true };
       } else {
+        const errorMessage =
+          response.friendlyMessage ||
+          (response.errors && response.errors.length > 0 ? response.errors[0] : 'Bir hata oluştu');
         return {
           success: false,
-          error: response.friendlyMessage || 'Bir hata oluştu',
+          error: errorMessage,
         };
       }
     } catch (error: any) {
