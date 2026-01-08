@@ -27,7 +27,7 @@ export const pdksService = {
       const response = await apiClient.get<UserShiftPlan>(
         `/shift/list-usershiftplan?userId=${userId}`
       );
-      return response || null;
+      return response.data || null;
     } catch (error) {
       console.error('Error fetching user shift plan:', error);
       return null;
@@ -39,7 +39,7 @@ export const pdksService = {
       const response = await apiClient.get<WorkLog[]>(
         `/employeeLog/get-userworklog?userId=${userId}`
       );
-      return response || [];
+      return response.data || [];
     } catch (error) {
       console.error('Error fetching user work log:', error);
       return [];
