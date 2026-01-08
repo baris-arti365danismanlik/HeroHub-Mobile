@@ -7,16 +7,41 @@ import {
   TouchableOpacity,
   TextInput,
   SafeAreaView,
+  Image,
 } from 'react-native';
-import { Menu, Search, Users as UsersIcon, MoreVertical } from 'lucide-react-native';
+import {
+  Menu,
+  Search,
+  Users as UsersIcon,
+  MoreVertical,
+  UserPlus,
+  ChevronDown,
+  Briefcase,
+  Calendar,
+  Clock,
+  Building2
+} from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { EmployeeDropdown } from '@/components/EmployeeDropdown';
 import { useAuth } from '@/contexts/AuthContext';
+
+interface Employee {
+  id: number;
+  name: string;
+  position: string;
+  department: string;
+  startDate: string;
+  workType: string;
+  company: string;
+  avatar?: string;
+}
 
 export default function EmployeesScreen() {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [sortType, setSortType] = useState('Alfabetik');
+  const [filterType, setFilterType] = useState('Tüm Çalışanlar');
   const [selectedEmployee, setSelectedEmployee] = useState<{
     id: number;
     name: string;
@@ -24,12 +49,34 @@ export default function EmployeesScreen() {
   } | null>(null);
   const { user } = useAuth();
 
-  const employees = [
-    { id: 1, name: 'Selin Yeşilce', position: 'Management Trainee', department: 'Yönetim' },
-    { id: 2, name: 'Mert Gözüdağ', position: 'Yazılım Geliştirici', department: 'Teknoloji' },
-    { id: 3, name: 'Selim Yücesoy', position: 'Proje Yöneticisi', department: 'Yönetim' },
-    { id: 4, name: 'Ayşe Demir', position: 'İK Uzmanı', department: 'İnsan Kaynakları' },
-    { id: 5, name: 'Mehmet Kaya', position: 'Satış Müdürü', department: 'Satış' },
+  const employees: Employee[] = [
+    {
+      id: 1,
+      name: 'Abba Jaxson Lipshutz',
+      position: 'Management Trainee',
+      department: 'Yönetim',
+      startDate: '31 Aralık 2023',
+      workType: 'Tam Zamanlı',
+      company: 'Artı365 Danışmanlık',
+    },
+    {
+      id: 2,
+      name: 'Ayşe Demir',
+      position: 'İK Uzmanı',
+      department: 'İnsan Kaynakları',
+      startDate: '15 Ocak 2023',
+      workType: 'Tam Zamanlı',
+      company: 'Artı365 Danışmanlık',
+    },
+    {
+      id: 3,
+      name: 'Dabba Jaxson Lipshutz',
+      position: 'Management Trainee',
+      department: 'Yönetim',
+      startDate: '31 Aralık 2023',
+      workType: 'Tam Zamanlı',
+      company: 'Artı365 Danışmanlık',
+    },
   ];
 
   const filteredEmployees = employees.filter(
@@ -39,78 +86,112 @@ export default function EmployeesScreen() {
       emp.department.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const groupedEmployees = filteredEmployees.reduce((groups, employee) => {
+    const firstLetter = employee.name.charAt(0).toUpperCase();
+    if (!groups[firstLetter]) {
+      groups[firstLetter] = [];
+    }
+    groups[firstLetter].push(employee);
+    return groups;
+  }, {} as Record<string, Employee[]>);
+
+  const sortedGroups = Object.keys(groupedEmployees).sort();
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => setDrawerVisible(true)}
-          style={styles.menuButton}
-          activeOpacity={0.7}
-        >
-          <Menu size={24} color="#7C3AED" />
-        </TouchableOpacity>
-
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Çalışanlar</Text>
+      <View style={styles.topSection}>
+        <View style={styles.titleRow}>
+          <UsersIcon size={20} color="#666" />
+          <Text style={styles.sectionTitle}>ÇALIŞANLAR</Text>
         </View>
 
-        <View style={styles.headerRight} />
-      </View>
+        <View style={styles.actionRow}>
+          <TouchableOpacity style={styles.addButton} activeOpacity={0.7}>
+            <UserPlus size={20} color="#7C3AED" />
+            <Text style={styles.addButtonText}>Yeni Çalışan Ekle</Text>
+          </TouchableOpacity>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              onPress={() => setDrawerVisible(true)}
+              style={styles.iconButton}
+              activeOpacity={0.7}
+            >
+              <Menu size={24} color="#666" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
+              <UsersIcon size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
         <View style={styles.searchContainer}>
           <Search size={20} color="#999" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Çalışan ara..."
+            placeholder="Arama"
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor="#999"
           />
         </View>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <UsersIcon size={24} color="#7C3AED" />
-            <Text style={styles.statNumber}>{employees.length}</Text>
-            <Text style={styles.statLabel}>Toplam Çalışan</Text>
-          </View>
+        <View style={styles.filterRow}>
+          <TouchableOpacity style={styles.filterButton} activeOpacity={0.7}>
+            <Text style={styles.filterButtonText}>{sortType}</Text>
+            <ChevronDown size={16} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.filterButton} activeOpacity={0.7}>
+            <Text style={styles.filterButtonText}>{filterType}</Text>
+            <ChevronDown size={16} color="#666" />
+          </TouchableOpacity>
         </View>
+      </View>
 
-        <View style={styles.listContainer}>
-          {filteredEmployees.map((employee) => (
-            <View key={employee.id} style={styles.employeeCard}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>
-                  {employee.name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')}
-                </Text>
-              </View>
-              <View style={styles.employeeInfo}>
-                <Text style={styles.employeeName}>{employee.name}</Text>
-                <Text style={styles.employeePosition}>{employee.position}</Text>
-                <Text style={styles.employeeDepartment}>{employee.department}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.moreButton}
-                activeOpacity={0.7}
-                onPress={(e) => {
-                  const target = e.nativeEvent;
-                  setSelectedEmployee({
-                    id: employee.id,
-                    name: employee.name,
-                    position: { x: target.pageX, y: target.pageY },
-                  });
-                  setDropdownVisible(true);
-                }}
-              >
-                <MoreVertical size={20} color="#666" />
-              </TouchableOpacity>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {sortedGroups.map((letter) => (
+          <View key={letter} style={styles.groupContainer}>
+            <View style={styles.letterHeader}>
+              <Text style={styles.letterText}>{letter}</Text>
             </View>
-          ))}
-        </View>
+            {groupedEmployees[letter].map((employee) => (
+              <View key={employee.id} style={styles.employeeCard}>
+                <View style={styles.avatar}>
+                  {employee.avatar ? (
+                    <Image source={{ uri: employee.avatar }} style={styles.avatarImage} />
+                  ) : (
+                    <Text style={styles.avatarText}>
+                      {employee.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .substring(0, 2)}
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.employeeInfo}>
+                  <Text style={styles.employeeName}>{employee.name}</Text>
+                  <View style={styles.infoRow}>
+                    <Briefcase size={14} color="#666" />
+                    <Text style={styles.infoText}>{employee.position}</Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <Calendar size={14} color="#666" />
+                    <Text style={styles.infoText}>{employee.startDate}</Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <Clock size={14} color="#666" />
+                    <Text style={styles.infoText}>{employee.workType}</Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <Building2 size={14} color="#666" />
+                    <Text style={styles.infoText}>{employee.company}</Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        ))}
       </ScrollView>
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
@@ -136,112 +217,131 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
-  header: {
+  topSection: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666',
+    letterSpacing: 1,
+  },
+  actionRow: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  menuButton: {
-    padding: 8,
-  },
-  headerCenter: {
-    flex: 1,
     alignItems: 'center',
+    marginBottom: 16,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1a1a1a',
-  },
-  headerRight: {
-    width: 40,
-  },
-  content: {
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderWidth: 1.5,
+    borderColor: '#7C3AED',
+    borderRadius: 8,
     flex: 1,
-    padding: 16,
+    marginRight: 12,
+  },
+  addButtonText: {
+    fontSize: 15,
+    color: '#7C3AED',
+    fontWeight: '500',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconButton: {
+    padding: 8,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12,
   },
   searchIcon: {
     marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
     color: '#1a1a1a',
   },
-  statsContainer: {
-    marginBottom: 24,
+  filterRow: {
+    flexDirection: 'row',
+    gap: 8,
   },
-  statCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
+  filterButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    borderRadius: 8,
+    backgroundColor: '#fff',
   },
-  statNumber: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginTop: 8,
-  },
-  statLabel: {
+  filterButtonText: {
     fontSize: 14,
-    color: '#666',
-    marginTop: 4,
+    color: '#333',
   },
-  listContainer: {
-    gap: 12,
+  content: {
+    flex: 1,
+  },
+  groupContainer: {
+    marginBottom: 8,
+  },
+  letterHeader: {
+    backgroundColor: '#F0F0F0',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  letterText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#666',
   },
   employeeCard: {
     backgroundColor: '#fff',
-    borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  moreButton: {
-    padding: 8,
-    marginLeft: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: '#F0E7FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
+  avatarImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
   avatarText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#7C3AED',
   },
@@ -252,15 +352,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
+    marginBottom: 6,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 4,
   },
-  employeePosition: {
-    fontSize: 14,
+  infoText: {
+    fontSize: 13,
     color: '#666',
-    marginBottom: 2,
-  },
-  employeeDepartment: {
-    fontSize: 12,
-    color: '#999',
   },
 });
