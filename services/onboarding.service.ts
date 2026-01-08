@@ -94,28 +94,36 @@ export const onboardingService = {
       let requestBody: any = { userId };
 
       if (formData) {
-        let startDateISO = '';
+        let jobFirstDayDate = '';
+        let jobFirstDayHour = '';
+
         if (formData.startDate) {
           const [day, month, year] = formData.startDate.split('/');
-          startDateISO = `${year}-${month}-${day}T00:00:00`;
+          jobFirstDayDate = `${year}-${month}-${day}`;
+        }
+
+        if (formData.arrivalTime) {
+          const today = new Date();
+          const dateStr = jobFirstDayDate || today.toISOString().split('T')[0];
+          jobFirstDayHour = `${dateStr}T${formData.arrivalTime}:00.000Z`;
         }
 
         requestBody = {
-          userId,
-          email: formData.email,
-          startDate: startDateISO || formData.startDate,
-          arrivalTime: formData.arrivalTime,
-          arrivalAddress: formData.arrivalAddress,
-          greeterUserId: formData.greeterUserId,
-          managerId: formData.managerId,
-          otherInstructions: formData.otherInstructions,
+          userId: String(userId),
+          email: formData.email || '',
+          jobFirstDayDate: jobFirstDayDate,
+          jobFirstDayHour: jobFirstDayHour,
+          address: formData.arrivalAddress || '',
+          instructions: formData.otherInstructions || '',
+          personToMeetId: formData.greeterUserId,
+          reportsTo: formData.managerId,
         };
       }
 
       console.log('Sending welcome package with data:', requestBody);
 
       const response = await apiClient.post(
-        `/OnboardingQuestion/send-welcome-package`,
+        `/OnboardingQuestion/send-welcoming-package`,
         requestBody
       );
 
