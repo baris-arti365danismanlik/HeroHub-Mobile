@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: 999,
+    zIndex: 9999,
   },
   loadingContainer: {
     flex: 1,
@@ -442,6 +442,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
+    zIndex: 10000,
   },
   titleRow: {
     flexDirection: 'row',
@@ -505,11 +506,12 @@ const styles = StyleSheet.create({
   filterRow: {
     flexDirection: 'row',
     gap: 8,
-    zIndex: 1000,
+    zIndex: 10000,
   },
   dropdownWrapper: {
     position: 'relative',
     flex: 1,
+    zIndex: 10000,
   },
   filterButton: {
     flexDirection: 'row',
@@ -542,8 +544,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
-    elevation: 5,
-    zIndex: 1001,
+    elevation: 10,
+    zIndex: 10001,
   },
   dropdownItem: {
     paddingVertical: 14,
@@ -566,6 +568,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    zIndex: 1,
   },
   groupContainer: {
     marginBottom: 8,
