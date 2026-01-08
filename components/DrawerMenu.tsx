@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  Image,
   SafeAreaView,
 } from 'react-native';
 import Animated, {
@@ -17,12 +16,10 @@ import Animated, {
 import {
   X,
   Home,
-  User,
   Users,
   Settings,
   Plus,
   UserIcon,
-  FileText
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -81,34 +78,34 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const menuItems: MenuItem[] = [
     {
       id: 'home',
-      label: 'Anasayfa',
-      icon: <Home size={22} color="#7C3AED" />,
+      label: 'Ana Sayfa',
+      icon: <Home size={24} color="#4A4A4A" />,
       route: '/(tabs)',
     },
     {
       id: 'profile',
       label: 'Profilim',
-      icon: <User size={22} color="#7C3AED" />,
+      icon: <UserIcon size={24} color="#4A4A4A" />,
       route: '/(tabs)/profile',
     },
     {
       id: 'employees',
       label: 'Çalışanlar',
-      icon: <Users size={22} color="#7C3AED" />,
+      icon: <Users size={24} color="#4A4A4A" />,
       route: '/(tabs)/employees',
       roles: ['Admin', 'Manager', 'HR', '365 Admin'],
     },
     {
       id: 'admin',
       label: 'Admin',
-      icon: <Settings size={22} color="#7C3AED" />,
+      icon: <Settings size={24} color="#4A4A4A" />,
       route: '/(tabs)/admin',
       roles: ['Admin', '365 Admin'],
     },
     {
       id: 'plus-admin',
       label: 'Artı Admin',
-      icon: <Plus size={22} color="#7C3AED" />,
+      icon: <Plus size={24} color="#4A4A4A" />,
       route: '/(tabs)/plus-admin',
       roles: ['SuperAdmin', '365 Admin'],
     },
@@ -141,15 +138,12 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
         <Animated.View style={[styles.drawerContainer, drawerAnimatedStyle]}>
           <SafeAreaView style={styles.drawer}>
             <View style={styles.header}>
-              <View style={styles.logoContainer}>
-                <Text style={styles.logoText}>hero</Text>
-                <View style={styles.logoBadge}>
-                  <Text style={styles.logoBadgeText}>+</Text>
-                </View>
-              </View>
+              <Text style={styles.logoText}>
+                hero<Text style={styles.logoPlusText}>+</Text>
+              </Text>
 
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <X size={24} color="#666" />
+                <X size={24} color="#333" />
               </TouchableOpacity>
             </View>
 
@@ -169,19 +163,6 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                   </TouchableOpacity>
                 );
               })}
-            </View>
-
-            <View style={styles.footer}>
-              {user?.profilePictureUrl ? (
-                <Image
-                  source={{ uri: user.profilePictureUrl }}
-                  style={styles.avatar}
-                />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <UserIcon size={20} color="#7C3AED" />
-                </View>
-              )}
             </View>
           </SafeAreaView>
         </Animated.View>
@@ -218,65 +199,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 24,
+    borderBottomWidth: 0,
   },
   logoText: {
-    fontSize: 26,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#7C3AED',
   },
-  logoBadge: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#7C3AED',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 4,
-  },
-  logoBadgeText: {
-    fontSize: 15,
+  logoPlusText: {
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#7C3AED',
   },
   closeButton: {
     padding: 4,
   },
   menuItems: {
     flex: 1,
-    paddingTop: 4,
-  },
-  footer: {
-    padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    alignItems: 'flex-end',
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  avatarPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F0E7FF',
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingTop: 16,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
     gap: 16,
     backgroundColor: 'transparent',
   },
@@ -284,11 +232,12 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     justifyContent: 'center',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   menuItemText: {
-    fontSize: 16,
-    color: '#1a1a1a',
+    fontSize: 17,
+    color: '#333333',
     fontWeight: '400',
+    letterSpacing: 0.2,
   },
 });
