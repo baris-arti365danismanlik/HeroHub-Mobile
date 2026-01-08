@@ -198,27 +198,6 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                   </Text>
                   <ChevronDown size={20} color="#666" />
                 </TouchableOpacity>
-                {showDepartmentPicker && (
-                  <View style={styles.pickerDropdown}>
-                    <ScrollView style={styles.pickerScroll}>
-                      {departments.map((dept) => (
-                        <TouchableOpacity
-                          key={dept.id}
-                          style={styles.pickerItem}
-                          onPress={() => {
-                            setFormData({ ...formData, departmentId: dept.id });
-                            setShowDepartmentPicker(false);
-                          }}
-                        >
-                          <Text style={styles.pickerItemText}>{dept.name}</Text>
-                        </TouchableOpacity>
-                      ))}
-                      <TouchableOpacity style={styles.pickerAddItem} onPress={() => {}}>
-                        <Text style={styles.pickerAddItemText}>Yeni Departman Ekle</Text>
-                      </TouchableOpacity>
-                    </ScrollView>
-                  </View>
-                )}
               </View>
 
               <View style={[styles.formGroup, styles.halfWidth]}>
@@ -235,27 +214,6 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                   <Text style={styles.pickerText}>{selectedTitle?.name || 'Unvan'}</Text>
                   <ChevronDown size={20} color="#666" />
                 </TouchableOpacity>
-                {showTitlePicker && (
-                  <View style={styles.pickerDropdown}>
-                    <ScrollView style={styles.pickerScroll}>
-                      {titles.map((title) => (
-                        <TouchableOpacity
-                          key={title.id}
-                          style={styles.pickerItem}
-                          onPress={() => {
-                            setFormData({ ...formData, titleId: title.id });
-                            setShowTitlePicker(false);
-                          }}
-                        >
-                          <Text style={styles.pickerItemText}>{title.name}</Text>
-                        </TouchableOpacity>
-                      ))}
-                      <TouchableOpacity style={styles.pickerAddItem} onPress={() => {}}>
-                        <Text style={styles.pickerAddItemText}>Yeni Unvan Ekle</Text>
-                      </TouchableOpacity>
-                    </ScrollView>
-                  </View>
-                )}
               </View>
             </View>
 
@@ -276,27 +234,6 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                   </Text>
                   <ChevronDown size={20} color="#666" />
                 </TouchableOpacity>
-                {showWorkplacePicker && (
-                  <View style={styles.pickerDropdown}>
-                    <ScrollView style={styles.pickerScroll}>
-                      {workplaces.map((workplace) => (
-                        <TouchableOpacity
-                          key={workplace.id}
-                          style={styles.pickerItem}
-                          onPress={() => {
-                            setFormData({ ...formData, workplaceId: workplace.id });
-                            setShowWorkplacePicker(false);
-                          }}
-                        >
-                          <Text style={styles.pickerItemText}>{workplace.name}</Text>
-                        </TouchableOpacity>
-                      ))}
-                      <TouchableOpacity style={styles.pickerAddItem} onPress={() => {}}>
-                        <Text style={styles.pickerAddItemText}>Yeni İş Yeri Ekle</Text>
-                      </TouchableOpacity>
-                    </ScrollView>
-                  </View>
-                )}
               </View>
 
               <View style={[styles.formGroup, styles.halfWidth]}>
@@ -313,24 +250,6 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                   <Text style={styles.pickerText}>{formData.workType || 'Çalışma Şekli'}</Text>
                   <ChevronDown size={20} color="#666" />
                 </TouchableOpacity>
-                {showWorkTypePicker && (
-                  <View style={styles.pickerDropdown}>
-                    <ScrollView style={styles.pickerScroll}>
-                      {workTypes.map((type) => (
-                        <TouchableOpacity
-                          key={type}
-                          style={styles.pickerItem}
-                          onPress={() => {
-                            setFormData({ ...formData, workType: type });
-                            setShowWorkTypePicker(false);
-                          }}
-                        >
-                          <Text style={styles.pickerItemText}>{type}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                )}
               </View>
             </View>
 
@@ -451,6 +370,147 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
             initialDate={formData.startDate}
           />
         )}
+
+        {showDepartmentPicker && (
+          <Modal transparent visible={showDepartmentPicker} animationType="fade">
+            <TouchableOpacity
+              style={styles.dropdownOverlay}
+              activeOpacity={1}
+              onPress={() => setShowDepartmentPicker(false)}
+            >
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
+              >
+                <View style={styles.dropdownContainer}>
+                  <Text style={styles.dropdownTitle}>Departman Seçin</Text>
+                  <ScrollView style={styles.dropdownScroll}>
+                    {departments.map((dept) => (
+                      <TouchableOpacity
+                        key={dept.id}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setFormData({ ...formData, departmentId: dept.id });
+                          setShowDepartmentPicker(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{dept.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                    <TouchableOpacity style={styles.dropdownAddItem} onPress={() => {}}>
+                      <Text style={styles.dropdownAddItemText}>Yeni Departman Ekle</Text>
+                    </TouchableOpacity>
+                  </ScrollView>
+                </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
+        )}
+
+        {showTitlePicker && (
+          <Modal transparent visible={showTitlePicker} animationType="fade">
+            <TouchableOpacity
+              style={styles.dropdownOverlay}
+              activeOpacity={1}
+              onPress={() => setShowTitlePicker(false)}
+            >
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
+              >
+                <View style={styles.dropdownContainer}>
+                  <Text style={styles.dropdownTitle}>Unvan Seçin</Text>
+                  <ScrollView style={styles.dropdownScroll}>
+                    {titles.map((title) => (
+                      <TouchableOpacity
+                        key={title.id}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setFormData({ ...formData, titleId: title.id });
+                          setShowTitlePicker(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{title.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                    <TouchableOpacity style={styles.dropdownAddItem} onPress={() => {}}>
+                      <Text style={styles.dropdownAddItemText}>Yeni Unvan Ekle</Text>
+                    </TouchableOpacity>
+                  </ScrollView>
+                </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
+        )}
+
+        {showWorkplacePicker && (
+          <Modal transparent visible={showWorkplacePicker} animationType="fade">
+            <TouchableOpacity
+              style={styles.dropdownOverlay}
+              activeOpacity={1}
+              onPress={() => setShowWorkplacePicker(false)}
+            >
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
+              >
+                <View style={styles.dropdownContainer}>
+                  <Text style={styles.dropdownTitle}>İş Yeri Seçin</Text>
+                  <ScrollView style={styles.dropdownScroll}>
+                    {workplaces.map((workplace) => (
+                      <TouchableOpacity
+                        key={workplace.id}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setFormData({ ...formData, workplaceId: workplace.id });
+                          setShowWorkplacePicker(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{workplace.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                    <TouchableOpacity style={styles.dropdownAddItem} onPress={() => {}}>
+                      <Text style={styles.dropdownAddItemText}>Yeni İş Yeri Ekle</Text>
+                    </TouchableOpacity>
+                  </ScrollView>
+                </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
+        )}
+
+        {showWorkTypePicker && (
+          <Modal transparent visible={showWorkTypePicker} animationType="fade">
+            <TouchableOpacity
+              style={styles.dropdownOverlay}
+              activeOpacity={1}
+              onPress={() => setShowWorkTypePicker(false)}
+            >
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={(e) => e.stopPropagation()}
+              >
+                <View style={styles.dropdownContainer}>
+                  <Text style={styles.dropdownTitle}>Çalışma Şekli Seçin</Text>
+                  <ScrollView style={styles.dropdownScroll}>
+                    {workTypes.map((type) => (
+                      <TouchableOpacity
+                        key={type}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setFormData({ ...formData, workType: type });
+                          setShowWorkTypePicker(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{type}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
+        )}
       </View>
     </Modal>
   );
@@ -491,7 +551,6 @@ const styles = StyleSheet.create({
   },
   formGroup: {
     marginBottom: 16,
-    position: 'relative',
   },
   label: {
     fontSize: 14,
@@ -535,45 +594,47 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#333',
   },
-  pickerDropdown: {
-    position: 'absolute',
-    top: 70,
-    left: 0,
-    right: 0,
+  dropdownOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  dropdownContainer: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    maxHeight: 250,
-    zIndex: 1000,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '70%',
+    paddingBottom: 20,
   },
-  pickerScroll: {
-    maxHeight: 250,
+  dropdownTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
   },
-  pickerItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+  dropdownScroll: {
+    maxHeight: '100%',
+  },
+  dropdownItem: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
-  pickerItemText: {
-    fontSize: 15,
+  dropdownItemText: {
+    fontSize: 16,
     color: '#333',
   },
-  pickerAddItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+  dropdownAddItem: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     backgroundColor: '#FAFAFA',
   },
-  pickerAddItemText: {
-    fontSize: 15,
+  dropdownAddItemText: {
+    fontSize: 16,
     color: '#7C3AED',
     fontWeight: '600',
   },
