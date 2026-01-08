@@ -1,5 +1,5 @@
 import { apiClient } from './api.client';
-import type { ApiResponse } from '@/types/backend';
+import type { ApiResponse, UserProfileDetails } from '@/types/backend';
 
 export interface OnboardingTaskCategory {
   id: number;
@@ -49,6 +49,14 @@ export interface UserAgendaItem {
 }
 
 export const homeService = {
+  async getUserInformation(): Promise<UserProfileDetails> {
+    const response = await apiClient.get<UserProfileDetails>('/Home/get-information');
+    if (!response.data) {
+      throw new Error('Failed to load user information');
+    }
+    return response.data;
+  },
+
   async getNotificationCount(): Promise<number> {
     const response = await apiClient.get<number>('/Notification/get-notificationcount');
     return response.data || 0;

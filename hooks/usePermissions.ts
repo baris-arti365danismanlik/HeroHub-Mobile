@@ -1,48 +1,39 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { ModulePermissions } from '@/types/backend';
+import { ModulePermission } from '@/types/backend';
 
 export function usePermissions() {
-  const { permissions, hasPermission, userProfile } = useAuth();
+  const { modulePermissions, hasModulePermission, userProfile } = useAuth();
 
-  const getModulePermissions = (moduleName: string): ModulePermissions => {
-    return (
-      permissions[moduleName] || {
-        can_read: false,
-        can_write: false,
-        can_delete: false,
-      }
-    );
+  const getModulePermissions = (moduleId: number): ModulePermission | null => {
+    return modulePermissions.find((p) => p.moduleId === moduleId) || null;
   };
 
-  const canRead = (moduleName: string): boolean => {
-    return hasPermission(moduleName, 'read');
+  const canRead = (moduleId: number): boolean => {
+    return hasModulePermission(moduleId, 'read');
   };
 
-  const canWrite = (moduleName: string): boolean => {
-    return hasPermission(moduleName, 'write');
+  const canWrite = (moduleId: number): boolean => {
+    return hasModulePermission(moduleId, 'write');
   };
 
-  const canDelete = (moduleName: string): boolean => {
-    return hasPermission(moduleName, 'delete');
+  const canDelete = (moduleId: number): boolean => {
+    return hasModulePermission(moduleId, 'delete');
   };
 
-  const hasAnyPermission = (moduleName: string): boolean => {
-    const perms = getModulePermissions(moduleName);
-    return perms.can_read || perms.can_write || perms.can_delete;
-  };
-
-  const isAdmin = (): boolean => {
-    return userProfile?.role?.name === 'Admin';
+  const hasAnyPermission = (moduleId: number): boolean => {
+    const perms = getModulePermissions(moduleId);
+    if (!perms) return false;
+    return perms.canRead || perms.canWrite || perms.canDelete;
   };
 
   return {
-    permissions,
+    modulePermissions,
     userProfile,
     getModulePermissions,
     canRead,
     canWrite,
     canDelete,
     hasAnyPermission,
-    isAdmin,
+    hasModulePermission,
   };
 }

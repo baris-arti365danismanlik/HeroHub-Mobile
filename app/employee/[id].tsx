@@ -23,20 +23,31 @@ import {
 } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { userService } from '@/services/user.service';
 import type { UserProfileDetails } from '@/types/backend';
+
+const EMPLOYEES_MODULE_ID = 2;
 
 export default function EmployeeDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { canRead, canWrite, canDelete } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [employee, setEmployee] = useState<UserProfileDetails | null>(null);
-  const [hasPermission, setHasPermission] = useState(false);
+
+  const hasReadPermission = canRead(EMPLOYEES_MODULE_ID);
+  const hasWritePermission = canWrite(EMPLOYEES_MODULE_ID);
+  const hasDeletePermission = canDelete(EMPLOYEES_MODULE_ID);
 
   useEffect(() => {
-    loadEmployeeData();
-  }, [id]);
+    if (hasReadPermission) {
+      loadEmployeeData();
+    } else {
+      setLoading(false);
+    }
+  }, [id, hasReadPermission]);
 
   const loadEmployeeData = async () => {
     try {
@@ -45,9 +56,6 @@ export default function EmployeeDetailScreen() {
 
       const data = await userService.getUserProfile(employeeId);
       setEmployee(data);
-
-      const employeesModule = data.modulePermissions.find(m => m.moduleId === 2);
-      setHasPermission(employeesModule?.canRead || false);
     } catch (error) {
       console.error('Error loading employee:', error);
     } finally {
@@ -131,7 +139,7 @@ export default function EmployeeDetailScreen() {
     );
   }
 
-  if (!hasPermission || !employee) {
+  if (!hasReadPermission) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
@@ -143,6 +151,23 @@ export default function EmployeeDetailScreen() {
         </View>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Bu sayfayı görüntüleme yetkiniz bulunmamaktadır.</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!employee) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <ArrowLeft size={24} color="#1a1a1a" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Çalışan Detayı</Text>
+          <View style={{ width: 24 }} />
+        </View>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Çalışan bulunamadı.</Text>
         </View>
       </SafeAreaView>
     );
