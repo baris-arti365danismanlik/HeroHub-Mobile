@@ -8,6 +8,7 @@ import {
   Image,
   ActivityIndicator,
   Linking,
+  SafeAreaView,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
@@ -115,26 +116,17 @@ export default function EmployeeDetailScreen() {
     }
   };
 
-  const parseSocialMedia = (socialMediaJson: string | null) => {
-    if (!socialMediaJson) return null;
-    try {
-      return JSON.parse(socialMediaJson);
-    } catch {
-      return null;
-    }
-  };
-
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#7C3AED" />
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!employee) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Çalışan Detayı</Text>
           <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
@@ -144,17 +136,15 @@ export default function EmployeeDetailScreen() {
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Çalışan bilgisi bulunamadı</Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
-  const socialMedia = employee.socialMedia
-    ? parseSocialMedia(employee.socialMedia.socialMediaLinks)
-    : null;
-  const fullName = `${employee.personalInformation.firstName} ${employee.personalInformation.lastName}`;
+  const socialMedia = employee.socialMedia;
+  const fullName = `${employee.personalInformation?.firstName || ''} ${employee.personalInformation?.lastName || ''}`.trim() || 'N/A';
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Çalışan Detayı</Text>
         <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
@@ -165,7 +155,7 @@ export default function EmployeeDetailScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
-            {employee.profilePhoto ? (
+            {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
               <Image
                 source={{
                   uri: employee.profilePhoto.startsWith('http')
@@ -181,7 +171,8 @@ export default function EmployeeDetailScreen() {
                     .split(' ')
                     .map((n) => n[0])
                     .join('')
-                    .substring(0, 2)}
+                    .substring(0, 2)
+                    .toUpperCase()}
                 </Text>
               </View>
             )}
@@ -194,7 +185,7 @@ export default function EmployeeDetailScreen() {
         </View>
 
         <View style={styles.contactSection}>
-          {employee.userContact.phoneNumber && (
+          {employee.userContact?.phoneNumber && (
             <TouchableOpacity
               style={styles.contactRow}
               onPress={() => handlePhonePress(employee.userContact.phoneNumber)}
@@ -204,7 +195,7 @@ export default function EmployeeDetailScreen() {
             </TouchableOpacity>
           )}
 
-          {employee.userContact.businessPhone && (
+          {employee.userContact?.businessPhone && (
             <TouchableOpacity
               style={styles.contactRow}
               onPress={() => handlePhonePress(employee.userContact.businessPhone)}
@@ -214,7 +205,7 @@ export default function EmployeeDetailScreen() {
             </TouchableOpacity>
           )}
 
-          {employee.userContact.email && (
+          {employee.userContact?.email && (
             <TouchableOpacity
               style={styles.contactRow}
               onPress={() => handleEmailPress(employee.userContact.email)}
@@ -226,26 +217,26 @@ export default function EmployeeDetailScreen() {
 
           {socialMedia && (
             <View style={styles.socialRow}>
-              {socialMedia.linkedinLink && (
+              {socialMedia.linkedin && (
                 <TouchableOpacity
                   style={styles.socialButton}
-                  onPress={() => handleSocialPress(socialMedia.linkedinLink)}
+                  onPress={() => handleSocialPress(socialMedia.linkedin)}
                 >
                   <Linkedin size={24} color="#0077B5" />
                 </TouchableOpacity>
               )}
-              {socialMedia.facebookLink && (
+              {socialMedia.facebook && (
                 <TouchableOpacity
                   style={styles.socialButton}
-                  onPress={() => handleSocialPress(socialMedia.facebookLink)}
+                  onPress={() => handleSocialPress(socialMedia.facebook)}
                 >
                   <Facebook size={24} color="#1877F2" />
                 </TouchableOpacity>
               )}
-              {socialMedia.instagramLink && (
+              {socialMedia.instagram && (
                 <TouchableOpacity
                   style={styles.socialButton}
-                  onPress={() => handleSocialPress(socialMedia.instagramLink)}
+                  onPress={() => handleSocialPress(socialMedia.instagram)}
                 >
                   <Instagram size={24} color="#E4405F" />
                 </TouchableOpacity>
@@ -256,15 +247,17 @@ export default function EmployeeDetailScreen() {
 
         <View style={styles.divider} />
 
-        <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>İşe Başlama Tarihi</Text>
-          <Text style={styles.dateText}>
-            {formatDate(employee.personalInformation.jobStartDate)}
-          </Text>
-          <Text style={styles.durationText}>
-            {calculateWorkDuration(employee.personalInformation.jobStartDate)}
-          </Text>
-        </View>
+        {employee.personalInformation?.jobStartDate && (
+          <View style={styles.infoSection}>
+            <Text style={styles.sectionTitle}>İşe Başlama Tarihi</Text>
+            <Text style={styles.dateText}>
+              {formatDate(employee.personalInformation.jobStartDate)}
+            </Text>
+            <Text style={styles.durationText}>
+              {calculateWorkDuration(employee.personalInformation.jobStartDate)}
+            </Text>
+          </View>
+        )}
 
         <View style={styles.detailsGrid}>
           {employee.currentTitle && (
@@ -272,7 +265,7 @@ export default function EmployeeDetailScreen() {
               <View style={styles.detailIconWrapper}>
                 <Briefcase size={20} color="#7C3AED" />
               </View>
-              <Text style={styles.detailLabel}>Ürün ve Pazarlama Direktörlüğü</Text>
+              <Text style={styles.detailLabel}>{employee.currentTitle}</Text>
             </View>
           )}
 
@@ -285,14 +278,16 @@ export default function EmployeeDetailScreen() {
             </View>
           )}
 
-          <View style={styles.detailCard}>
-            <View style={styles.detailIconWrapper}>
-              <Building2 size={20} color="#7C3AED" />
+          {employee.personalInformation?.workPlace && (
+            <View style={styles.detailCard}>
+              <View style={styles.detailIconWrapper}>
+                <Building2 size={20} color="#7C3AED" />
+              </View>
+              <Text style={styles.detailLabel}>
+                {employee.personalInformation.workPlace}
+              </Text>
             </View>
-            <Text style={styles.detailLabel}>
-              {employee.personalInformation.workPlace || 'Artı365 Danışmanlık'}
-            </Text>
-          </View>
+          )}
 
           <View style={styles.detailCard}>
             <View style={styles.detailIconWrapper}>
@@ -317,7 +312,7 @@ export default function EmployeeDetailScreen() {
           <Text style={styles.closeFooterButtonText}>Kapat</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -346,7 +341,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingTop: 60,
+    paddingTop: 16,
     paddingBottom: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
@@ -361,7 +356,7 @@ const styles = StyleSheet.create({
   closeButton: {
     position: 'absolute',
     right: 16,
-    top: 60,
+    top: 16,
     padding: 4,
   },
   content: {
