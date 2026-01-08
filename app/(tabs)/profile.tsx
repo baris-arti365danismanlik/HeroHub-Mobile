@@ -660,7 +660,27 @@ export default function ProfileScreen() {
   };
 
   const handleAddAsset = async () => {
-    if (!user?.backend_user_id || !assetForm.categoryId || !assetForm.serialNo || !assetForm.deliveryDate) {
+    console.log('handleAddAsset called');
+    console.log('user.backend_user_id:', user?.backend_user_id);
+    console.log('assetForm:', assetForm);
+
+    if (!user?.backend_user_id) {
+      console.log('Missing user.backend_user_id');
+      return;
+    }
+
+    if (!assetForm.categoryId) {
+      console.log('Missing categoryId');
+      return;
+    }
+
+    if (!assetForm.serialNo) {
+      console.log('Missing serialNo');
+      return;
+    }
+
+    if (!assetForm.deliveryDate) {
+      console.log('Missing deliveryDate');
       return;
     }
 
@@ -668,14 +688,20 @@ export default function ProfileScreen() {
       setAssetLoading(true);
 
       const formattedDeliveryDate = formatDateForBackend(assetForm.deliveryDate);
+      console.log('formattedDeliveryDate:', formattedDeliveryDate);
 
-      await assetService.createAsset({
+      const payload = {
         userId: Number(user.backend_user_id),
         categoryId: assetForm.categoryId,
         serialNo: assetForm.serialNo,
         description: assetForm.description,
         deliveryDate: formattedDeliveryDate,
-      });
+      };
+
+      console.log('Sending payload:', payload);
+
+      const result = await assetService.createAsset(payload);
+      console.log('createAsset result:', result);
 
       setAssetForm({
         categoryId: assetCategories.length > 0 ? assetCategories[0].id : 0,
@@ -1291,6 +1317,15 @@ export default function ProfileScreen() {
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => {
+              setAssetForm({
+                categoryId: assetCategories.length > 0 ? assetCategories[0].id : 0,
+                categoryName: assetCategories.length > 0 ? assetCategories[0].name : '',
+                serialNo: '',
+                description: '',
+                deliveryDate: '',
+                returnDate: '',
+              });
+              setCategoryDropdownOpen(false);
               loadBadgeCardInfo();
               setAssetModalVisible(true);
             }}
@@ -2303,7 +2338,11 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.modalContent}>
+            <ScrollView
+              style={styles.modalContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
               <View style={styles.modalUserCard}>
                 {badgeCardInfo?.profilePhoto ? (
                   <Image
@@ -2327,7 +2366,7 @@ export default function ProfileScreen() {
                   style={styles.formDropdownTrigger}
                   onPress={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
                 >
-                  <Text style={styles.formDropdownText}>
+                  <Text style={[styles.formDropdownText, !assetForm.categoryName && styles.placeholderText]}>
                     {assetForm.categoryName || 'Kategori seçin'}
                   </Text>
                   <ChevronDown size={20} color="#666" />
@@ -2335,39 +2374,33 @@ export default function ProfileScreen() {
 
                 {categoryDropdownOpen && (
                   <View style={styles.formDropdownList}>
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      style={styles.categoryScrollView}
-                    >
-                      {assetCategories.map((category) => (
-                        <TouchableOpacity
-                          key={category.id}
-                          style={[
-                            styles.categoryChip,
-                            assetForm.categoryId === category.id && styles.categoryChipSelected,
-                          ]}
-                          onPress={() => {
-                            setAssetForm({
-                              ...assetForm,
-                              categoryId: category.id,
-                              categoryName: category.name,
-                            });
-                            setCategoryDropdownOpen(false);
-                          }}
-                        >
-                          <Text style={[
-                            styles.categoryChipText,
-                            assetForm.categoryId === category.id && styles.categoryChipTextSelected,
-                          ]}>
-                            {category.name}
-                          </Text>
-                          {assetForm.categoryId === category.id && (
-                            <Check size={16} color="#7C3AED" />
-                          )}
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
+                    {assetCategories.map((category) => (
+                      <TouchableOpacity
+                        key={category.id}
+                        style={[
+                          styles.categoryOptionItem,
+                          assetForm.categoryId === category.id && styles.categoryOptionItemSelected,
+                        ]}
+                        onPress={() => {
+                          setAssetForm({
+                            ...assetForm,
+                            categoryId: category.id,
+                            categoryName: category.name,
+                          });
+                          setCategoryDropdownOpen(false);
+                        }}
+                      >
+                        <Text style={[
+                          styles.categoryOptionItemText,
+                          assetForm.categoryId === category.id && styles.categoryOptionItemTextSelected,
+                        ]}>
+                          {category.name}
+                        </Text>
+                        {assetForm.categoryId === category.id && (
+                          <Check size={16} color="#7C3AED" />
+                        )}
+                      </TouchableOpacity>
+                    ))}
                   </View>
                 )}
               </View>
@@ -2397,33 +2430,31 @@ export default function ProfileScreen() {
 
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Teslim Tarihi</Text>
-                <TouchableOpacity style={styles.formDatePicker}>
+                <View style={styles.formDatePicker}>
                   <TextInput
                     style={styles.formDateInput}
                     placeholder="12 / 23 / 2023"
                     value={assetForm.deliveryDate}
                     onChangeText={(text) => setAssetForm({...assetForm, deliveryDate: text})}
+                    editable={true}
                   />
                   <Calendar size={20} color="#7C3AED" />
-                </TouchableOpacity>
+                </View>
               </View>
 
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>İade Tarihi</Text>
-                <TouchableOpacity style={styles.formDatePicker}>
+                <View style={styles.formDatePicker}>
                   <TextInput
                     style={styles.formDateInput}
                     placeholder="12 / 23 / 2023"
                     value={assetForm.returnDate}
                     onChangeText={(text) => setAssetForm({...assetForm, returnDate: text})}
+                    editable={true}
                   />
                   <Calendar size={20} color="#7C3AED" />
-                </TouchableOpacity>
+                </View>
               </View>
-
-              <TouchableOpacity style={styles.addFileButton}>
-                <Text style={styles.addFileText}>Dosya Ekle</Text>
-              </TouchableOpacity>
             </ScrollView>
 
             <View style={styles.modalFooter}>
@@ -3921,7 +3952,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     borderRadius: 8,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 4,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -3929,7 +3960,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     color: '#1a1a1a',
-    padding: 0,
+    padding: 10,
+    backgroundColor: 'transparent',
   },
   addFileButton: {
     marginBottom: 20,
@@ -4921,34 +4953,29 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
-    padding: 8,
     maxHeight: 200,
   },
-  categoryScrollView: {
-    flexGrow: 0,
-  },
-  categoryChip: {
+  categoryOptionItem: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 8,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    marginRight: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
-  categoryChipSelected: {
+  categoryOptionItemSelected: {
     backgroundColor: '#f5f3ff',
-    borderColor: '#7C3AED',
   },
-  categoryChipText: {
-    fontSize: 14,
-    color: '#666',
+  categoryOptionItemText: {
+    fontSize: 15,
+    color: '#333',
   },
-  categoryChipTextSelected: {
+  categoryOptionItemTextSelected: {
     color: '#7C3AED',
     fontWeight: '600',
+  },
+  placeholderText: {
+    color: '#999',
   },
 });
