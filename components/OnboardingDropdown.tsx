@@ -12,6 +12,7 @@ import { Diamond, ChevronDown, X } from 'lucide-react-native';
 import { onboardingService } from '@/services/onboarding.service';
 import { OnboardingProcess, WelcomePackageForm } from '@/types/backend';
 import { WelcomePackageModal } from './WelcomePackageModal';
+import { SuccessModal } from './SuccessModal';
 
 interface OnboardingDropdownProps {
   userId: number;
@@ -24,6 +25,7 @@ export function OnboardingDropdown({ userId, organizationId }: OnboardingDropdow
   const [process, setProcess] = useState<OnboardingProcess | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [welcomeModalVisible, setWelcomeModalVisible] = useState(false);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -46,9 +48,10 @@ export function OnboardingDropdown({ userId, organizationId }: OnboardingDropdow
   };
 
   const handleWelcomePackageSubmit = async (form: WelcomePackageForm) => {
-    const success = await onboardingService.sendWelcomePackage(userId);
+    const success = await onboardingService.sendWelcomePackage(userId, form);
     if (success) {
       await loadOnboardingProcess();
+      setSuccessModalVisible(true);
     }
   };
 
@@ -226,6 +229,13 @@ export function OnboardingDropdown({ userId, organizationId }: OnboardingDropdow
         userId={userId}
         organizationId={organizationId}
         onSubmit={handleWelcomePackageSubmit}
+      />
+
+      <SuccessModal
+        visible={successModalVisible}
+        onClose={() => setSuccessModalVisible(false)}
+        title="Hoşgeldin Paketi"
+        message="Hoşgeldin paketi başarıyla gönderildi"
       />
     </>
   );

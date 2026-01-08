@@ -4,6 +4,7 @@ import {
   OnboardingQuestionItem,
   UserOnboardingTaskItem,
   OnboardingProcess,
+  WelcomePackageForm,
 } from '@/types/backend';
 
 export const onboardingService = {
@@ -57,11 +58,27 @@ export const onboardingService = {
     }
   },
 
-  async sendWelcomePackage(userId: number): Promise<boolean> {
+  async sendWelcomePackage(
+    userId: number,
+    formData?: WelcomePackageForm
+  ): Promise<boolean> {
     try {
+      const requestBody = formData
+        ? {
+            userId,
+            email: formData.email,
+            startDate: formData.startDate,
+            arrivalTime: formData.arrivalTime,
+            arrivalAddress: formData.arrivalAddress,
+            greeterUserId: formData.greeterUserId,
+            managerId: formData.managerId,
+            otherInstructions: formData.otherInstructions,
+          }
+        : { userId };
+
       const response = await apiClient.post(
         `/OnboardingQuestion/send-welcome-package`,
-        { userId }
+        requestBody
       );
       return response.succeeded || false;
     } catch (error) {
