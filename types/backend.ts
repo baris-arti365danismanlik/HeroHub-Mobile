@@ -590,3 +590,76 @@ export interface UserProfileDetails {
   dayOffs: any[];
   userStatus: number;
 }
+
+export interface WorkingInformation {
+  id: number;
+  userId: number;
+  fullname: string;
+  personnelNumber: string;
+  jobStartDate: string;
+  workPlaceName: string | null;
+  workType: number;
+  workNotes: string;
+  jobEndDate: string | null;
+  reasonForLeaving: string | null;
+  isCurrent: boolean;
+}
+
+export interface Position {
+  id: number;
+  userId: number;
+  positionName: string;
+  startDate: string;
+  endDate: string | null;
+  isCurrent: boolean;
+}
+
+export interface UserSalary {
+  id: number;
+  userId: number;
+  salary: number;
+  currency: string;
+  effectiveDate: string;
+}
+
+export interface UserTitle {
+  id: number;
+  name: string;
+  organizationId: number;
+}
+
+export interface ManagerUser {
+  managerUserId: number;
+  managerUserName: string;
+  departmentId: number;
+  departmentName: string;
+}
+
+export interface Department {
+  id: number;
+  name: string;
+  organizationId: number;
+  workPlaceId: number;
+}
+
+export interface Workplace {
+  id: number;
+  name: string;
+  organizationId: number;
+}
+
+export interface City {
+  name: string;
+  plateNo: string;
+  phoneCode: string;
+  countryId: number;
+  id: number;
+  unique: string;
+  createdAt: string;
+  deletedAt: string | null;
+  updatedAt: string | null;
+  createdBy: string;
+  deletedBy: string | null;
+  updatedBy: string | null;
+  isActive: boolean;
+}

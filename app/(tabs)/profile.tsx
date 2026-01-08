@@ -56,6 +56,7 @@ import { inboxService } from '@/services/inbox.service';
 import { onboardingService } from '@/services/onboarding.service';
 import { pdksService } from '@/services/pdks.service';
 import { userService } from '@/services/user.service';
+import { employmentService } from '@/services/employment.service';
 import {
   Asset,
   AssetStatus,
@@ -71,6 +72,14 @@ import {
   UserProfileDetails,
   Country,
   ModulePermission,
+  WorkingInformation,
+  Position,
+  UserSalary,
+  UserTitle,
+  ManagerUser,
+  Department,
+  Workplace,
+  City,
 } from '@/types/backend';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
@@ -164,6 +173,16 @@ export default function ProfileScreen() {
   } | null>(null);
   const [renameModalVisible, setRenameModalVisible] = useState(false);
   const [renameInput, setRenameInput] = useState('');
+
+  const [employmentLoading, setEmploymentLoading] = useState(false);
+  const [workingInformation, setWorkingInformation] = useState<WorkingInformation[]>([]);
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [userSalary, setUserSalary] = useState<UserSalary | null>(null);
+  const [userTitles, setUserTitles] = useState<UserTitle[]>([]);
+  const [managerUsers, setManagerUsers] = useState<ManagerUser[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [workplaces, setWorkplaces] = useState<Workplace[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
 
   const [profileEditModalVisible, setProfileEditModalVisible] = useState(false);
   const [profileEditForm, setProfileEditForm] = useState({
@@ -399,6 +418,47 @@ export default function ProfileScreen() {
     setMilitaryEditModalVisible(false);
   };
 
+  const loadEmploymentData = async () => {
+    if (!user?.backend_user_id) return;
+
+    try {
+      setEmploymentLoading(true);
+
+      const [
+        workingInfo,
+        positionsData,
+        salaryData,
+        titlesData,
+        managersData,
+        departmentsData,
+        workplacesData,
+        citiesData,
+      ] = await Promise.all([
+        employmentService.getWorkingInformation(user.backend_user_id),
+        employmentService.getPositions(user.backend_user_id),
+        employmentService.getUserSalary(user.backend_user_id),
+        employmentService.getUserTitles(2),
+        employmentService.getManagerUsers(),
+        employmentService.getOrganizationDepartments(),
+        employmentService.getWorkplaces(),
+        employmentService.getCities(1),
+      ]);
+
+      setWorkingInformation(workingInfo);
+      setPositions(positionsData);
+      setUserSalary(salaryData);
+      setUserTitles(titlesData);
+      setManagerUsers(managersData);
+      setDepartments(departmentsData);
+      setWorkplaces(workplacesData);
+      setCities(citiesData);
+    } catch (error) {
+      console.error('Error loading employment data:', error);
+    } finally {
+      setEmploymentLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user?.id) {
       loadAssets();
@@ -408,6 +468,12 @@ export default function ProfileScreen() {
       loadPDKSData();
     }
   }, [user?.id, selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    if (user?.backend_user_id && selectedSection === 'Çalışma Bilgileri') {
+      loadEmploymentData();
+    }
+  }, [user?.backend_user_id, selectedSection]);
 
   const loadUnreadCount = async () => {
     if (!user?.id) return;
@@ -873,98 +939,127 @@ export default function ProfileScreen() {
     </>
   );
 
-  const renderWorkInfoSection = () => (
-    <>
-      <Accordion
-        title="ÇALIŞAN BİLGİLERİ"
-        icon={<UserIcon size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <InfoRow label="İşe Giriş Tarihi" value="05.09.2012" />
-        <InfoRow label="Çalışma Şekli" value="Tam Zamanlı" isLast />
-      </Accordion>
+  const getWorkTypeName = (workType: number) => {
+    const types: Record<number, string> = {
+      0: 'Ofis',
+      1: 'Uzaktan',
+      2: 'Hibrit',
+    };
+    return types[workType] || 'Bilinmiyor';
+  };
 
-      <Accordion
-        title="POZİSYON BİLGİLERİ"
-        icon={<Briefcase size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <WorkInfoCard
-          title="Şube Müdürü"
-          details={[
-            { label: 'Tarih', value: '05.09.2021' },
-            { label: 'Departman', value: 'Banka Yönetimi' },
-            { label: 'İş Yeri', value: 'İstanbul (ANB.)' },
-            { label: 'Konum', value: 'Altunizade' },
-            { label: 'Yönetici', value: 'Selim Yücesoy', isHighlight: true },
-          ]}
-          onEdit={() => handleEdit('position-current')}
-        />
+  const renderWorkInfoSection = () => {
+    const currentWorkInfo = workingInformation.find(w => w.isCurrent);
+    const currentPositions = positions.filter(p => p.isCurrent);
+    const pastPositions = positions.filter(p => !p.isCurrent);
 
-        <WorkInfoCard
-          title="Kredi Puanlama Yetkilisi"
-          details={[
-            { label: 'Tarih', value: '05.09.2020' },
-            { label: 'Departman', value: 'Kredi Departmanı' },
-            { label: 'İş Yeri', value: 'İstanbul (AVR.)' },
-            { label: 'Konum', value: 'Galata' },
-            { label: 'Yönetici', value: 'Mert Gözüdağ', isHighlight: true },
-          ]}
-          onEdit={() => handleEdit('position-past')}
-          isPast
-        />
-      </Accordion>
+    return (
+      <>
+        <Accordion
+          title="ÇALIŞAN BİLGİLERİ"
+          icon={<UserIcon size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+        >
+          {employmentLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#7C3AED" />
+            </View>
+          ) : currentWorkInfo ? (
+            <>
+              <InfoRow
+                label="Personel No"
+                value={currentWorkInfo.personnelNumber}
+              />
+              <InfoRow
+                label="İşe Giriş Tarihi"
+                value={formatDate(currentWorkInfo.jobStartDate)}
+              />
+              <InfoRow
+                label="Çalışma Şekli"
+                value={getWorkTypeName(currentWorkInfo.workType)}
+              />
+              {currentWorkInfo.workNotes && (
+                <InfoRow
+                  label="Notlar"
+                  value={currentWorkInfo.workNotes}
+                  isLast
+                />
+              )}
+            </>
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>Çalışan bilgisi bulunmuyor</Text>
+            </View>
+          )}
+        </Accordion>
 
-      <Accordion
-        title="MAAŞ BİLGİLERİ"
-        icon={<DollarSign size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <WorkInfoCard
-          title="80.000 ₺"
-          details={[
-            { label: 'Tarih', value: '05.09.2021' },
-            { label: 'Güncelleme Nedeni', value: 'Terfi' },
-          ]}
-          onEdit={() => handleEdit('salary-current')}
-        />
+        <Accordion
+          title="POZİSYON BİLGİLERİ"
+          icon={<Briefcase size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+        >
+          {employmentLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#7C3AED" />
+            </View>
+          ) : positions.length > 0 ? (
+            <>
+              {currentPositions.map((position) => (
+                <WorkInfoCard
+                  key={position.id}
+                  title={position.positionName}
+                  details={[
+                    { label: 'Başlangıç', value: formatDate(position.startDate) },
+                  ]}
+                  onEdit={() => handleEdit('position-current')}
+                />
+              ))}
+              {pastPositions.map((position) => (
+                <WorkInfoCard
+                  key={position.id}
+                  title={position.positionName}
+                  details={[
+                    { label: 'Başlangıç', value: formatDate(position.startDate) },
+                    { label: 'Bitiş', value: formatDate(position.endDate || '') },
+                  ]}
+                  onEdit={() => handleEdit('position-past')}
+                  isPast
+                />
+              ))}
+            </>
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>Pozisyon bilgisi bulunmuyor</Text>
+            </View>
+          )}
+        </Accordion>
 
-        <WorkInfoCard
-          title="50.000 ₺"
-          details={[
-            { label: 'Tarih', value: '05.09.2020' },
-            { label: 'Güncelleme Nedeni', value: 'Terfi' },
-          ]}
-          onEdit={() => handleEdit('salary-past')}
-          isPast
-        />
-      </Accordion>
-
-      <Accordion
-        title="BAĞLI ÇALIŞANLAR"
-        icon={<Users2 size={18} color="#7C3AED" />}
-        defaultExpanded={false}
-      >
-        <WorkInfoCard
-          title="Görkem Çağlayan"
-          details={[
-            { label: 'Ünvanı', value: 'Pazarlama Direktörü' },
-            { label: 'İşe Giriş Tarihi', value: '12.10.2020' },
-          ]}
-          onEdit={() => handleEdit('employee-1')}
-        />
-
-        <WorkInfoCard
-          title="Melisa Toköz"
-          details={[
-            { label: 'Ünvanı', value: 'Dijital Pazarlama Müdürü' },
-            { label: 'İşe Giriş Tarihi', value: '12.10.2021' },
-          ]}
-          onEdit={() => handleEdit('employee-2')}
-        />
-      </Accordion>
-    </>
-  );
+        <Accordion
+          title="MAAŞ BİLGİLERİ"
+          icon={<DollarSign size={18} color="#7C3AED" />}
+          defaultExpanded={false}
+        >
+          {employmentLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#7C3AED" />
+            </View>
+          ) : userSalary ? (
+            <WorkInfoCard
+              title={`${userSalary.salary.toLocaleString('tr-TR')} ${userSalary.currency}`}
+              details={[
+                { label: 'Geçerlilik Tarihi', value: formatDate(userSalary.effectiveDate) },
+              ]}
+              onEdit={() => handleEdit('salary-current')}
+            />
+          ) : (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>Maaş bilgisi bulunmuyor</Text>
+            </View>
+          )}
+        </Accordion>
+      </>
+    );
+  };
 
   const calculateWorkDuration = (startDate: string) => {
     const start = new Date(startDate);
