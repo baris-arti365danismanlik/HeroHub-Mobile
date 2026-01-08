@@ -46,6 +46,10 @@ export default function EmployeesScreen() {
   const [titles, setTitles] = useState<UserTitle[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState<number | null>(null);
   const [selectedTitle, setSelectedTitle] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<'alphabetic' | 'date'>('alphabetic');
+  const [filterByTitle, setFilterByTitle] = useState<'all' | number>('all');
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [showTitleDropdown, setShowTitleDropdown] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -80,18 +84,50 @@ export default function EmployeesScreen() {
     loadData();
   };
 
-  const filteredGroupedEmployees = groupedEmployees
-    .map((group) => ({
-      ...group,
-      workers: group.workers.filter((worker) => {
-        const matchesSearch =
-          worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (worker.position && worker.position.toLowerCase().includes(searchQuery.toLowerCase()));
+  const getProcessedEmployees = () => {
+    let allWorkers = groupedEmployees.flatMap(group => group.workers);
 
-        return matchesSearch;
-      }),
-    }))
-    .filter((group) => group.workers.length > 0);
+    if (searchQuery) {
+      allWorkers = allWorkers.filter((worker) =>
+        worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (worker.position && worker.position.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+
+    if (filterByTitle !== 'all') {
+      const selectedTitleName = titles.find(t => t.id === filterByTitle)?.name;
+      if (selectedTitleName) {
+        allWorkers = allWorkers.filter(worker => worker.position === selectedTitleName);
+      }
+    }
+
+    if (sortBy === 'date') {
+      allWorkers.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+
+      return [{
+        key: 'Tarih',
+        workers: allWorkers
+      }];
+    } else {
+      const grouped: { [key: string]: typeof allWorkers } = {};
+      allWorkers.forEach(worker => {
+        const firstLetter = worker.name.charAt(0).toUpperCase();
+        if (!grouped[firstLetter]) {
+          grouped[firstLetter] = [];
+        }
+        grouped[firstLetter].push(worker);
+      });
+
+      return Object.keys(grouped)
+        .sort()
+        .map(key => ({
+          key,
+          workers: grouped[key].sort((a, b) => a.name.localeCompare(b.name, 'tr'))
+        }));
+    }
+  };
+
+  const filteredGroupedEmployees = getProcessedEmployees();
 
   const renderTreeEmployee = (employee: TreeEmployee, depth: number = 0) => {
     return (
@@ -141,6 +177,16 @@ export default function EmployeesScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {(showSortDropdown || showTitleDropdown) && (
+        <TouchableOpacity
+          style={styles.dropdownOverlay}
+          activeOpacity={1}
+          onPress={() => {
+            setShowSortDropdown(false);
+            setShowTitleDropdown(false);
+          }}
+        />
+      )}
       <View style={styles.topSection}>
         <View style={styles.titleRow}>
           <UsersIcon size={20} color="#666" />
@@ -192,14 +238,120 @@ export default function EmployeesScreen() {
 
         {viewMode === 'list' && (
           <View style={styles.filterRow}>
-            <TouchableOpacity style={styles.filterButton} activeOpacity={0.7}>
-              <Text style={styles.filterButtonText}>Alfabetik</Text>
-              <ChevronDown size={16} color="#666" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterButton} activeOpacity={0.7}>
-              <Text style={styles.filterButtonText}>Tüm Çalışanlar</Text>
-              <ChevronDown size={16} color="#666" />
-            </TouchableOpacity>
+            <View style={styles.dropdownWrapper}>
+              <TouchableOpacity
+                style={styles.filterButton}
+                activeOpacity={0.7}
+                onPress={() => {
+                  setShowSortDropdown(!showSortDropdown);
+                  setShowTitleDropdown(false);
+                }}
+              >
+                <Text style={styles.filterButtonText}>
+                  {sortBy === 'alphabetic' ? 'Alfabetik' : 'Tarih'}
+                </Text>
+                <ChevronDown size={16} color="#666" />
+              </TouchableOpacity>
+              {showSortDropdown && (
+                <View style={styles.dropdownMenu}>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownItem,
+                      sortBy === 'alphabetic' && styles.dropdownItemActive
+                    ]}
+                    onPress={() => {
+                      setSortBy('alphabetic');
+                      setShowSortDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      sortBy === 'alphabetic' && styles.dropdownItemTextActive
+                    ]}>
+                      Alfabetik
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownItem,
+                      styles.dropdownItemLast,
+                      sortBy === 'date' && styles.dropdownItemActive
+                    ]}
+                    onPress={() => {
+                      setSortBy('date');
+                      setShowSortDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      sortBy === 'date' && styles.dropdownItemTextActive
+                    ]}>
+                      Tarih
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.dropdownWrapper}>
+              <TouchableOpacity
+                style={styles.filterButton}
+                activeOpacity={0.7}
+                onPress={() => {
+                  setShowTitleDropdown(!showTitleDropdown);
+                  setShowSortDropdown(false);
+                }}
+              >
+                <Text style={styles.filterButtonText}>
+                  {filterByTitle === 'all'
+                    ? 'Tüm Çalışanlar'
+                    : titles.find(t => t.id === filterByTitle)?.name || 'Tüm Çalışanlar'}
+                </Text>
+                <ChevronDown size={16} color="#666" />
+              </TouchableOpacity>
+              {showTitleDropdown && (
+                <ScrollView style={styles.dropdownMenu} nestedScrollEnabled>
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownItem,
+                      filterByTitle === 'all' && styles.dropdownItemActive
+                    ]}
+                    onPress={() => {
+                      setFilterByTitle('all');
+                      setShowTitleDropdown(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.dropdownItemText,
+                      filterByTitle === 'all' && styles.dropdownItemTextActive
+                    ]}>
+                      Tüm Çalışanlar
+                    </Text>
+                  </TouchableOpacity>
+                  {titles.map((title, index) => (
+                    <TouchableOpacity
+                      key={title.id}
+                      style={[
+                        styles.dropdownItem,
+                        index === titles.length - 1 && styles.dropdownItemLast,
+                        filterByTitle === title.id && styles.dropdownItemActive
+                      ]}
+                      onPress={() => {
+                        setFilterByTitle(title.id);
+                        setShowTitleDropdown(false);
+                      }}
+                    >
+                      <Text style={[
+                        styles.dropdownItemText,
+                        filterByTitle === title.id && styles.dropdownItemTextActive
+                      ]}>
+                        {title.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
           </View>
         )}
       </View>
@@ -269,6 +421,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
+  },
+  dropdownOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
   },
   loadingContainer: {
     flex: 1,
@@ -345,10 +505,16 @@ const styles = StyleSheet.create({
   filterRow: {
     flexDirection: 'row',
     gap: 8,
+    zIndex: 1000,
+  },
+  dropdownWrapper: {
+    position: 'relative',
+    flex: 1,
   },
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -360,6 +526,43 @@ const styles = StyleSheet.create({
   filterButtonText: {
     fontSize: 14,
     color: '#333',
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 42,
+    left: 0,
+    right: 0,
+    maxHeight: 250,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1001,
+  },
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  dropdownItemLast: {
+    borderBottomWidth: 0,
+  },
+  dropdownItemActive: {
+    backgroundColor: '#F5F3FF',
+  },
+  dropdownItemText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  dropdownItemTextActive: {
+    color: '#7C3AED',
+    fontWeight: '600',
   },
   content: {
     flex: 1,
