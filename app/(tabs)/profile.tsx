@@ -87,6 +87,7 @@ import {
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
 import { DatePicker } from '@/components/DatePicker';
+import { PDKSModal } from '@/components/PDKSModal';
 import {
   formatGender,
   formatBloodType,
@@ -248,6 +249,7 @@ export default function ProfileScreen() {
   });
 
   const [shiftChangeModalVisible, setShiftChangeModalVisible] = useState(false);
+  const [pdksModalVisible, setPdksModalVisible] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date(2025, 2, 1));
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
 
@@ -2304,7 +2306,13 @@ export default function ProfileScreen() {
           <ProfileDropdown
             options={profileSections}
             selectedOption={selectedSection}
-            onSelect={setSelectedSection}
+            onSelect={(section) => {
+              if (section === 'PDKS') {
+                setPdksModalVisible(true);
+              } else {
+                setSelectedSection(section);
+              }
+            }}
           />
 
           <View style={styles.sectionsContainer}>
@@ -2854,6 +2862,14 @@ export default function ProfileScreen() {
           onClose={() => setInboxVisible(false)}
           userId={user.id}
           onUnreadCountChange={setUnreadCount}
+        />
+      )}
+
+      {user && user.backend_user_id && (
+        <PDKSModal
+          visible={pdksModalVisible}
+          onClose={() => setPdksModalVisible(false)}
+          userId={user.backend_user_id}
         />
       )}
 
