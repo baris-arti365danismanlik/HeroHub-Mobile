@@ -28,12 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const currentUser = await authService.getCurrentUser();
         if (currentUser) {
           setUser(currentUser);
-        } else {
-          await authService.logout();
         }
       }
     } catch (error) {
-      await authService.logout();
+      console.error('Error checking auth:', error);
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(currentUser);
       }
     } catch (error) {
-      await authService.logout();
+      console.error('Error refreshing user:', error);
     }
   };
 

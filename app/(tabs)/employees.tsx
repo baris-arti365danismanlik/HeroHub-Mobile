@@ -24,7 +24,6 @@ import {
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { AddEmployeeModal, EmployeeFormData } from '@/components/AddEmployeeModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'expo-router';
 import { userService } from '@/services/user.service';
 import { employmentService } from '@/services/employment.service';
 import type {
@@ -52,7 +51,6 @@ export default function EmployeesScreen() {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showTitleDropdown, setShowTitleDropdown] = useState(false);
   const { user } = useAuth();
-  const router = useRouter();
 
   useEffect(() => {
     loadData();
@@ -136,11 +134,7 @@ export default function EmployeesScreen() {
 
     return (
       <View key={employee.id} style={styles.treeNodeContainer}>
-        <TouchableOpacity
-          style={styles.treeEmployeeCard}
-          activeOpacity={0.7}
-          onPress={() => router.push(`/employees/${employee.id}`)}
-        >
+        <View style={styles.treeEmployeeCard}>
           <View style={styles.treeCardContent}>
             <View style={styles.treeAvatar}>
               {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
@@ -162,7 +156,7 @@ export default function EmployeesScreen() {
               )}
             </View>
           </View>
-        </TouchableOpacity>
+        </View>
 
         {hasChildren && (
           <>
@@ -401,12 +395,7 @@ export default function EmployeesScreen() {
                 <Text style={styles.letterText}>{group.key}</Text>
               </View>
               {group.workers.map((worker) => (
-                <TouchableOpacity
-                  key={worker.id}
-                  style={styles.employeeCard}
-                  activeOpacity={0.7}
-                  onPress={() => router.push(`/employees/${worker.id}`)}
-                >
+                <View key={worker.id} style={styles.employeeCard}>
                   <View style={styles.avatar}>
                     {worker.profilePhoto && worker.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
                       <Image source={{ uri: worker.profilePhoto }} style={styles.avatarImage} />
@@ -437,7 +426,7 @@ export default function EmployeesScreen() {
                       <Text style={styles.infoText}>{worker.workPlaceName}</Text>
                     </View>
                   </View>
-                </TouchableOpacity>
+                </View>
               ))}
             </View>
           ))}

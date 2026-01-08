@@ -78,6 +78,7 @@ class HttpClient {
 
       throw new Error('Invalid refresh response');
     } catch (error) {
+      console.error('Refresh token error:', error);
       await tokenStorage.clearTokens();
       return null;
     }
@@ -138,6 +139,8 @@ class HttpClient {
       });
     }
 
+    console.log(`[HTTP GET] ${url.toString()}`);
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -165,6 +168,8 @@ class HttpClient {
     const makeRequest = async () => {
       const headers = await this.getHeaders(includeAuth);
       const url = `${this.baseURL}${endpoint}`;
+
+      console.log(`curl -X POST -H 'Content-Type: application/json' ${includeAuth && await tokenStorage.getToken() ? `-H 'Authorization: Bearer ${(await tokenStorage.getToken())?.substring(0, 20)}...' ` : ''}-d '${JSON.stringify(body)}' '${url}'`);
 
       return fetch(url, {
         method: 'POST',
