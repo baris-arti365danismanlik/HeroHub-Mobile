@@ -1,4 +1,5 @@
 import { apiHttpClient as apiClient } from './http.client';
+import { apiClient as newApiClient } from './api.client';
 import type {
   User,
   UserDayOff,
@@ -8,7 +9,9 @@ import type {
   ApiResponse,
   PaginatedResponse,
   UserProfileDetails,
-  Country
+  Country,
+  BadgeCardInfo,
+  GroupedDepartmentUsers
 } from '@/types/backend';
 
 class UserService {
@@ -91,6 +94,34 @@ class UserService {
   async getCountries(): Promise<Country[]> {
     const response = await apiClient.get<Country[]>('/Profile/countries');
     return response.data || [];
+  }
+
+  async getBadgeCardInfo(userId: number): Promise<BadgeCardInfo | null> {
+    try {
+      const response = await newApiClient.get<BadgeCardInfo>(
+        `/user/badgecard-info?userId=${userId}`
+      );
+      return response.data || null;
+    } catch (error) {
+      console.error('Error fetching badge card info:', error);
+      return null;
+    }
+  }
+
+  async getGroupedByDepartments(
+    organizationId: number,
+    includeHRManagers: boolean,
+    stateKey: 'personToMeet' | 'reportsTo'
+  ): Promise<GroupedDepartmentUsers | null> {
+    try {
+      const response = await newApiClient.get<GroupedDepartmentUsers>(
+        `/User/grouped-by-departments?organizationId=${organizationId}&includeHRManagers=${includeHRManagers}&stateKey=${stateKey}`
+      );
+      return response.data || null;
+    } catch (error) {
+      console.error('Error fetching grouped departments:', error);
+      return null;
+    }
   }
 }
 

@@ -1840,7 +1840,10 @@ export default function ProfileScreen() {
 
     return (
       <View style={styles.sectionsContainer}>
-        <OnboardingDropdown userId={user.backend_user_id} />
+        <OnboardingDropdown
+          userId={user.backend_user_id}
+          organizationId={user.organization_id || 2}
+        />
 
         <View style={styles.onboardingStepsContainer}>
           {onboardingData.steps.map((step, index) => {

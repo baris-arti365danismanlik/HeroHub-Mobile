@@ -49,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isActive: true,
         createdAt: new Date().toISOString(),
         backend_user_id: response.id,
+        organization_id: response.organizationId,
       };
 
       setUser(userData);

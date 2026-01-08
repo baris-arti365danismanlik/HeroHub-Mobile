@@ -109,6 +109,7 @@ export interface User {
   role?: string;
   position?: string;
   backend_user_id?: number;
+  organization_id?: number;
 }
 
 export interface UserDayOffBalance {
@@ -432,6 +433,55 @@ export interface OnboardingProcess {
   currentStepNumber: number;
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface BadgeCardInfo {
+  firstName: string;
+  lastName: string;
+  title: string;
+  fullName: string;
+  profilePhoto: string;
+  dayOffBalance: number;
+}
+
+export interface DepartmentUser {
+  id: number;
+  tckn: string | null;
+  firstName: string;
+  lastName: string;
+  reportsToTckn: string | null;
+  reportsToFirstName: string | null;
+  reportsToLastName: string | null;
+  email: string;
+  gender: string;
+  phoneNumber: string | null;
+  title: string | null;
+  workPlace: string | null;
+  userShiftPlan: string | null;
+  role: string | null;
+  loginLink: string | null;
+}
+
+export interface DepartmentGroup {
+  departmentName: string;
+  departmentId: number;
+  departmentUserCount: number;
+  users: DepartmentUser[];
+}
+
+export interface GroupedDepartmentUsers {
+  totalUserCount: number;
+  departmentUsers: DepartmentGroup[];
+}
+
+export interface WelcomePackageForm {
+  email: string;
+  startDate: string;
+  arrivalTime: string;
+  arrivalAddress: string;
+  greeterUserId: number | null;
+  managerId: number | null;
+  otherInstructions: string;
 }
 
 export enum AttendanceStatus {

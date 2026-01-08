@@ -10,17 +10,20 @@ import {
 } from 'react-native';
 import { Diamond, ChevronDown, X } from 'lucide-react-native';
 import { onboardingService } from '@/services/onboarding.service';
-import { OnboardingProcess } from '@/types/backend';
+import { OnboardingProcess, WelcomePackageForm } from '@/types/backend';
+import { WelcomePackageModal } from './WelcomePackageModal';
 
 interface OnboardingDropdownProps {
   userId: number;
+  organizationId: number;
 }
 
-export function OnboardingDropdown({ userId }: OnboardingDropdownProps) {
+export function OnboardingDropdown({ userId, organizationId }: OnboardingDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [process, setProcess] = useState<OnboardingProcess | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [welcomeModalVisible, setWelcomeModalVisible] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -39,14 +42,13 @@ export function OnboardingDropdown({ userId }: OnboardingDropdownProps) {
   };
 
   const handleSendWelcomePackage = async () => {
-    setActionLoading(true);
-    try {
-      const success = await onboardingService.sendWelcomePackage(userId);
-      if (success) {
-        await loadOnboardingProcess();
-      }
-    } finally {
-      setActionLoading(false);
+    setWelcomeModalVisible(true);
+  };
+
+  const handleWelcomePackageSubmit = async (form: WelcomePackageForm) => {
+    const success = await onboardingService.sendWelcomePackage(userId);
+    if (success) {
+      await loadOnboardingProcess();
     }
   };
 
@@ -217,6 +219,14 @@ export function OnboardingDropdown({ userId }: OnboardingDropdownProps) {
           </View>
         </View>
       </Modal>
+
+      <WelcomePackageModal
+        visible={welcomeModalVisible}
+        onClose={() => setWelcomeModalVisible(false)}
+        userId={userId}
+        organizationId={organizationId}
+        onSubmit={handleWelcomePackageSubmit}
+      />
     </>
   );
 }
