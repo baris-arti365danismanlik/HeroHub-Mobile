@@ -62,6 +62,7 @@ import {
   Asset,
   AssetStatus,
   AssetCategory,
+  BadgeCardInfo,
   LeaveRequest,
   OnboardingStep,
   OnboardingTask,
@@ -113,6 +114,8 @@ export default function ProfileScreen() {
     returnDate: '',
   });
   const [assetCategories, setAssetCategories] = useState<AssetCategory[]>([]);
+  const [badgeCardInfo, setBadgeCardInfo] = useState<BadgeCardInfo | null>(null);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [selectedYearAssets, setSelectedYearAssets] = useState('2024');
   const [selectedType, setSelectedType] = useState('Tümü');
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -520,6 +523,17 @@ export default function ProfileScreen() {
     }
   };
 
+  const loadBadgeCardInfo = async () => {
+    if (!user?.backend_user_id) return;
+
+    try {
+      const info = await assetService.getBadgeCardInfo(Number(user.backend_user_id));
+      setBadgeCardInfo(info);
+    } catch (error) {
+      console.error('Error loading badge card info:', error);
+    }
+  };
+
   const loadLeaveRequests = async () => {
     if (!user?.id) return;
 
@@ -634,6 +648,17 @@ export default function ProfileScreen() {
     }
   };
 
+  const formatDateForBackend = (dateStr: string): string => {
+    if (!dateStr) return '';
+
+    const parts = dateStr.split('/').map(p => p.trim());
+    if (parts.length === 3) {
+      const [month, day, year] = parts;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    return dateStr;
+  };
+
   const handleAddAsset = async () => {
     if (!user?.backend_user_id || !assetForm.categoryId || !assetForm.serialNo || !assetForm.deliveryDate) {
       return;
@@ -642,12 +667,14 @@ export default function ProfileScreen() {
     try {
       setAssetLoading(true);
 
+      const formattedDeliveryDate = formatDateForBackend(assetForm.deliveryDate);
+
       await assetService.createAsset({
         userId: Number(user.backend_user_id),
         categoryId: assetForm.categoryId,
         serialNo: assetForm.serialNo,
         description: assetForm.description,
-        deliveryDate: assetForm.deliveryDate,
+        deliveryDate: formattedDeliveryDate,
       });
 
       setAssetForm({
@@ -659,6 +686,7 @@ export default function ProfileScreen() {
         returnDate: '',
       });
 
+      setCategoryDropdownOpen(false);
       setAssetModalVisible(false);
       await loadAssets();
     } catch (error) {
@@ -1262,7 +1290,10 @@ export default function ProfileScreen() {
 
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => setAssetModalVisible(true)}
+            onPress={() => {
+              loadBadgeCardInfo();
+              setAssetModalVisible(true);
+            }}
           >
             <Text style={styles.addButtonText}>Zimmet Ekle</Text>
           </TouchableOpacity>
@@ -2274,9 +2305,9 @@ export default function ProfileScreen() {
 
             <ScrollView style={styles.modalContent}>
               <View style={styles.modalUserCard}>
-                {user.profilePictureUrl ? (
+                {badgeCardInfo?.profilePhoto ? (
                   <Image
-                    source={{ uri: user.profilePictureUrl }}
+                    source={{ uri: `https://faz2-api.herotr.com${badgeCardInfo.profilePhoto}` }}
                     style={styles.modalUserImage}
                   />
                 ) : (
@@ -2285,39 +2316,60 @@ export default function ProfileScreen() {
                   </View>
                 )}
                 <View style={styles.modalUserInfo}>
-                  <Text style={styles.modalUserName}>{user.firstName} {user.lastName}</Text>
-                  <Text style={styles.modalUserRole}>{userProfile?.position || 'Pozisyon'}</Text>
+                  <Text style={styles.modalUserName}>{badgeCardInfo?.fullName || `${user.firstName} ${user.lastName}`}</Text>
+                  <Text style={styles.modalUserRole}>{badgeCardInfo?.title || '—'}</Text>
                 </View>
               </View>
 
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Kategori</Text>
-                <View style={styles.formDropdown}>
-                  {assetCategories.map((category) => (
-                    <TouchableOpacity
-                      key={category.id}
-                      style={[
-                        styles.categoryOption,
-                        assetForm.categoryId === category.id && styles.categoryOptionSelected,
-                      ]}
-                      onPress={() => setAssetForm({
-                        ...assetForm,
-                        categoryId: category.id,
-                        categoryName: category.name,
-                      })}
+                <TouchableOpacity
+                  style={styles.formDropdownTrigger}
+                  onPress={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+                >
+                  <Text style={styles.formDropdownText}>
+                    {assetForm.categoryName || 'Kategori seçin'}
+                  </Text>
+                  <ChevronDown size={20} color="#666" />
+                </TouchableOpacity>
+
+                {categoryDropdownOpen && (
+                  <View style={styles.formDropdownList}>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.categoryScrollView}
                     >
-                      <Text style={[
-                        styles.categoryOptionText,
-                        assetForm.categoryId === category.id && styles.categoryOptionTextSelected,
-                      ]}>
-                        {category.name}
-                      </Text>
-                      {assetForm.categoryId === category.id && (
-                        <Check size={18} color="#7C3AED" />
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </View>
+                      {assetCategories.map((category) => (
+                        <TouchableOpacity
+                          key={category.id}
+                          style={[
+                            styles.categoryChip,
+                            assetForm.categoryId === category.id && styles.categoryChipSelected,
+                          ]}
+                          onPress={() => {
+                            setAssetForm({
+                              ...assetForm,
+                              categoryId: category.id,
+                              categoryName: category.name,
+                            });
+                            setCategoryDropdownOpen(false);
+                          }}
+                        >
+                          <Text style={[
+                            styles.categoryChipText,
+                            assetForm.categoryId === category.id && styles.categoryChipTextSelected,
+                          ]}>
+                            {category.name}
+                          </Text>
+                          {assetForm.categoryId === category.id && (
+                            <Check size={16} color="#7C3AED" />
+                          )}
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
               </View>
 
               <View style={styles.formGroup}>
@@ -4848,23 +4900,54 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
-  categoryOption: {
+  formDropdownTrigger: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#fff',
   },
-  categoryOptionSelected: {
-    backgroundColor: '#f5f3ff',
-  },
-  categoryOptionText: {
+  formDropdownText: {
     fontSize: 15,
     color: '#333',
   },
-  categoryOptionTextSelected: {
+  formDropdownList: {
+    marginTop: 8,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 8,
+    maxHeight: 200,
+  },
+  categoryScrollView: {
+    flexGrow: 0,
+  },
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginRight: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
+  },
+  categoryChipSelected: {
+    backgroundColor: '#f5f3ff',
+    borderColor: '#7C3AED',
+  },
+  categoryChipText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  categoryChipTextSelected: {
     color: '#7C3AED',
     fontWeight: '600',
   },
