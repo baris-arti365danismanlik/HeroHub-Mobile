@@ -21,7 +21,6 @@ import {
   Building2,
   Network,
 } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { AddEmployeeModal, EmployeeFormData } from '@/components/AddEmployeeModal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,7 +35,6 @@ import type {
 import { formatDate } from '@/utils/formatters';
 
 export default function EmployeesScreen() {
-  const router = useRouter();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [addEmployeeModalVisible, setAddEmployeeModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -136,11 +134,7 @@ export default function EmployeesScreen() {
 
     return (
       <View key={employee.id} style={styles.treeNodeContainer}>
-        <TouchableOpacity
-          style={styles.treeEmployeeCard}
-          activeOpacity={0.7}
-          onPress={() => router.push(`/employee/${employee.id}`)}
-        >
+        <View style={styles.treeEmployeeCard}>
           <View style={styles.treeCardContent}>
             <View style={styles.treeAvatar}>
               {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
@@ -162,7 +156,7 @@ export default function EmployeesScreen() {
               )}
             </View>
           </View>
-        </TouchableOpacity>
+        </View>
 
         {hasChildren && (
           <>
@@ -401,12 +395,7 @@ export default function EmployeesScreen() {
                 <Text style={styles.letterText}>{group.key}</Text>
               </View>
               {group.workers.map((worker) => (
-                <TouchableOpacity
-                  key={worker.id}
-                  style={styles.employeeCard}
-                  activeOpacity={0.7}
-                  onPress={() => router.push(`/employee/${worker.id}`)}
-                >
+                <View key={worker.id} style={styles.employeeCard}>
                   <View style={styles.avatar}>
                     {worker.profilePhoto && worker.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
                       <Image source={{ uri: worker.profilePhoto }} style={styles.avatarImage} />
@@ -437,7 +426,7 @@ export default function EmployeesScreen() {
                       <Text style={styles.infoText}>{worker.workPlaceName}</Text>
                     </View>
                   </View>
-                </TouchableOpacity>
+                </View>
               ))}
             </View>
           ))}
