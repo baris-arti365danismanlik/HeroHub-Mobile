@@ -56,6 +56,8 @@ export function WelcomePackageModal({
 
   const [selectedGreeter, setSelectedGreeter] = useState<DepartmentUser | null>(null);
   const [selectedManager, setSelectedManager] = useState<DepartmentUser | null>(null);
+  const [tempDate, setTempDate] = useState(new Date());
+  const [tempTime, setTempTime] = useState({ hour: 9, minute: 0 });
 
   useEffect(() => {
     if (visible) {
@@ -130,6 +132,21 @@ export function WelcomePackageModal({
     setShowManagerDropdown(false);
   };
 
+  const handleDateSelect = () => {
+    const day = String(tempDate.getDate()).padStart(2, '0');
+    const month = String(tempDate.getMonth() + 1).padStart(2, '0');
+    const year = tempDate.getFullYear();
+    const formattedDate = `${day}/${month}/${year}`;
+    setForm((prev) => ({ ...prev, startDate: formattedDate }));
+    setShowDatePicker(false);
+  };
+
+  const handleTimeSelect = () => {
+    const formattedTime = `${String(tempTime.hour).padStart(2, '0')}:${String(tempTime.minute).padStart(2, '0')}`;
+    setForm((prev) => ({ ...prev, arrivalTime: formattedTime }));
+    setShowTimePicker(false);
+  };
+
   const getInitials = (name: string) => {
     const parts = name.split(' ');
     if (parts.length >= 2) {
@@ -186,14 +203,13 @@ export function WelcomePackageModal({
                   <TouchableOpacity
                     style={styles.inputWithIcon}
                     onPress={() => setShowDatePicker(true)}>
-                    <TextInput
-                      style={styles.inputText}
-                      value={form.startDate}
-                      onChangeText={(text) => setForm((prev) => ({ ...prev, startDate: text }))}
-                      placeholder="GG/AA/YYYY"
-                      placeholderTextColor="#999"
-                      editable={false}
-                    />
+                    <Text
+                      style={[
+                        styles.inputText,
+                        !form.startDate && styles.placeholderText,
+                      ]}>
+                      {form.startDate || 'GG/AA/YYYY'}
+                    </Text>
                     <Calendar size={20} color="#6B46C1" strokeWidth={2} />
                   </TouchableOpacity>
                 </View>
@@ -203,14 +219,13 @@ export function WelcomePackageModal({
                   <TouchableOpacity
                     style={styles.inputWithIcon}
                     onPress={() => setShowTimePicker(true)}>
-                    <TextInput
-                      style={styles.inputText}
-                      value={form.arrivalTime}
-                      onChangeText={(text) => setForm((prev) => ({ ...prev, arrivalTime: text }))}
-                      placeholder="Saat seçin"
-                      placeholderTextColor="#999"
-                      editable={false}
-                    />
+                    <Text
+                      style={[
+                        styles.inputText,
+                        !form.arrivalTime && styles.placeholderText,
+                      ]}>
+                      {form.arrivalTime || 'Saat seçin'}
+                    </Text>
                     <Clock size={20} color="#6B46C1" strokeWidth={2} />
                   </TouchableOpacity>
                 </View>
@@ -337,6 +352,114 @@ export function WelcomePackageModal({
           </View>
         </View>
       </View>
+
+      <Modal visible={showDatePicker} animationType="fade" transparent={true}>
+        <View style={styles.pickerOverlay}>
+          <View style={styles.pickerContainer}>
+            <View style={styles.pickerHeader}>
+              <Text style={styles.pickerTitle}>Tarih Seçin</Text>
+              <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.datePickerContent}>
+              <View style={styles.dateInputGroup}>
+                <Text style={styles.dateLabel}>Gün</Text>
+                <TextInput
+                  style={styles.dateInput}
+                  value={String(tempDate.getDate())}
+                  onChangeText={(text) => {
+                    const day = parseInt(text) || 1;
+                    const newDate = new Date(tempDate);
+                    newDate.setDate(Math.min(31, Math.max(1, day)));
+                    setTempDate(newDate);
+                  }}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+              </View>
+              <View style={styles.dateInputGroup}>
+                <Text style={styles.dateLabel}>Ay</Text>
+                <TextInput
+                  style={styles.dateInput}
+                  value={String(tempDate.getMonth() + 1)}
+                  onChangeText={(text) => {
+                    const month = parseInt(text) || 1;
+                    const newDate = new Date(tempDate);
+                    newDate.setMonth(Math.min(12, Math.max(1, month)) - 1);
+                    setTempDate(newDate);
+                  }}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+              </View>
+              <View style={styles.dateInputGroup}>
+                <Text style={styles.dateLabel}>Yıl</Text>
+                <TextInput
+                  style={styles.dateInput}
+                  value={String(tempDate.getFullYear())}
+                  onChangeText={(text) => {
+                    const year = parseInt(text) || 2024;
+                    const newDate = new Date(tempDate);
+                    newDate.setFullYear(year);
+                    setTempDate(newDate);
+                  }}
+                  keyboardType="number-pad"
+                  maxLength={4}
+                />
+              </View>
+            </View>
+            <TouchableOpacity style={styles.pickerButton} onPress={handleDateSelect}>
+              <Text style={styles.pickerButtonText}>Seç</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showTimePicker} animationType="fade" transparent={true}>
+        <View style={styles.pickerOverlay}>
+          <View style={styles.pickerContainer}>
+            <View style={styles.pickerHeader}>
+              <Text style={styles.pickerTitle}>Saat Seçin</Text>
+              <TouchableOpacity onPress={() => setShowTimePicker(false)}>
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.timePickerContent}>
+              <View style={styles.timeInputGroup}>
+                <Text style={styles.timeLabel}>Saat</Text>
+                <TextInput
+                  style={styles.timeInput}
+                  value={String(tempTime.hour)}
+                  onChangeText={(text) => {
+                    const hour = parseInt(text) || 0;
+                    setTempTime((prev) => ({ ...prev, hour: Math.min(23, Math.max(0, hour)) }));
+                  }}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+              </View>
+              <Text style={styles.timeSeparator}>:</Text>
+              <View style={styles.timeInputGroup}>
+                <Text style={styles.timeLabel}>Dakika</Text>
+                <TextInput
+                  style={styles.timeInput}
+                  value={String(tempTime.minute)}
+                  onChangeText={(text) => {
+                    const minute = parseInt(text) || 0;
+                    setTempTime((prev) => ({ ...prev, minute: Math.min(59, Math.max(0, minute)) }));
+                  }}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+              </View>
+            </View>
+            <TouchableOpacity style={styles.pickerButton} onPress={handleTimeSelect}>
+              <Text style={styles.pickerButtonText}>Seç</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 }
@@ -444,6 +567,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: '#1F2937',
+    paddingVertical: 0,
+  },
+  placeholderText: {
+    color: '#9CA3AF',
   },
   textArea: {
     minHeight: 100,
@@ -522,6 +649,102 @@ const styles = StyleSheet.create({
     backgroundColor: '#6B46C1',
   },
   submitButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  pickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  pickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  pickerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  datePickerContent: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  dateInputGroup: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  dateLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#1F2937',
+    textAlign: 'center',
+    width: '100%',
+  },
+  timePickerContent: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 24,
+  },
+  timeInputGroup: {
+    alignItems: 'center',
+  },
+  timeLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  timeInput: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1F2937',
+    textAlign: 'center',
+    minWidth: 80,
+  },
+  timeSeparator: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginTop: 28,
+  },
+  pickerButton: {
+    backgroundColor: '#6B46C1',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  pickerButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
