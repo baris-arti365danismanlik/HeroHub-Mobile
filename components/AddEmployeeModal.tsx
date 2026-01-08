@@ -131,7 +131,7 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
     onClose();
   };
 
-  const workTypes = ['Tam Zamanlı', 'Yarı Zamanlı', 'Sözleşmeli', 'Stajyer'];
+  const workTypes = ['Tam Zamanlı', 'Yarı Zamanlı', 'Sözleşmeli', 'Stajyer', 'Danışman'];
 
   const selectedDepartment = departments.find((d) => d.id === formData.departmentId);
   const selectedTitle = titles.find((t) => t.id === formData.titleId);
@@ -186,7 +186,12 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                 <Text style={styles.label}>Departman</Text>
                 <TouchableOpacity
                   style={styles.picker}
-                  onPress={() => setShowDepartmentPicker(!showDepartmentPicker)}
+                  onPress={() => {
+                    setShowDepartmentPicker(!showDepartmentPicker);
+                    setShowTitlePicker(false);
+                    setShowWorkplacePicker(false);
+                    setShowWorkTypePicker(false);
+                  }}
                 >
                   <Text style={styles.pickerText}>
                     {selectedDepartment?.name || 'Departman'}
@@ -208,6 +213,9 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                           <Text style={styles.pickerItemText}>{dept.name}</Text>
                         </TouchableOpacity>
                       ))}
+                      <TouchableOpacity style={styles.pickerAddItem} onPress={() => {}}>
+                        <Text style={styles.pickerAddItemText}>Yeni Departman Ekle</Text>
+                      </TouchableOpacity>
                     </ScrollView>
                   </View>
                 )}
@@ -217,7 +225,12 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                 <Text style={styles.label}>Unvan</Text>
                 <TouchableOpacity
                   style={styles.picker}
-                  onPress={() => setShowTitlePicker(!showTitlePicker)}
+                  onPress={() => {
+                    setShowTitlePicker(!showTitlePicker);
+                    setShowDepartmentPicker(false);
+                    setShowWorkplacePicker(false);
+                    setShowWorkTypePicker(false);
+                  }}
                 >
                   <Text style={styles.pickerText}>{selectedTitle?.name || 'Unvan'}</Text>
                   <ChevronDown size={20} color="#666" />
@@ -237,6 +250,9 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                           <Text style={styles.pickerItemText}>{title.name}</Text>
                         </TouchableOpacity>
                       ))}
+                      <TouchableOpacity style={styles.pickerAddItem} onPress={() => {}}>
+                        <Text style={styles.pickerAddItemText}>Yeni Unvan Ekle</Text>
+                      </TouchableOpacity>
                     </ScrollView>
                   </View>
                 )}
@@ -248,7 +264,12 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                 <Text style={styles.label}>İş Yeri</Text>
                 <TouchableOpacity
                   style={styles.picker}
-                  onPress={() => setShowWorkplacePicker(!showWorkplacePicker)}
+                  onPress={() => {
+                    setShowWorkplacePicker(!showWorkplacePicker);
+                    setShowDepartmentPicker(false);
+                    setShowTitlePicker(false);
+                    setShowWorkTypePicker(false);
+                  }}
                 >
                   <Text style={styles.pickerText}>
                     {selectedWorkplace?.name || 'İş Yeri'}
@@ -270,6 +291,9 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                           <Text style={styles.pickerItemText}>{workplace.name}</Text>
                         </TouchableOpacity>
                       ))}
+                      <TouchableOpacity style={styles.pickerAddItem} onPress={() => {}}>
+                        <Text style={styles.pickerAddItemText}>Yeni İş Yeri Ekle</Text>
+                      </TouchableOpacity>
                     </ScrollView>
                   </View>
                 )}
@@ -279,7 +303,12 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                 <Text style={styles.label}>Çalışma Şekli</Text>
                 <TouchableOpacity
                   style={styles.picker}
-                  onPress={() => setShowWorkTypePicker(!showWorkTypePicker)}
+                  onPress={() => {
+                    setShowWorkTypePicker(!showWorkTypePicker);
+                    setShowDepartmentPicker(false);
+                    setShowTitlePicker(false);
+                    setShowWorkplacePicker(false);
+                  }}
                 >
                   <Text style={styles.pickerText}>{formData.workType || 'Çalışma Şekli'}</Text>
                   <ChevronDown size={20} color="#666" />
@@ -462,11 +491,12 @@ const styles = StyleSheet.create({
   },
   formGroup: {
     marginBottom: 16,
+    position: 'relative',
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '600',
+    color: '#1a1a1a',
     marginBottom: 8,
   },
   input: {
@@ -494,8 +524,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E5E5',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -503,7 +533,7 @@ const styles = StyleSheet.create({
   },
   pickerText: {
     fontSize: 15,
-    color: '#666',
+    color: '#333',
   },
   pickerDropdown: {
     position: 'absolute',
@@ -514,7 +544,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E5E5',
-    maxHeight: 200,
+    maxHeight: 250,
     zIndex: 1000,
     elevation: 5,
     shadowColor: '#000',
@@ -523,17 +553,29 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   pickerScroll: {
-    maxHeight: 200,
+    maxHeight: 250,
   },
   pickerItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   pickerItemText: {
     fontSize: 15,
-    color: '#1a1a1a',
+    color: '#333',
+  },
+  pickerAddItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    backgroundColor: '#FAFAFA',
+  },
+  pickerAddItemText: {
+    fontSize: 15,
+    color: '#7C3AED',
+    fontWeight: '600',
   },
   dateInputContainer: {
     flexDirection: 'row',
