@@ -1,22 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  TouchableOpacity,
+  Image,
+  RefreshControl,
+} from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
 import { inboxService } from '@/services/inbox.service';
-import { Calendar, Clock, FileText, Menu, Bell, MessageSquare, User as UserIcon } from 'lucide-react-native';
+import { homeService } from '@/services/home.service';
+import type {
+  OnboardingTaskCategory,
+  NewEmployee,
+  UserAgendaItem,
+  UserTrainingStatus,
+} from '@/services/home.service';
+import {
+  Calendar,
+  Clock,
+  FileText,
+  Menu,
+  Bell,
+  MessageSquare,
+  User as UserIcon,
+  Users,
+  BookOpen,
+  TrendingUp,
+  CheckCircle,
+  AlertCircle,
+} from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
-import type { UserDayOffBalance, UserDayOff, UserRequest } from '@/types/backend';
+import type { UserDayOffBalance } from '@/types/backend';
 
 export default function HomeScreen() {
   const { user } = useAuth();
   const [dayOffBalance, setDayOffBalance] = useState<UserDayOffBalance | null>(null);
-  const [recentDayOffs, setRecentDayOffs] = useState<UserDayOff[]>([]);
-  const [recentRequests, setRecentRequests] = useState<UserRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [inboxVisible, setInboxVisible] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [newEmployees, setNewEmployees] = useState<NewEmployee[]>([]);
+  const [userAgenda, setUserAgenda] = useState<UserAgendaItem[]>([]);
+  const [trainingStatus, setTrainingStatus] = useState<UserTrainingStatus | null>(null);
+  const [onboardingTasks, setOnboardingTasks] = useState<OnboardingTaskCategory[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -29,22 +62,43 @@ export default function HomeScreen() {
 
     try {
       setIsLoading(true);
-      const [balance, dayOffs, requests, unread] = await Promise.all([
-        userService.getDayOffBalance(user.id),
-        userService.getUserDayOffs(user.id),
-        userService.getUserRequests(user.id),
-        inboxService.getUnreadCount(user.id),
+
+      const [
+        balance,
+        notifications,
+        unread,
+        employees,
+        agenda,
+        training,
+        tasks,
+      ] = await Promise.all([
+        userService.getDayOffBalance(user.backend_user_id || user.id).catch(() => null),
+        homeService.getNotificationCount().catch(() => 0),
+        inboxService.getUnreadCount(user.id).catch(() => 0),
+        homeService.listNewEmployees().catch(() => []),
+        homeService.listUserAgenda().catch(() => []),
+        homeService.getUserTrainingStatus().catch(() => null),
+        homeService.listOnboardingTasksByCategory().catch(() => []),
       ]);
 
       setDayOffBalance(balance);
-      setRecentDayOffs(dayOffs.slice(0, 3));
-      setRecentRequests(requests.slice(0, 3));
+      setNotificationCount(notifications);
       setUnreadCount(unread);
+      setNewEmployees(employees.slice(0, 3));
+      setUserAgenda(agenda.slice(0, 5));
+      setTrainingStatus(training);
+      setOnboardingTasks(tasks);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
       setIsLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadDashboardData();
   };
 
   if (isLoading) {
@@ -77,9 +131,11 @@ export default function HomeScreen() {
             <View style={styles.headerActions}>
               <TouchableOpacity style={styles.iconButton}>
                 <Bell size={20} color="#1a1a1a" />
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>2</Text>
-                </View>
+                {notificationCount > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{notificationCount}</Text>
+                  </View>
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -110,75 +166,144 @@ export default function HomeScreen() {
           </View>
 
           <Text style={styles.greeting}>Merhaba,</Text>
-          <Text style={styles.userName}>{user?.firstName} {user?.lastName}</Text>
+          <Text style={styles.userName}>
+            {user?.firstName} {user?.lastName}
+          </Text>
         </View>
 
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Calendar size={24} color="#7C3AED" />
-              <Text style={styles.cardTitle}>İzin Bakiyesi</Text>
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7C3AED" />
+          }
+        >
+          {dayOffBalance && (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Calendar size={24} color="#7C3AED" />
+                <Text style={styles.cardTitle}>İzin Bakiyesi</Text>
+              </View>
+              <View style={styles.balanceContainer}>
+                <View style={styles.balanceItem}>
+                  <Text style={[styles.balanceValue, styles.balanceValueHighlight]}>
+                    {dayOffBalance.reamainingDays || 0}
+                  </Text>
+                  <Text style={styles.balanceLabel}>Kalan Gün</Text>
+                </View>
+              </View>
             </View>
-        {dayOffBalance ? (
-          <View style={styles.balanceContainer}>
-            <View style={styles.balanceItem}>
-              <Text style={styles.balanceValue}>{dayOffBalance.totalDays}</Text>
-              <Text style={styles.balanceLabel}>Toplam Gün</Text>
-            </View>
-            <View style={styles.balanceItem}>
-              <Text style={styles.balanceValue}>{dayOffBalance.usedDays}</Text>
-              <Text style={styles.balanceLabel}>Kullanılan</Text>
-            </View>
-            <View style={styles.balanceItem}>
-              <Text style={[styles.balanceValue, styles.balanceValueHighlight]}>
-                {dayOffBalance.remainingDays}
-              </Text>
-              <Text style={styles.balanceLabel}>Kalan</Text>
-            </View>
-          </View>
-        ) : (
-          <Text style={styles.noDataText}>İzin bakiyesi bulunamadı</Text>
-        )}
-      </View>
+          )}
 
-          {recentDayOffs.length > 0 && (
+          {trainingStatus && (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <BookOpen size={24} color="#7C3AED" />
+                <Text style={styles.cardTitle}>Eğitim Durumu</Text>
+              </View>
+              <View style={styles.trainingContainer}>
+                <View style={styles.trainingItem}>
+                  <View style={styles.trainingIcon}>
+                    <CheckCircle size={20} color="#10B981" />
+                  </View>
+                  <View style={styles.trainingInfo}>
+                    <Text style={styles.trainingValue}>{trainingStatus.plannedCount}</Text>
+                    <Text style={styles.trainingLabel}>Planlanmış</Text>
+                  </View>
+                </View>
+                <View style={styles.trainingDivider} />
+                <View style={styles.trainingItem}>
+                  <View style={styles.trainingIcon}>
+                    <AlertCircle size={20} color="#EF4444" />
+                  </View>
+                  <View style={styles.trainingInfo}>
+                    <Text style={styles.trainingValue}>{trainingStatus.overdueCount}</Text>
+                    <Text style={styles.trainingLabel}>Gecikmiş</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {newEmployees.length > 0 && (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Users size={24} color="#7C3AED" />
+                <Text style={styles.cardTitle}>Yeni Çalışanlar</Text>
+              </View>
+              {newEmployees.map((employee) => (
+                <View key={employee.id} style={styles.employeeItem}>
+                  <View style={styles.employeeLeft}>
+                    {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com/' ? (
+                      <Image source={{ uri: employee.profilePhoto }} style={styles.employeeImage} />
+                    ) : (
+                      <View style={styles.employeePlaceholder}>
+                        <UserIcon size={20} color="#7C3AED" />
+                      </View>
+                    )}
+                    <View style={styles.employeeInfo}>
+                      <Text style={styles.employeeName}>{employee.fullname}</Text>
+                      <Text style={styles.employeeTitle}>{employee.title || 'Pozisyon belirtilmemiş'}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.employeeDate}>
+                    {new Date(employee.jobStartDate).toLocaleDateString('tr-TR', {
+                      day: 'numeric',
+                      month: 'short',
+                    })}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {userAgenda.length > 0 && (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <TrendingUp size={24} color="#7C3AED" />
+                <Text style={styles.cardTitle}>Son Aktiviteler</Text>
+              </View>
+              {userAgenda.map((item, index) => (
+                <View key={index} style={styles.agendaItem}>
+                  <View style={styles.agendaIcon}>
+                    <FileText size={16} color="#7C3AED" />
+                  </View>
+                  <View style={styles.agendaContent}>
+                    <Text style={styles.agendaTitle}>{item.title}</Text>
+                    <Text style={styles.agendaDate}>
+                      {new Date(item.eventDate).toLocaleDateString('tr-TR', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {onboardingTasks.length > 0 && (
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Clock size={24} color="#7C3AED" />
-                <Text style={styles.cardTitle}>Son İzinler</Text>
+                <Text style={styles.cardTitle}>Oryantasyon Görevleri</Text>
               </View>
-          {recentDayOffs.map((dayOff) => (
-            <View key={dayOff.id} style={styles.listItem}>
-              <Text style={styles.listItemTitle}>
-                {new Date(dayOff.startDate).toLocaleDateString('tr-TR')}
-              </Text>
-              <Text style={styles.listItemSubtitle}>{dayOff.totalDays} gün</Text>
+              {onboardingTasks.map((category) => (
+                <View key={category.id} style={styles.taskCategory}>
+                  <Text style={styles.taskCategoryTitle}>{category.name}</Text>
+                  <Text style={styles.taskCount}>{category.onboardingTaskList.length} görev</Text>
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
-      )}
+          )}
 
-          {recentRequests.length > 0 && (
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <FileText size={24} color="#7C3AED" />
-                <Text style={styles.cardTitle}>Son Talepler</Text>
-              </View>
-          {recentRequests.map((request) => (
-            <View key={request.id} style={styles.listItem}>
-              <Text style={styles.listItemTitle}>{request.title}</Text>
-              <Text style={styles.listItemSubtitle}>{request.description}</Text>
-            </View>
-          ))}
-        </View>
-      )}
+          <View style={styles.bottomPadding} />
         </ScrollView>
       </View>
 
-      <DrawerMenu
-        visible={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
-      />
+      <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
 
       {user && (
         <InboxModal
@@ -326,15 +451,14 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   balanceContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 8,
+    alignItems: 'center',
+    paddingVertical: 16,
   },
   balanceItem: {
     alignItems: 'center',
   },
   balanceValue: {
-    fontSize: 32,
+    fontSize: 48,
     fontWeight: 'bold',
     color: '#1a1a1a',
   },
@@ -342,28 +466,139 @@ const styles = StyleSheet.create({
     color: '#7C3AED',
   },
   balanceLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  listItem: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  listItemTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    color: '#666',
+    marginTop: 8,
+  },
+  trainingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  trainingItem: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  trainingIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F9FAFB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  trainingInfo: {
+    flex: 1,
+  },
+  trainingValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: '#1a1a1a',
   },
-  listItemSubtitle: {
+  trainingLabel: {
     fontSize: 14,
     color: '#666',
-    marginTop: 4,
+    marginTop: 2,
   },
-  noDataText: {
-    textAlign: 'center',
-    color: '#666',
+  trainingDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 16,
+  },
+  employeeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  employeeLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  employeeImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  employeePlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F0E7FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  employeeInfo: {
+    flex: 1,
+  },
+  employeeName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  employeeTitle: {
     fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  employeeDate: {
+    fontSize: 14,
+    color: '#7C3AED',
+    fontWeight: '500',
+  },
+  agendaItem: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  agendaIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F0E7FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  agendaContent: {
+    flex: 1,
+  },
+  agendaTitle: {
+    fontSize: 15,
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  agendaDate: {
+    fontSize: 13,
+    color: '#666',
+  },
+  taskCategory: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  taskCategoryTitle: {
+    fontSize: 15,
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  taskCount: {
+    fontSize: 14,
+    color: '#7C3AED',
+    fontWeight: '500',
+  },
+  bottomPadding: {
+    height: 24,
   },
 });
