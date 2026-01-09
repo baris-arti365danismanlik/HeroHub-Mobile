@@ -20,6 +20,10 @@ import {
   Clock,
   Users,
   MapPin,
+  Linkedin,
+  Facebook,
+  Instagram,
+  Twitter,
 } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -147,6 +151,10 @@ export default function EmployeeDetailScreen() {
   const socialLinks = getSocialMediaLinks();
   const workDuration = employee.jobStartDate ? calculateWorkDuration(employee.jobStartDate) : '-';
 
+  const handleGoToProfile = () => {
+    router.push('/(tabs)/profile');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -241,17 +249,32 @@ export default function EmployeeDetailScreen() {
         {socialLinks.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Sosyal Medya</Text>
-            <View style={styles.card}>
-              {socialLinks.map((link, index) => (
-                <TouchableOpacity
-                  key={link.platform}
-                  style={[styles.socialRow, index === socialLinks.length - 1 && styles.contactRowLast]}
-                  onPress={() => openUrl(link.url)}
-                >
-                  <Text style={styles.socialPlatform}>{link.platform}</Text>
-                  <Text style={styles.socialLink}>Profili Görüntüle</Text>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.socialMediaContainer}>
+              {socialLinks.map((link) => {
+                let IconComponent = Linkedin;
+                let iconColor = '#0A66C2';
+
+                if (link.icon === 'facebook') {
+                  IconComponent = Facebook;
+                  iconColor = '#1877F2';
+                } else if (link.icon === 'instagram') {
+                  IconComponent = Instagram;
+                  iconColor = '#E4405F';
+                } else if (link.icon === 'twitter') {
+                  IconComponent = Twitter;
+                  iconColor = '#1DA1F2';
+                }
+
+                return (
+                  <TouchableOpacity
+                    key={link.platform}
+                    style={styles.socialIconButton}
+                    onPress={() => openUrl(link.url)}
+                  >
+                    <IconComponent size={24} color={iconColor} />
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         )}
@@ -373,8 +396,17 @@ export default function EmployeeDetailScreen() {
           </View>
         )}
 
-        <View style={{ height: 32 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.profileButton} onPress={handleGoToProfile}>
+          <Text style={styles.profileButtonText}>Profile Git</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
+          <Text style={styles.closeButtonText}>Kapat</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -509,24 +541,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#1a1a1a',
   },
-  socialRow: {
+  socialMediaContainer: {
     flexDirection: 'row',
+    gap: 12,
+  },
+  socialIconButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  socialPlatform: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#1a1a1a',
-  },
-  socialLink: {
-    fontSize: 14,
-    color: '#7C3AED',
-    fontWeight: '500',
   },
   infoRow: {
     flexDirection: 'row',
@@ -641,5 +668,42 @@ const styles = StyleSheet.create({
   colleagueTitle: {
     fontSize: 13,
     color: '#666',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    gap: 12,
+  },
+  profileButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#7C3AED',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#7C3AED',
+  },
+  closeButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    backgroundColor: '#7C3AED',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
