@@ -141,8 +141,8 @@ export default function ProfileScreen() {
   const [onboardingLoading, setOnboardingLoading] = useState(false);
   const [answerInputs, setAnswerInputs] = useState<Record<string, string>>({});
   const [welcomePackageModalVisible, setWelcomePackageModalVisible] = useState(false);
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
-  const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
+  const [userWorkLogs, setUserWorkLogs] = useState<any[]>([]);
+  const [userShiftPlan, setUserShiftPlan] = useState<any>(null);
   const [pdksLoading, setPdksLoading] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -468,6 +468,12 @@ export default function ProfileScreen() {
       loadBadgeCardInfo();
     }
   }, [selectedSection]);
+
+  useEffect(() => {
+    if (selectedSection === 'PDKS' && user?.backend_user_id) {
+      loadPDKSData();
+    }
+  }, [selectedSection, user?.backend_user_id]);
 
   const loadUnreadCount = async () => {
     if (!user?.id) return;
@@ -951,21 +957,21 @@ export default function ProfileScreen() {
   };
 
   const loadPDKSData = async () => {
-    if (!user?.id) return;
+    if (!user?.backend_user_id) return;
 
     try {
       setPdksLoading(true);
-      const startDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`;
-      const lastDayOfMonth = new Date(selectedYear, selectedMonth, 0);
-      const endDate = lastDayOfMonth.toISOString().split('T')[0];
 
-      const [records, today] = await Promise.all([
-        pdksService.getAttendanceRecords(user.id, startDate, endDate),
-        pdksService.getTodayRecord(user.id),
+      const [workLogs, shiftPlan] = await Promise.all([
+        pdksService.getUserWorkLog(Number(user.backend_user_id)),
+        shiftService.getUserShiftPlan(Number(user.backend_user_id)),
       ]);
 
-      setAttendanceRecords(records);
-      setTodayRecord(today);
+      console.log('Work logs:', workLogs);
+      console.log('Shift plan:', shiftPlan);
+
+      setUserWorkLogs(workLogs);
+      setUserShiftPlan(shiftPlan);
     } catch (error) {
       console.error('Error loading PDKS data:', error);
     } finally {
@@ -2035,13 +2041,6 @@ export default function ProfileScreen() {
       );
     }
 
-    const getWorkHours = (duration: number | null) => {
-      if (!duration) return '00:00 - 00:00';
-      const hours = Math.floor(duration / 60);
-      const minutes = duration % 60;
-      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-    };
-
     return (
       <>
         <View style={styles.pdksSection}>
@@ -2053,15 +2052,21 @@ export default function ProfileScreen() {
           <View style={styles.pdksInfoGrid}>
             <View style={styles.pdksInfoRow}>
               <Text style={styles.pdksInfoLabel}>Mevcut Vardiya</Text>
-              <Text style={styles.pdksInfoValue}>Vardiya Grup-1</Text>
+              <Text style={styles.pdksInfoValue}>
+                {userShiftPlan?.shiftPlanName || 'Vardiya bilgisi yok'}
+              </Text>
             </View>
             <View style={styles.pdksInfoRow}>
               <Text style={styles.pdksInfoLabel}>Mevcut Tip</Text>
-              <Text style={styles.pdksInfoValue}>Sabah Vardiyası</Text>
+              <Text style={styles.pdksInfoValue}>
+                {userShiftPlan?.shiftType || '-'}
+              </Text>
             </View>
             <View style={styles.pdksInfoRow}>
               <Text style={styles.pdksInfoLabel}>Çalışma Saatleri</Text>
-              <Text style={styles.pdksInfoValue}>08:00 - 19:00</Text>
+              <Text style={styles.pdksInfoValue}>
+                {userShiftPlan ? `${userShiftPlan.startTime} - ${userShiftPlan.endTime}` : '-'}
+              </Text>
             </View>
           </View>
         </View>
@@ -2071,24 +2076,15 @@ export default function ProfileScreen() {
             <Text style={styles.pdksSectionTitle}>VARDİYA GEÇMİŞİ</Text>
           </View>
 
-          {attendanceRecords.length === 0 ? (
+          {userWorkLogs.length === 0 ? (
             <Text style={styles.pdksEmptyText}>Vardiya geçmişi bulunamadı</Text>
           ) : (
-            attendanceRecords.map((record) => (
-              <View key={record.id} style={styles.pdksHistoryCard}>
+            userWorkLogs.map((log, index) => (
+              <View key={log.id || index} style={styles.pdksHistoryCard}>
                 <View style={styles.pdksHistoryHeader}>
-                  <Text style={styles.pdksHistoryDate}>{formatDate(record.date)}</Text>
-                  <Text
-                    style={[
-                      styles.pdksHistoryTime,
-                      record.work_duration
-                        ? styles.pdksHistoryTimeNormal
-                        : styles.pdksHistoryTimeWarning,
-                    ]}
-                  >
-                    {record.work_duration
-                      ? getWorkHours(record.work_duration)
-                      : '08:00 - 16:00'}
+                  <Text style={styles.pdksHistoryDate}>{formatDate(log.date)}</Text>
+                  <Text style={styles.pdksHistoryTime}>
+                    {log.totalWorkHours ? `${log.totalWorkHours} saat` : '-'}
                   </Text>
                 </View>
 
@@ -2096,13 +2092,13 @@ export default function ProfileScreen() {
                   <View style={styles.pdksHistoryRow}>
                     <Text style={styles.pdksHistoryLabel}>Giriş</Text>
                     <Text style={styles.pdksHistoryValue}>
-                      {formatTime(record.check_in_time)}
+                      {log.checkInTime || '-'}
                     </Text>
                   </View>
                   <View style={styles.pdksHistoryRow}>
                     <Text style={styles.pdksHistoryLabel}>Çıkış</Text>
                     <Text style={styles.pdksHistoryValue}>
-                      {formatTime(record.check_out_time)}
+                      {log.checkOutTime || '-'}
                     </Text>
                   </View>
                 </View>
