@@ -96,7 +96,7 @@ import {
 } from '@/utils/formatters';
 
 export default function ProfileScreen() {
-  const { user, logout, userProfile } = useAuth();
+  const { user, logout } = useAuth();
   const { canWrite, canDelete, isAdmin } = usePermissions();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -303,7 +303,7 @@ export default function ProfileScreen() {
           leaveService.getPastDayOffs(user.backend_user_id),
         ]);
 
-        setDayOffBalance(balance.reamainingDays);
+        setDayOffBalance(balance.remainingDays);
         setIncomingDayOffs(incoming);
         setPastDayOffs(past);
       } catch (error) {
@@ -447,7 +447,7 @@ export default function ProfileScreen() {
         employmentService.getWorkingInformation(user.backend_user_id),
         employmentService.getPositions(user.backend_user_id),
         employmentService.getUserSalary(user.backend_user_id),
-        employmentService.getUserTitles(2),
+        employmentService.getUserTitles(),
         employmentService.getManagerUsers(),
         employmentService.getOrganizationDepartments(),
         employmentService.getWorkplaces(),
@@ -1166,10 +1166,10 @@ export default function ProfileScreen() {
           <Text style={styles.assetUserName}>
             {user.firstName} {user.lastName}
           </Text>
-          {userProfile?.role?.name && (
+          {profileDetails?.currentTitle && (
             <View style={styles.assetUserDetail}>
               <Briefcase size={14} color="#666" />
-              <Text style={styles.assetUserDetailText}>{userProfile.role.name}</Text>
+              <Text style={styles.assetUserDetailText}>{profileDetails.currentTitle}</Text>
             </View>
           )}
           <View style={styles.assetUserDetail}>
@@ -1220,7 +1220,7 @@ export default function ProfileScreen() {
           <View style={styles.summaryDetailItem}>
             <Briefcase size={20} color="#333" />
             <Text style={styles.summaryDetailText}>
-              {userProfile?.role?.name || 'Management Trainee'}
+              {profileDetails?.currentTitle || 'Management Trainee'}
             </Text>
           </View>
 
@@ -1290,10 +1290,10 @@ export default function ProfileScreen() {
           <Text style={styles.assetUserName}>
             {user.firstName} {user.lastName}
           </Text>
-          {userProfile?.role?.name && (
+          {profileDetails?.currentTitle && (
             <View style={styles.assetUserDetail}>
               <Briefcase size={14} color="#666" />
-              <Text style={styles.assetUserDetailText}>{userProfile.role.name}</Text>
+              <Text style={styles.assetUserDetailText}>{profileDetails.currentTitle}</Text>
             </View>
           )}
           <View style={styles.assetUserDetail}>
@@ -2277,11 +2277,11 @@ export default function ProfileScreen() {
               </Text>
 
               <View style={styles.profileDetails}>
-                {userProfile?.role && (
+                {profileDetails?.currentTitle && (
                   <View style={styles.profileDetailRow}>
                     <Award size={16} color="#7C3AED" />
                     <Text style={[styles.profileDetailText, { color: '#7C3AED', fontWeight: '600' }]}>
-                      {userProfile.role.name}
+                      {profileDetails.currentTitle}
                     </Text>
                   </View>
                 )}
@@ -2633,7 +2633,7 @@ export default function ProfileScreen() {
                 )}
                 <View style={styles.leaveUserInfo}>
                   <Text style={styles.leaveUserName}>{user.firstName} {user.lastName}</Text>
-                  <Text style={styles.leaveUserRole}>{userProfile?.role?.name || 'Management Trainee'}</Text>
+                  <Text style={styles.leaveUserRole}>{profileDetails?.currentTitle || 'Management Trainee'}</Text>
                 </View>
                 <View style={styles.leaveBalanceBox}>
                   <Text style={styles.leaveBalanceLabel}>İZİN BAKİYESİ</Text>
@@ -4967,10 +4967,6 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 8,
     backgroundColor: '#fff',
-  },
-  formDropdownText: {
-    fontSize: 15,
-    color: '#333',
   },
   formDropdownList: {
     marginTop: 8,

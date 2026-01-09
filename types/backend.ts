@@ -126,7 +126,7 @@ export interface UserDayOffBalance {
 export interface DayOffBalanceResponse {
   userId: number;
   dayOffType: number;
-  reamainingDays: number;
+  remainingDays: number;
 }
 
 export interface UserDayOff {

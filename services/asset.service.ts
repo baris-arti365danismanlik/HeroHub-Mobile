@@ -4,7 +4,7 @@ import { apiClient } from './api.client';
 export const assetService = {
   async getUserAssets(userId: number): Promise<Asset[]> {
     try {
-      const response = await apiClient.get(`/userAsset/list-userAssets?userId=${userId}`);
+      const response = await apiClient.get<Asset[]>(`/userAsset/list-userAssets?userId=${userId}`);
       if (response.succeeded && response.data) {
         return response.data;
       }
@@ -17,7 +17,7 @@ export const assetService = {
 
   async getAssetCategories(): Promise<AssetCategory[]> {
     try {
-      const response = await apiClient.get('/assetCategory/list-assetCategories');
+      const response = await apiClient.get<AssetCategory[]>('/assetCategory/list-assetCategories');
       if (response.succeeded && response.data) {
         return response.data;
       }
@@ -30,7 +30,7 @@ export const assetService = {
 
   async getBadgeCardInfo(userId: number): Promise<BadgeCardInfo | null> {
     try {
-      const response = await apiClient.get(`/user/badgecard-info?userId=${userId}`);
+      const response = await apiClient.get<BadgeCardInfo>(`/user/badgecard-info?userId=${userId}`);
       if (response.succeeded && response.data) {
         return response.data;
       }
@@ -50,7 +50,7 @@ export const assetService = {
     fileUrl?: string;
   }): Promise<Asset | null> {
     try {
-      const response = await apiClient.post('/userAsset/create-userAsset', asset);
+      const response = await apiClient.post<Asset>('/userAsset/create-userAsset', asset);
       if (response.succeeded && response.data) {
         return response.data;
       }
@@ -64,7 +64,7 @@ export const assetService = {
   async deleteAsset(assetId: number): Promise<boolean> {
     try {
       const response = await apiClient.delete(`/userAsset/delete-userAsset?id=${assetId}`);
-      return response.succeeded;
+      return response.succeeded || false;
     } catch (error) {
       console.error('Error deleting asset:', error);
       return false;
@@ -77,7 +77,7 @@ export const assetService = {
         assetId,
         returnDate,
       });
-      return response.succeeded;
+      return response.succeeded || false;
     } catch (error) {
       console.error('Error returning asset:', error);
       return false;

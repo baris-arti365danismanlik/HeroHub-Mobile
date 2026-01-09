@@ -72,7 +72,7 @@ export default function HomeScreen() {
         training,
         tasks,
       ] = await Promise.all([
-        userService.getDayOffBalance(user.backend_user_id || user.id).catch(() => null),
+        userService.getDayOffBalance(user.backend_user_id?.toString() || user.id).catch(() => null),
         homeService.getNotificationCount().catch(() => 0),
         inboxService.getUnreadCount(user.id).catch(() => 0),
         homeService.listNewEmployees().catch(() => []),
@@ -187,7 +187,7 @@ export default function HomeScreen() {
               <View style={styles.balanceContainer}>
                 <View style={styles.balanceItem}>
                   <Text style={[styles.balanceValue, styles.balanceValueHighlight]}>
-                    {dayOffBalance.reamainingDays || 0}
+                    {dayOffBalance.remainingDays || 0}
                   </Text>
                   <Text style={styles.balanceLabel}>Kalan Gün</Text>
                 </View>
