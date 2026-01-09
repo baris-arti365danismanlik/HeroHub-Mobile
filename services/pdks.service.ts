@@ -16,7 +16,7 @@ export const pdksService = {
       const response = await apiClient.get(
         `/employeeLog/get-userworklog?userId=${userId}`
       );
-      return (response as any) || [];
+      return (response as any)?.data || [];
     } catch (error) {
       console.error('Error fetching user work log:', error);
       return [];

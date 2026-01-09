@@ -20,7 +20,7 @@ export const shiftService = {
       const response = await apiClient.get(
         `/shift/list-usershiftplan?userId=${userId}`
       );
-      return (response as any) || null;
+      return (response as any)?.data || null;
     } catch (error) {
       console.error('Error fetching user shift plan:', error);
       return null;
