@@ -702,27 +702,28 @@ export default function ProfileScreen() {
   };
 
   const handleAddAsset = async () => {
-    console.log('handleAddAsset called');
-    console.log('user.backend_user_id:', user?.backend_user_id);
-    console.log('assetForm:', assetForm);
+    if (!hasAssetPermission('write')) {
+      console.error('No permission to add asset');
+      return;
+    }
 
     if (!user?.backend_user_id) {
-      console.log('Missing user.backend_user_id');
+      console.error('Missing user.backend_user_id');
       return;
     }
 
     if (!assetForm.categoryId) {
-      console.log('Missing categoryId');
+      console.error('Missing categoryId');
       return;
     }
 
     if (!assetForm.serialNo) {
-      console.log('Missing serialNo');
+      console.error('Missing serialNo');
       return;
     }
 
     if (!assetForm.deliveryDate) {
-      console.log('Missing deliveryDate');
+      console.error('Missing deliveryDate');
       return;
     }
 
@@ -730,7 +731,6 @@ export default function ProfileScreen() {
       setAssetLoading(true);
 
       const formattedDeliveryDate = formatDateForBackend(assetForm.deliveryDate);
-      console.log('formattedDeliveryDate:', formattedDeliveryDate);
 
       const payload = {
         userId: Number(user.backend_user_id),
@@ -740,23 +740,22 @@ export default function ProfileScreen() {
         deliveryDate: formattedDeliveryDate,
       };
 
-      console.log('Sending payload:', payload);
-
       const result = await assetService.createAsset(payload);
-      console.log('createAsset result:', result);
 
-      setAssetForm({
-        categoryId: assetCategories.length > 0 ? assetCategories[0].id : 0,
-        categoryName: assetCategories.length > 0 ? assetCategories[0].name : '',
-        serialNo: '',
-        description: '',
-        deliveryDate: '',
-        returnDate: '',
-      });
+      if (result) {
+        setAssetForm({
+          categoryId: assetCategories.length > 0 ? assetCategories[0].id : 0,
+          categoryName: assetCategories.length > 0 ? assetCategories[0].name : '',
+          serialNo: '',
+          description: '',
+          deliveryDate: '',
+          returnDate: '',
+        });
 
-      setCategoryDropdownOpen(false);
-      setAssetModalVisible(false);
-      await loadAssets();
+        setCategoryDropdownOpen(false);
+        setAssetModalVisible(false);
+        await loadAssets();
+      }
     } catch (error) {
       console.error('Error adding asset:', error);
     } finally {
@@ -2527,9 +2526,12 @@ export default function ProfileScreen() {
                 <Text style={styles.modalCancelText}>Vazgeç</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.modalSubmitButton}
+                style={[
+                  styles.modalSubmitButton,
+                  (assetLoading || !hasAssetPermission('write')) && styles.modalSubmitButtonDisabled
+                ]}
                 onPress={handleAddAsset}
-                disabled={assetLoading}
+                disabled={assetLoading || !hasAssetPermission('write')}
               >
                 {assetLoading ? (
                   <ActivityIndicator size="small" color="#fff" />
@@ -4075,6 +4077,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
+  },
+  modalSubmitButtonDisabled: {
+    backgroundColor: '#CCC',
+    opacity: 0.6,
   },
   modalSubmitText: {
     fontSize: 15,
