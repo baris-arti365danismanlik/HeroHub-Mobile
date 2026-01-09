@@ -486,6 +486,15 @@ export default function ProfileScreen() {
     }
   }, [user?.backend_user_id, selectedSection]);
 
+  useEffect(() => {
+    if (selectedSection === 'Zimmet Bilgileri') {
+      loadAssets();
+      loadAssetCategories();
+      loadCountries();
+      loadBadgeCardInfo();
+    }
+  }, [selectedSection]);
+
   const loadUnreadCount = async () => {
     if (!user?.id) return;
     try {
@@ -534,6 +543,36 @@ export default function ProfileScreen() {
       setBadgeCardInfo(info);
     } catch (error) {
       console.error('Error loading badge card info:', error);
+    }
+  };
+
+  const loadCountries = async () => {
+    try {
+      const countriesData = await userService.getCountries();
+      setCountries(countriesData);
+    } catch (error) {
+      console.error('Error loading countries:', error);
+    }
+  };
+
+  const hasAssetPermission = (permission: 'read' | 'write' | 'delete'): boolean => {
+    if (!profileDetails?.modulePermissions) return false;
+
+    const assetModule = profileDetails.modulePermissions.find(
+      (module) => module.moduleId === 8
+    );
+
+    if (!assetModule) return false;
+
+    switch (permission) {
+      case 'read':
+        return assetModule.canRead;
+      case 'write':
+        return assetModule.canWrite;
+      case 'delete':
+        return assetModule.canDelete;
+      default:
+        return false;
     }
   };
 
@@ -821,7 +860,7 @@ export default function ProfileScreen() {
     'İzin Bilgileri',
     'Çalışma Bilgileri',
     'Profil Bilgileri',
-    'Zimmet Bilgileri',
+    ...(hasAssetPermission('read') ? ['Zimmet Bilgileri'] : []),
     'Dosyalar',
   ];
 
@@ -1273,68 +1312,81 @@ export default function ProfileScreen() {
     </>
   );
 
-  const renderAssetsSection = () => (
-    <>
-      <View style={styles.assetUserCard}>
-        {user.profilePictureUrl ? (
-          <Image
-            source={{ uri: user.profilePictureUrl }}
-            style={styles.assetUserImage}
-          />
-        ) : (
-          <View style={styles.assetUserPlaceholder}>
-            <UserIcon size={32} color="#7C3AED" />
-          </View>
-        )}
-        <View style={styles.assetUserInfo}>
-          <Text style={styles.assetUserName}>
-            {user.firstName} {user.lastName}
-          </Text>
-          {profileDetails?.currentTitle && (
-            <View style={styles.assetUserDetail}>
-              <Briefcase size={14} color="#666" />
-              <Text style={styles.assetUserDetailText}>{profileDetails.currentTitle}</Text>
+  const renderAssetsSection = () => {
+    if (!hasAssetPermission('read')) {
+      return (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>Bu bölümü görüntüleme izniniz bulunmamaktadır.</Text>
+        </View>
+      );
+    }
+
+    return (
+      <>
+        <View style={styles.assetUserCard}>
+          {user.profilePictureUrl ? (
+            <Image
+              source={{ uri: user.profilePictureUrl }}
+              style={styles.assetUserImage}
+            />
+          ) : (
+            <View style={styles.assetUserPlaceholder}>
+              <UserIcon size={32} color="#7C3AED" />
             </View>
           )}
-          <View style={styles.assetUserDetail}>
-            <Building2 size={14} color="#666" />
-            <Text style={styles.assetUserDetailText}>Art365 Danışmanlık</Text>
+          <View style={styles.assetUserInfo}>
+            <Text style={styles.assetUserName}>
+              {user.firstName} {user.lastName}
+            </Text>
+            {profileDetails?.currentTitle && (
+              <View style={styles.assetUserDetail}>
+                <Briefcase size={14} color="#666" />
+                <Text style={styles.assetUserDetailText}>{profileDetails.currentTitle}</Text>
+              </View>
+            )}
+            <View style={styles.assetUserDetail}>
+              <Building2 size={14} color="#666" />
+              <Text style={styles.assetUserDetailText}>Art365 Danışmanlık</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.sectionHeader}>
-        <AlignJustify size={18} color="#1a1a1a" />
-        <Text style={styles.sectionHeaderTitle}>ZİMMET BİLGİLERİ</Text>
-      </View>
+        <View style={styles.sectionHeader}>
+          <AlignJustify size={18} color="#1a1a1a" />
+          <Text style={styles.sectionHeaderTitle}>ZİMMET BİLGİLERİ</Text>
+        </View>
 
       <View style={styles.actionButtons}>
-          <TouchableOpacity
-            style={styles.downloadButton}
-            onPress={() => console.log('Download report')}
-          >
-            <Download size={18} color="#7C3AED" />
-            <Text style={styles.downloadButtonText}>Zimmet Raporu İndir</Text>
-          </TouchableOpacity>
+          {hasAssetPermission('read') && (
+            <TouchableOpacity
+              style={styles.downloadButton}
+              onPress={() => console.log('Download report')}
+            >
+              <Download size={18} color="#7C3AED" />
+              <Text style={styles.downloadButtonText}>Zimmet Raporu İndir</Text>
+            </TouchableOpacity>
+          )}
 
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => {
-              setAssetForm({
-                categoryId: assetCategories.length > 0 ? assetCategories[0].id : 0,
-                categoryName: assetCategories.length > 0 ? assetCategories[0].name : '',
-                serialNo: '',
-                description: '',
-                deliveryDate: '',
-                returnDate: '',
-              });
-              setCategoryDropdownOpen(false);
-              loadBadgeCardInfo();
-              setAssetModalVisible(true);
-            }}
-          >
-            <Text style={styles.addButtonText}>Zimmet Ekle</Text>
-          </TouchableOpacity>
+          {hasAssetPermission('write') && (
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => {
+                setAssetForm({
+                  categoryId: assetCategories.length > 0 ? assetCategories[0].id : 0,
+                  categoryName: assetCategories.length > 0 ? assetCategories[0].name : '',
+                  serialNo: '',
+                  description: '',
+                  deliveryDate: '',
+                  returnDate: '',
+                });
+                setCategoryDropdownOpen(false);
+                loadBadgeCardInfo();
+                setAssetModalVisible(true);
+              }}
+            >
+              <Text style={styles.addButtonText}>Zimmet Ekle</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {assetLoading ? (
@@ -1359,15 +1411,17 @@ export default function ProfileScreen() {
                 >
                   {asset.categoryName}
                 </Text>
-                <TouchableOpacity
-                  style={styles.assetEditButton}
-                  onPress={() => handleEdit(`asset-${asset.id}`)}
-                >
-                  <Pencil
-                    size={18}
-                    color={asset.status === AssetStatus.Returned ? '#CCC' : '#666'}
-                  />
-                </TouchableOpacity>
+                {hasAssetPermission('write') && (
+                  <TouchableOpacity
+                    style={styles.assetEditButton}
+                    onPress={() => handleEdit(`asset-${asset.id}`)}
+                  >
+                    <Pencil
+                      size={18}
+                      color={asset.status === AssetStatus.Returned ? '#CCC' : '#666'}
+                    />
+                  </TouchableOpacity>
+                )}
               </View>
 
               <View style={styles.assetCardBody}>
@@ -1425,8 +1479,9 @@ export default function ProfileScreen() {
             <Text style={styles.emptyText}>Henüz zimmet kaydı bulunmuyor</Text>
           </View>
         )}
-    </>
-  );
+      </>
+    );
+  };
 
   const renderProfileInfoSection = () => {
     if (!profileDetails) {
