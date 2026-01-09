@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, TextInput, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, TextInput, Modal, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
+import * as DocumentPicker from 'expo-document-picker';
 import {
   User as UserIcon,
   Phone,
@@ -147,6 +148,10 @@ export default function ProfileScreen() {
   const [leaveLoading, setLeaveLoading] = useState(false);
   const [fileUploadModalVisible, setFileUploadModalVisible] = useState(false);
   const [fileShareModalVisible, setFileShareModalVisible] = useState(false);
+  const [fileShareSuccessVisible, setFileShareSuccessVisible] = useState(false);
+  const [selectedFileForUpload, setSelectedFileForUpload] = useState<any>(null);
+  const [selectedFilesForShare, setSelectedFilesForShare] = useState<any[]>([]);
+  const [selectedShareType, setSelectedShareType] = useState<'employees' | 'email' | 'link' | null>(null);
   const [uploadForm, setUploadForm] = useState({
     fileName: '',
     fileType: 'document',
@@ -812,6 +817,109 @@ export default function ProfileScreen() {
     } finally {
       setAssetLoading(false);
       console.log('=== handleAddAsset END ===');
+    }
+  };
+
+  const handlePickDocument = async () => {
+    if (!hasDocumentPermission('write')) {
+      console.error('No permission to upload documents');
+      return;
+    }
+
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: '*/*',
+        copyToCacheDirectory: true,
+      });
+
+      console.log('Document picker result:', result);
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+        setSelectedFileForUpload(file);
+        setUploadForm({
+          ...uploadForm,
+          fileName: file.name || 'Untitled',
+          fileType: file.mimeType || 'document',
+        });
+        console.log('File selected:', file);
+      }
+    } catch (error) {
+      console.error('Error picking document:', error);
+    }
+  };
+
+  const handleUploadFile = async () => {
+    if (!hasDocumentPermission('write')) {
+      console.error('No permission to upload documents');
+      return;
+    }
+
+    if (!selectedFileForUpload || !uploadForm.fileName.trim()) {
+      console.error('No file selected or filename missing');
+      return;
+    }
+
+    try {
+      console.log('Uploading file:', {
+        file: selectedFileForUpload,
+        form: uploadForm,
+      });
+
+      setFileUploadModalVisible(false);
+      setSelectedFileForUpload(null);
+      setUploadForm({ fileName: '', fileType: 'document', description: '' });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    }
+  };
+
+  const handleSelectFileForShare = (file: any) => {
+    if (!hasDocumentPermission('read')) {
+      console.error('No permission to share documents');
+      return;
+    }
+
+    const isSelected = selectedFilesForShare.some(f => f.id === file.id);
+
+    if (isSelected) {
+      setSelectedFilesForShare(selectedFilesForShare.filter(f => f.id !== file.id));
+    } else {
+      setSelectedFilesForShare([...selectedFilesForShare, file]);
+    }
+  };
+
+  const handleShareFiles = async () => {
+    if (!hasDocumentPermission('read')) {
+      console.error('No permission to share documents');
+      return;
+    }
+
+    if (selectedFilesForShare.length === 0) {
+      console.error('No files selected for sharing');
+      return;
+    }
+
+    if (!selectedShareType) {
+      console.error('No share type selected');
+      return;
+    }
+
+    try {
+      console.log('Sharing files:', {
+        files: selectedFilesForShare,
+        shareType: selectedShareType,
+      });
+
+      setFileShareModalVisible(false);
+      setFileShareSuccessVisible(true);
+
+      setTimeout(() => {
+        setSelectedFilesForShare([]);
+        setSelectedShareType(null);
+      }, 500);
+    } catch (error) {
+      console.error('Error sharing files:', error);
     }
   };
 
@@ -2210,6 +2318,7 @@ export default function ProfileScreen() {
                   onPress={() => {
                     console.log('File upload button clicked');
                     setUploadForm({ fileName: '', fileType: 'document', description: '' });
+                    setSelectedFileForUpload(null);
                     setFileUploadModalVisible(true);
                   }}
                 >
@@ -2221,6 +2330,8 @@ export default function ProfileScreen() {
                   style={styles.filesActionButton}
                   onPress={() => {
                     console.log('File share button clicked');
+                    setSelectedFilesForShare([]);
+                    setSelectedShareType(null);
                     setFileShareModalVisible(true);
                   }}
                 >
@@ -3161,29 +3272,50 @@ export default function ProfileScreen() {
                 />
               </View>
 
-              <TouchableOpacity style={styles.uploadButton}>
+              <TouchableOpacity
+                style={styles.uploadButton}
+                onPress={handlePickDocument}
+              >
                 <Upload size={20} color="#7C3AED" />
-                <Text style={styles.uploadButtonText}>Dosya Seç</Text>
+                <Text style={styles.uploadButtonText}>
+                  {selectedFileForUpload ? 'Farklı Dosya Seç' : 'Dosya Seç'}
+                </Text>
               </TouchableOpacity>
+
+              {selectedFileForUpload && (
+                <View style={styles.selectedFilePreview}>
+                  <FileText size={20} color="#7C3AED" />
+                  <View style={styles.selectedFileInfo}>
+                    <Text style={styles.selectedFileName}>{selectedFileForUpload.name}</Text>
+                    <Text style={styles.selectedFileSize}>
+                      {(selectedFileForUpload.size / 1024).toFixed(2)} KB
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={() => setSelectedFileForUpload(null)}>
+                    <X size={20} color="#999" />
+                  </TouchableOpacity>
+                </View>
+              )}
             </ScrollView>
 
             <View style={styles.modalFooter}>
               <TouchableOpacity
                 style={styles.modalCancelButton}
-                onPress={() => setFileUploadModalVisible(false)}
+                onPress={() => {
+                  setFileUploadModalVisible(false);
+                  setSelectedFileForUpload(null);
+                  setUploadForm({ fileName: '', fileType: 'document', description: '' });
+                }}
               >
                 <Text style={styles.modalCancelText}>Vazgeç</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.modalSubmitButton,
-                  !uploadForm.fileName && styles.modalSubmitButtonDisabled
+                  (!uploadForm.fileName || !selectedFileForUpload) && styles.modalSubmitButtonDisabled
                 ]}
-                onPress={() => {
-                  console.log('Upload file:', uploadForm);
-                  setFileUploadModalVisible(false);
-                }}
-                disabled={!uploadForm.fileName}
+                onPress={handleUploadFile}
+                disabled={!uploadForm.fileName || !selectedFileForUpload}
               >
                 <Text style={styles.modalSubmitText}>Yükle</Text>
               </TouchableOpacity>
@@ -3217,28 +3349,128 @@ export default function ProfileScreen() {
             >
               <Text style={styles.sectionLabel}>Paylaşılacak Dosyalar</Text>
               <View style={styles.selectedFilesContainer}>
-                <View style={styles.selectedFileItem}>
-                  <FileText size={24} color="#7C3AED" />
-                  <View style={styles.selectedFileInfo}>
-                    <Text style={styles.selectedFileName}>Seçili dosya yok</Text>
-                    <Text style={styles.selectedFileSize}>Dosya seçmek için listeden seçin</Text>
+                {selectedFilesForShare.length > 0 ? (
+                  selectedFilesForShare.map((file) => (
+                    <View key={file.id} style={styles.selectedFileItem}>
+                      <FileText size={24} color="#7C3AED" />
+                      <View style={styles.selectedFileInfo}>
+                        <Text style={styles.selectedFileName}>{file.name}</Text>
+                        <Text style={styles.selectedFileSize}>{file.size}</Text>
+                      </View>
+                      <TouchableOpacity onPress={() => handleSelectFileForShare(file)}>
+                        <X size={20} color="#999" />
+                      </TouchableOpacity>
+                    </View>
+                  ))
+                ) : (
+                  <View style={styles.selectedFileItem}>
+                    <FileText size={24} color="#999" />
+                    <View style={styles.selectedFileInfo}>
+                      <Text style={styles.selectedFileName}>Seçili dosya yok</Text>
+                      <Text style={styles.selectedFileSize}>Aşağıdan dosya seçin</Text>
+                    </View>
                   </View>
-                </View>
+                )}
+              </View>
+
+              <Text style={styles.sectionLabel}>Mevcut Dosyalar</Text>
+              <View style={styles.availableFilesContainer}>
+                {[
+                  { id: '1', name: 'Özlük Dosyaları', type: 'folder', count: 'Boş Klasör', icon: 'folder-blue' },
+                  { id: '2', name: 'Sözleşme Dosyaları', type: 'folder', count: '5 Dosya', icon: 'folder-yellow' },
+                  { id: '3', name: 'İş Akdi.docx', type: 'file', size: '250 kb', icon: 'doc' },
+                  { id: '4', name: 'Gizlilik Sözleşmesi.pdf', type: 'file', size: '1.2 mb', icon: 'pdf' },
+                ].map((file) => {
+                  const isSelected = selectedFilesForShare.some(f => f.id === file.id);
+                  return (
+                    <TouchableOpacity
+                      key={file.id}
+                      style={[
+                        styles.fileListItem,
+                        isSelected && styles.fileListItemSelected
+                      ]}
+                      onPress={() => {
+                        if (file.type === 'file') {
+                          handleSelectFileForShare(file);
+                        }
+                      }}
+                      disabled={file.type === 'folder'}
+                    >
+                      <View style={styles.fileListItemLeft}>
+                        {file.icon === 'folder-blue' && <FolderOpen size={20} color="#3B82F6" />}
+                        {file.icon === 'folder-yellow' && <Folder size={20} color="#F59E0B" />}
+                        {file.icon === 'doc' && <FileText size={20} color="#2563EB" />}
+                        {file.icon === 'pdf' && <FileText size={20} color="#EF4444" />}
+                        <View style={styles.fileListItemInfo}>
+                          <Text style={styles.fileListItemName}>{file.name}</Text>
+                          <Text style={styles.fileListItemMeta}>
+                            {file.type === 'folder' ? file.count : file.size}
+                          </Text>
+                        </View>
+                      </View>
+                      {file.type === 'file' && isSelected && (
+                        <Check size={20} color="#7C3AED" />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
 
               <Text style={styles.sectionLabel}>Paylaşım Türü</Text>
               <View style={styles.shareOptions}>
-                <TouchableOpacity style={styles.shareOption}>
-                  <Users size={20} color="#7C3AED" />
-                  <Text style={styles.shareOptionText}>Çalışanlarla Paylaş</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.shareOption,
+                    selectedShareType === 'employees' && styles.shareOptionSelected
+                  ]}
+                  onPress={() => setSelectedShareType('employees')}
+                >
+                  <Users size={20} color={selectedShareType === 'employees' ? '#7C3AED' : '#666'} />
+                  <Text style={[
+                    styles.shareOptionText,
+                    selectedShareType === 'employees' && styles.shareOptionTextSelected
+                  ]}>
+                    Çalışanlarla Paylaş
+                  </Text>
+                  {selectedShareType === 'employees' && (
+                    <Check size={20} color="#7C3AED" style={{ marginLeft: 'auto' }} />
+                  )}
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.shareOption}>
-                  <Mail size={20} color="#7C3AED" />
-                  <Text style={styles.shareOptionText}>E-posta ile Paylaş</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.shareOption,
+                    selectedShareType === 'email' && styles.shareOptionSelected
+                  ]}
+                  onPress={() => setSelectedShareType('email')}
+                >
+                  <Mail size={20} color={selectedShareType === 'email' ? '#7C3AED' : '#666'} />
+                  <Text style={[
+                    styles.shareOptionText,
+                    selectedShareType === 'email' && styles.shareOptionTextSelected
+                  ]}>
+                    E-posta ile Paylaş
+                  </Text>
+                  {selectedShareType === 'email' && (
+                    <Check size={20} color="#7C3AED" style={{ marginLeft: 'auto' }} />
+                  )}
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.shareOption}>
-                  <Link size={20} color="#7C3AED" />
-                  <Text style={styles.shareOptionText}>Link Oluştur</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.shareOption,
+                    selectedShareType === 'link' && styles.shareOptionSelected
+                  ]}
+                  onPress={() => setSelectedShareType('link')}
+                >
+                  <Link size={20} color={selectedShareType === 'link' ? '#7C3AED' : '#666'} />
+                  <Text style={[
+                    styles.shareOptionText,
+                    selectedShareType === 'link' && styles.shareOptionTextSelected
+                  ]}>
+                    Link Oluştur
+                  </Text>
+                  {selectedShareType === 'link' && (
+                    <Check size={20} color="#7C3AED" style={{ marginLeft: 'auto' }} />
+                  )}
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -3246,20 +3478,52 @@ export default function ProfileScreen() {
             <View style={styles.modalFooter}>
               <TouchableOpacity
                 style={styles.modalCancelButton}
-                onPress={() => setFileShareModalVisible(false)}
+                onPress={() => {
+                  setFileShareModalVisible(false);
+                  setSelectedFilesForShare([]);
+                  setSelectedShareType(null);
+                }}
               >
                 <Text style={styles.modalCancelText}>Vazgeç</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.modalSubmitButton}
-                onPress={() => {
-                  console.log('Share file');
-                  setFileShareModalVisible(false);
-                }}
+                style={[
+                  styles.modalSubmitButton,
+                  (selectedFilesForShare.length === 0 || !selectedShareType) && styles.modalSubmitButtonDisabled
+                ]}
+                onPress={handleShareFiles}
+                disabled={selectedFilesForShare.length === 0 || !selectedShareType}
               >
                 <Text style={styles.modalSubmitText}>Paylaş</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={fileShareSuccessVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setFileShareSuccessVisible(false)}
+      >
+        <View style={styles.successModalOverlay}>
+          <View style={styles.successModalContainer}>
+            <Text style={styles.successTitle}>Dosya Paylaşıldı</Text>
+            <View style={styles.successIconContainer}>
+              <Check size={70} color="#34C759" strokeWidth={4} />
+            </View>
+            <Text style={styles.successMessage}>
+              {selectedFilesForShare.length > 1
+                ? `${selectedFilesForShare.length} dosya başarıyla paylaşıldı.`
+                : 'Dosya başarıyla paylaşıldı.'}
+            </Text>
+            <TouchableOpacity
+              style={styles.successButton}
+              onPress={() => setFileShareSuccessVisible(false)}
+            >
+              <Text style={styles.successButtonText}>Tamam</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -5363,5 +5627,63 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#374151',
+  },
+  shareOptionSelected: {
+    backgroundColor: '#F5F3FF',
+    borderColor: '#7C3AED',
+    borderWidth: 2,
+  },
+  shareOptionTextSelected: {
+    color: '#7C3AED',
+    fontWeight: '600',
+  },
+  selectedFilePreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#F9FAFB',
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginTop: 12,
+  },
+  availableFilesContainer: {
+    gap: 8,
+    marginBottom: 20,
+  },
+  fileListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  fileListItemSelected: {
+    backgroundColor: '#F5F3FF',
+    borderColor: '#7C3AED',
+    borderWidth: 2,
+  },
+  fileListItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  fileListItemInfo: {
+    flex: 1,
+  },
+  fileListItemName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1F2937',
+    marginBottom: 2,
+  },
+  fileListItemMeta: {
+    fontSize: 12,
+    color: '#6B7280',
   },
 });
