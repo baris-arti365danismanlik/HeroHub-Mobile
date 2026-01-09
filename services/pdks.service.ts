@@ -10,6 +10,14 @@ export interface UserWorkLog {
   totalWorkHours: number;
 }
 
+export interface PDKSTask {
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  assignedUserId?: number;
+}
+
 export const pdksService = {
   async getUserWorkLog(userId: number): Promise<UserWorkLog[]> {
     try {
@@ -20,6 +28,16 @@ export const pdksService = {
     } catch (error) {
       console.error('Error fetching user work log:', error);
       return [];
+    }
+  },
+
+  async createTask(taskData: PDKSTask): Promise<any> {
+    try {
+      const response = await apiClient.post('/pdks/create-task', taskData);
+      return (response as any)?.data || null;
+    } catch (error) {
+      console.error('Error creating PDKS task:', error);
+      throw error;
     }
   },
 };

@@ -19,6 +19,7 @@ import { pdksService } from '@/services/pdks.service';
 import { shiftService } from '@/services/shift.service';
 import { userService } from '@/services/user.service';
 import { employmentService } from '@/services/employment.service';
+import PDKSTaskModal, { PDKSTaskData } from '@/components/PDKSTaskModal';
 import {
   Asset,
   AssetStatus,
@@ -144,6 +145,7 @@ export default function ProfileScreen() {
   const [userWorkLogs, setUserWorkLogs] = useState<any[]>([]);
   const [userShiftPlan, setUserShiftPlan] = useState<any>(null);
   const [pdksLoading, setPdksLoading] = useState(false);
+  const [pdksTaskModalVisible, setPdksTaskModalVisible] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [fileDropdownVisible, setFileDropdownVisible] = useState(false);
@@ -998,6 +1000,21 @@ export default function ProfileScreen() {
       await loadPDKSData();
     } catch (error) {
       console.error('Error checking out:', error);
+    }
+  };
+
+  const handleCreatePDKSTask = async (taskData: PDKSTaskData) => {
+    if (!user?.backend_user_id) return;
+
+    try {
+      await pdksService.createTask({
+        ...taskData,
+        assignedUserId: Number(user.backend_user_id),
+      });
+      await loadPDKSData();
+    } catch (error) {
+      console.error('Error creating PDKS task:', error);
+      throw error;
     }
   };
 
@@ -2106,8 +2123,11 @@ export default function ProfileScreen() {
             ))
           )}
 
-          <TouchableOpacity style={styles.pdksViewAllButton}>
-            <Text style={styles.pdksViewAllButtonText}>Görevi Tamamla</Text>
+          <TouchableOpacity
+            style={styles.pdksViewAllButton}
+            onPress={() => setPdksTaskModalVisible(true)}
+          >
+            <Text style={styles.pdksViewAllButtonText}>Görev Tanımla</Text>
           </TouchableOpacity>
         </View>
       </>
@@ -3073,6 +3093,12 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      <PDKSTaskModal
+        visible={pdksTaskModalVisible}
+        onClose={() => setPdksTaskModalVisible(false)}
+        onSubmit={handleCreatePDKSTask}
+      />
 
       {user && (
         <InboxModal
