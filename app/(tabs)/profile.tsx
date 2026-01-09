@@ -2528,15 +2528,15 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.profileCard}>
-            <View style={styles.profileImageContainer}>
+            <View style={styles.profileImageContainerLarge}>
               {user.profilePictureUrl ? (
                 <Image
                   source={{ uri: user.profilePictureUrl }}
-                  style={styles.profileImage}
+                  style={styles.profileImageLarge}
                 />
               ) : (
-                <View style={styles.profileImagePlaceholder}>
-                  <UserIcon size={48} color="#7C3AED" />
+                <View style={styles.profileImagePlaceholderLarge}>
+                  <UserIcon size={60} color="#fff" />
                 </View>
               )}
             </View>
@@ -2547,23 +2547,15 @@ export default function ProfileScreen() {
               </Text>
 
               <View style={styles.profileDetails}>
-                {profileDetails?.currentTitle && (
-                  <View style={styles.profileDetailRow}>
-                    <Award size={16} color="#7C3AED" />
-                    <Text style={[styles.profileDetailText, { color: '#7C3AED', fontWeight: '600' }]}>
-                      {profileDetails.currentTitle}
-                    </Text>
-                  </View>
-                )}
                 <View style={styles.profileDetailRow}>
-                  <Briefcase size={16} color="#666" />
+                  <Briefcase size={14} color="#666" />
                   <Text style={styles.profileDetailText}>
-                    {user.position || 'Management Trainee'}
+                    {profileDetails?.currentTitle || user.position || 'Management Trainee'}
                   </Text>
                 </View>
                 {profileDetails?.organizationName && (
                   <View style={styles.profileDetailRow}>
-                    <Building2 size={16} color="#666" />
+                    <Briefcase size={14} color="#666" />
                     <Text style={styles.profileDetailText}>{profileDetails.organizationName}</Text>
                   </View>
                 )}
@@ -3975,11 +3967,9 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   profileCard: {
-    backgroundColor: '#fff',
-    padding: 20,
+    backgroundColor: '#F8F9FA',
+    paddingVertical: 32,
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   profileImageContainer: {
     marginBottom: 16,
@@ -3997,17 +3987,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  profileImageContainerLarge: {
+    marginBottom: 20,
+  },
+  profileImageLarge: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  profileImagePlaceholderLarge: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#9F7AEA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   profileInfo: {
     alignItems: 'center',
   },
   profileName: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#1a1a1a',
     marginBottom: 12,
   },
   profileDetails: {
-    gap: 6,
+    gap: 8,
+    alignItems: 'center',
   },
   profileDetailRow: {
     flexDirection: 'row',
