@@ -21,8 +21,9 @@ export function Accordion({ title, icon, children, defaultExpanded = false, onEd
   const handlePress = () => {
     if (onPress) {
       onPress();
+    } else {
+      setIsExpanded(!isExpanded);
     }
-    setIsExpanded(!isExpanded);
   };
 
   return (
