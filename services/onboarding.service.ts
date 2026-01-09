@@ -195,7 +195,31 @@ export const onboardingService = {
 
   async initializeUserTasks(userOnboardingId: string, tasks: any[]): Promise<void> {},
 
-  async completeTask(userTaskId: string): Promise<void> {},
+  async completeTask(userTaskId: number): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await apiClient.post(
+        `/userOnboardingTask/complete-task?userOnboardingTaskId=${userTaskId}`
+      );
+
+      if (response.succeeded) {
+        return { success: true };
+      } else {
+        const errorMessage =
+          response.friendlyMessage ||
+          (response.errors && response.errors.length > 0 ? response.errors[0] : 'Bir hata oluştu');
+        return {
+          success: false,
+          error: errorMessage,
+        };
+      }
+    } catch (error: any) {
+      console.error('Error completing task:', error);
+      return {
+        success: false,
+        error: error.message || 'Görev tamamlanamadı',
+      };
+    }
+  },
 
   async getUserAnswers(userOnboardingId: string): Promise<any[]> {
     return [];

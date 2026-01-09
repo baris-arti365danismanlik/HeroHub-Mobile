@@ -45,6 +45,9 @@ import {
   Department,
   Workplace,
   City,
+  OnboardingProcess,
+  OnboardingQuestionItem,
+  UserOnboardingTaskItem,
 } from '@/types/backend';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
@@ -123,12 +126,12 @@ export default function ProfileScreen() {
   const [inboxVisible, setInboxVisible] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [onboardingData, setOnboardingData] = useState<{
-    userOnboarding: UserOnboarding | null;
+    userOnboarding: OnboardingProcess | null;
     steps: OnboardingStep[];
-    tasks: OnboardingTask[];
-    questions: OnboardingQuestion[];
+    tasks: UserOnboardingTaskItem[];
+    questions: OnboardingQuestionItem[];
     userSteps: UserOnboardingStep[];
-    userTasks: UserOnboardingTask[];
+    userTasks: UserOnboardingTaskItem[];
     userAnswers: UserOnboardingAnswer[];
   }>({
     userOnboarding: null,
@@ -579,6 +582,27 @@ export default function ProfileScreen() {
     }
   };
 
+  const hasOnboardingPermission = (permission: 'read' | 'write' | 'delete'): boolean => {
+    if (!profileDetails?.modulePermissions) return false;
+
+    const profileModule = profileDetails.modulePermissions.find(
+      (module) => module.moduleId === 2
+    );
+
+    if (!profileModule) return false;
+
+    switch (permission) {
+      case 'read':
+        return profileModule.canRead;
+      case 'write':
+        return profileModule.canWrite;
+      case 'delete':
+        return profileModule.canDelete;
+      default:
+        return false;
+    }
+  };
+
   const hasPDKSPermission = (permission: 'read' | 'write' | 'delete'): boolean => {
     if (!profileDetails?.modulePermissions) return false;
 
@@ -615,61 +639,27 @@ export default function ProfileScreen() {
   };
 
   const loadOnboardingData = async () => {
-    if (!user?.id) return;
+    if (!user?.backend_user_id) return;
 
     try {
       setOnboardingLoading(true);
 
-      const [steps, tasks, questions] = await Promise.all([
-        onboardingService.getSteps(),
-        onboardingService.getTasks(),
-        onboardingService.getQuestions(),
+      const [tasks, questions, process] = await Promise.all([
+        onboardingService.listUserOnboardingTasks(Number(user.backend_user_id)),
+        onboardingService.getUserOnboardingQuestions(Number(user.backend_user_id)),
+        onboardingService.getUserOnboardingProcess(Number(user.backend_user_id)),
       ]);
-
-      let userOnboarding = await onboardingService.getUserOnboarding(user.id);
-
-      if (!userOnboarding) {
-        userOnboarding = await onboardingService.createUserOnboarding(user.id);
-      }
-
-      const [userSteps, userTasks, userAnswers] = await Promise.all([
-        onboardingService.getUserSteps(userOnboarding.id),
-        onboardingService.getUserTasks(userOnboarding.id),
-        onboardingService.getUserAnswers(userOnboarding.id),
-      ]);
-
-      if (userSteps.length === 0) {
-        await onboardingService.initializeUserSteps(userOnboarding.id, steps);
-      }
-
-      if (userTasks.length === 0) {
-        await onboardingService.initializeUserTasks(userOnboarding.id, tasks);
-      }
-
-      const refreshedUserSteps = userSteps.length === 0
-        ? await onboardingService.getUserSteps(userOnboarding.id)
-        : userSteps;
-
-      const refreshedUserTasks = userTasks.length === 0
-        ? await onboardingService.getUserTasks(userOnboarding.id)
-        : userTasks;
 
       const answersMap: Record<string, string> = {};
-      userAnswers.forEach((answer) => {
-        if (answer.answer) {
-          answersMap[answer.question_id] = answer.answer;
-        }
-      });
-      setAnswerInputs(answersMap);
 
       setOnboardingData({
-        userOnboarding,
-        steps,
-        tasks,
-        questions,
-        userSteps: refreshedUserSteps,
-        userTasks: refreshedUserTasks,
-        userAnswers,
+        userOnboarding: process,
+        steps: [],
+        tasks: tasks,
+        questions: questions,
+        userSteps: [],
+        userTasks: tasks,
+        userAnswers: [],
       });
     } catch (error) {
       console.error('Error loading onboarding data:', error);
@@ -915,7 +905,7 @@ export default function ProfileScreen() {
     if (!onboardingData.userOnboarding) return;
 
     try {
-      await onboardingService.updateWelcomePackage(onboardingData.userOnboarding.id, true);
+      await onboardingService.updateWelcomePackage(onboardingData.userOnboarding.id.toString(), true);
       setWelcomePackageModalVisible(false);
       await loadOnboardingData();
     } catch (error) {
@@ -938,20 +928,25 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleCompleteTask = async (userTaskId: string) => {
+  const handleCompleteTask = async (userTaskId: number) => {
     try {
-      await onboardingService.completeTask(userTaskId);
-      await loadOnboardingData();
+      const result = await onboardingService.completeTask(userTaskId);
+
+      if (result.success) {
+        await loadOnboardingData();
+      } else {
+        console.error('Failed to complete task:', result.error);
+      }
     } catch (error) {
       console.error('Error completing task:', error);
     }
   };
 
-  const handleSaveAnswer = async (questionId: string, answer: string) => {
+  const handleSaveAnswer = async (questionId: number, answer: string) => {
     if (!onboardingData.userOnboarding) return;
 
     try {
-      await onboardingService.saveAnswer(onboardingData.userOnboarding.id, questionId, answer);
+      await onboardingService.saveAnswer(onboardingData.userOnboarding.id.toString(), questionId.toString(), answer);
       setAnswerInputs((prev) => ({ ...prev, [questionId]: answer }));
     } catch (error) {
       console.error('Error saving answer:', error);
@@ -1023,8 +1018,7 @@ export default function ProfileScreen() {
 
     onboardingData.tasks.forEach((task) => {
       const category = task.category || 'Diğer';
-      const userTask = onboardingData.userTasks.find((ut) => ut.task_id === task.id);
-      const isCompleted = userTask?.is_completed || false;
+      const isCompleted = task.isCompleted || false;
 
       if (!categoryMap.has(category)) {
         categoryMap.set(category, {
@@ -1038,10 +1032,10 @@ export default function ProfileScreen() {
       categoryMap.get(category).tasks.push({
         id: task.id,
         title: task.title,
-        assignedTo: task.assigned_to || '-',
-        dueDate: task.due_date || new Date().toISOString(),
+        assignedTo: task.assignedToName || task.assignedTo || '-',
+        dueDate: task.dueDate || new Date().toISOString(),
         isCompleted,
-        userTaskId: userTask?.id,
+        userTaskId: task.userOnboardingTaskId || task.id,
       });
     });
 
@@ -2173,6 +2167,14 @@ export default function ProfileScreen() {
       );
     }
 
+    if (!hasOnboardingPermission('read')) {
+      return (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>Bu bölümü görüntüleme yetkiniz bulunmamaktadır</Text>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.sectionsContainer}>
         <OnboardingDropdown
@@ -2203,17 +2205,18 @@ export default function ProfileScreen() {
           })}
         </View>
 
-        <Accordion
-          title="İŞE BAŞLAMA GÖREVLERİ"
-          icon={<AlignJustify size={18} color="#7C3AED" />}
-          defaultExpanded={false}
-        >
-          {(() => {
-            const categories = getOnboardingModalData();
-            return categories.map((category) => (
-              <View key={category.id} style={styles.taskCategoryContainer}>
-                <Text style={styles.taskCategoryHeader}>{category.name}</Text>
-                {category.tasks.map((task: any) => {
+        {hasOnboardingPermission('read') && (
+          <Accordion
+            title="İŞE BAŞLAMA GÖREVLERİ"
+            icon={<AlignJustify size={18} color="#7C3AED" />}
+            defaultExpanded={false}
+          >
+            {(() => {
+              const categories = getOnboardingModalData();
+              return categories.map((category) => (
+                <View key={category.id} style={styles.taskCategoryContainer}>
+                  <Text style={styles.taskCategoryHeader}>{category.name}</Text>
+                  {category.tasks.map((task: any) => {
                   const isOverdue = !task.isCompleted && new Date(task.dueDate) < new Date();
 
                   return (
@@ -2237,29 +2240,30 @@ export default function ProfileScreen() {
                         <View style={styles.taskCompletedBadge}>
                           <Text style={styles.taskCompletedBadgeText}>Tamamlandı</Text>
                         </View>
-                      ) : (
+                      ) : hasOnboardingPermission('write') ? (
                         <View style={styles.taskActions}>
                           <TouchableOpacity
                             style={styles.completeTaskButton}
-                            onPress={() => task.userTaskId && handleCompleteTask(task.userTaskId.toString())}
+                            onPress={() => task.userTaskId && handleCompleteTask(task.userTaskId)}
                           >
                             <Text style={styles.completeTaskButtonText}>Görevi Tamamla</Text>
                           </TouchableOpacity>
                           <TouchableOpacity
                             style={styles.checkTaskButton}
-                            onPress={() => task.userTaskId && handleCompleteTask(task.userTaskId.toString())}
+                            onPress={() => task.userTaskId && handleCompleteTask(task.userTaskId)}
                           >
                             <Check size={20} color="#fff" />
                           </TouchableOpacity>
                         </View>
-                      )}
+                      ) : null}
                     </View>
                   );
                 })}
               </View>
             ));
           })()}
-        </Accordion>
+          </Accordion>
+        )}
 
         <Accordion
           title="SENİ TANIYALIM"
@@ -2270,7 +2274,7 @@ export default function ProfileScreen() {
             <Text style={styles.questionsSubtitle}>Seni Tanıyalım Soruları</Text>
             {onboardingData.questions.map((question) => {
               const answer = answerInputs[question.id] || '';
-              const userAnswer = onboardingData.userAnswers.find((ua) => ua.question_id === question.id);
+              const userAnswer = onboardingData.userAnswers.find((ua) => Number(ua.question_id) === question.id);
               const isSaved = !!userAnswer?.answer;
 
               return (
@@ -2282,7 +2286,7 @@ export default function ProfileScreen() {
                       </View>
                     )}
                     <Text style={styles.questionLabel}>
-                      {question.is_required && <Text style={styles.requiredStar}>* </Text>}
+                      {question.isRequired && <Text style={styles.requiredStar}>* </Text>}
                       Zorunlu Soru
                     </Text>
                   </View>
@@ -3103,7 +3107,7 @@ export default function ProfileScreen() {
             <ScrollView style={styles.welcomePackageModalContent}>
               {onboardingData.steps.map((step, index) => {
                 const userStep = onboardingData.userSteps.find((us) => us.step_id === step.id);
-                const isCompleted = userStep?.is_completed || (index === 0 && onboardingData.userOnboarding?.welcome_package_sent);
+                const isCompleted = userStep?.is_completed || (index === 0 && onboardingData.userOnboarding?.welcomePackageSent);
 
                 return (
                   <View key={step.id} style={styles.welcomePackageStepItem}>
@@ -3123,9 +3127,9 @@ export default function ProfileScreen() {
                       <Text style={[styles.welcomePackageStepTitle, isCompleted && styles.welcomePackageStepTitleCompleted]}>
                         {step.title}
                       </Text>
-                      {index === 0 && isCompleted && onboardingData.userOnboarding?.welcome_package_sent_at && (
+                      {index === 0 && isCompleted && onboardingData.userOnboarding?.welcomePackageSentAt && (
                         <Text style={styles.welcomePackageStepDate}>
-                          {formatDate(onboardingData.userOnboarding.welcome_package_sent_at)}
+                          {formatDate(onboardingData.userOnboarding.welcomePackageSentAt)}
                         </Text>
                       )}
                     </View>
