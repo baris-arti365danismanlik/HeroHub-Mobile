@@ -121,11 +121,7 @@ class HttpClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.message || errorData.friendlyMessage || `HTTP Error: ${response.status}`;
-      const error: any = new Error(errorMessage);
-      error.status = response.status;
-      error.data = errorData;
-      throw error;
+      throw new Error(errorData.message || `HTTP Error: ${response.status}`);
     }
 
     const data = await response.json();
