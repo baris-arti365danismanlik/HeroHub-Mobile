@@ -58,7 +58,6 @@ import {
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
-  const { canWrite, canDelete, isAdmin } = usePermissions();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -66,6 +65,7 @@ export default function ProfileScreen() {
   const [profileDetails, setProfileDetails] = useState<UserProfileDetails | null>(null);
   const [countries, setCountries] = useState<Country[]>([]);
   const [modulePermissions, setModulePermissions] = useState<ModulePermission[]>([]);
+  const { canWrite, canDelete, isAdmin } = usePermissions(modulePermissions);
   const [assetModalVisible, setAssetModalVisible] = useState(false);
   const [assetForm, setAssetForm] = useState({
     categoryId: 0,
@@ -166,14 +166,6 @@ export default function ProfileScreen() {
   const [workplaces, setWorkplaces] = useState<Workplace[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [currentShiftPlan, setCurrentShiftPlan] = useState<any>(null);
-  const [shiftChangeForm, setShiftChangeForm] = useState({
-    newShiftType: 'Sabah Vardiyası',
-    startDate: '',
-    reason: '',
-  });
-  const [shiftLoading, setShiftLoading] = useState(false);
-  const [shiftSuccessModalVisible, setShiftSuccessModalVisible] = useState(false);
-  const [showShiftTypeDropdown, setShowShiftTypeDropdown] = useState(false);
 
   const [profileEditModalVisible, setProfileEditModalVisible] = useState(false);
   const [profileEditForm, setProfileEditForm] = useState({
@@ -228,13 +220,11 @@ export default function ProfileScreen() {
     postponementReason: '',
   });
 
-  const [shiftChangeModalVisible, setShiftChangeModalVisible] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date(2025, 2, 1));
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
 
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
   const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
-  const shiftTypes = ['Sabah Vardiyası', 'Öğlen Vardiyası', 'Akşam Vardiyası', 'Gece Vardiyası'];
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -937,35 +927,6 @@ export default function ProfileScreen() {
       setCurrentShiftPlan(shiftPlan);
     } catch (error) {
       console.error('Error loading shift plan:', error);
-    }
-  };
-
-  const handleShiftChange = async () => {
-    if (!user?.backend_user_id) return;
-
-    if (!shiftChangeForm.startDate.trim() || !shiftChangeForm.reason.trim()) {
-      console.error('Please fill all required fields');
-      return;
-    }
-
-    try {
-      setShiftLoading(true);
-      await shiftService.requestShiftChange({
-        userId: Number(user.backend_user_id),
-        newShiftPlanId: 1,
-        startDate: shiftChangeForm.startDate,
-        reason: shiftChangeForm.reason,
-      });
-
-      setShiftChangeModalVisible(false);
-      setShiftSuccessModalVisible(true);
-      setShiftChangeForm({ newShiftType: 'Sabah Vardiyası', startDate: '', reason: '' });
-      setShowShiftTypeDropdown(false);
-      await loadShiftPlan();
-    } catch (error) {
-      console.error('Error requesting shift change:', error);
-    } finally {
-      setShiftLoading(false);
     }
   };
 
@@ -2103,13 +2064,6 @@ export default function ProfileScreen() {
               <Text style={styles.pdksInfoValue}>08:00 - 19:00</Text>
             </View>
           </View>
-
-          <TouchableOpacity
-            style={styles.pdksChangeShiftButton}
-            onPress={() => setShiftChangeModalVisible(true)}
-          >
-            <Text style={styles.pdksChangeShiftButtonText}>Vardiya Değiştir</Text>
-          </TouchableOpacity>
         </View>
 
         <View style={styles.pdksSection}>
@@ -3132,160 +3086,6 @@ export default function ProfileScreen() {
           onUnreadCountChange={setUnreadCount}
         />
       )}
-
-      <Modal
-        visible={shiftChangeModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShiftChangeModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Vardiya Değiştir</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setShiftChangeModalVisible(false);
-                  setShiftChangeForm({ newShiftType: 'Sabah Vardiyası', startDate: '', reason: '' });
-                  setShowShiftTypeDropdown(false);
-                }}
-                style={styles.modalCloseButton}
-              >
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView
-              style={styles.modalContent}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Yeni Vardiya Tipi *</Text>
-                <TouchableOpacity
-                  style={styles.formDropdownTrigger}
-                  onPress={() => {
-                    if (hasPDKSPermission('write')) {
-                      setShowShiftTypeDropdown(!showShiftTypeDropdown);
-                    }
-                  }}
-                  disabled={!hasPDKSPermission('write')}
-                >
-                  <Text style={styles.formDropdownText}>{shiftChangeForm.newShiftType}</Text>
-                  <ChevronDown size={20} color="#666" />
-                </TouchableOpacity>
-
-                {showShiftTypeDropdown && (
-                  <View style={styles.dropdownMenu}>
-                    {shiftTypes.map((type) => (
-                      <TouchableOpacity
-                        key={type}
-                        style={[
-                          styles.dropdownItem,
-                          shiftChangeForm.newShiftType === type && styles.dropdownItemActive
-                        ]}
-                        onPress={() => {
-                          setShiftChangeForm({...shiftChangeForm, newShiftType: type});
-                          setShowShiftTypeDropdown(false);
-                        }}
-                      >
-                        <Text style={[
-                          styles.dropdownItemText,
-                          shiftChangeForm.newShiftType === type && styles.dropdownItemTextActive
-                        ]}>
-                          {type}
-                        </Text>
-                        {shiftChangeForm.newShiftType === type && (
-                          <Check size={16} color="#7C3AED" />
-                        )}
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Başlangıç Tarihi *</Text>
-                <TextInput
-                  style={styles.formInput}
-                  placeholder="YYYY-MM-DD"
-                  value={shiftChangeForm.startDate}
-                  onChangeText={(text) => setShiftChangeForm({...shiftChangeForm, startDate: text})}
-                  editable={hasPDKSPermission('write')}
-                />
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Sebep *</Text>
-                <TextInput
-                  style={[styles.formInput, styles.formTextarea]}
-                  placeholder="Vardiya değişikliği sebebini açıklayın..."
-                  multiline
-                  numberOfLines={4}
-                  value={shiftChangeForm.reason}
-                  onChangeText={(text) => setShiftChangeForm({...shiftChangeForm, reason: text})}
-                  textAlignVertical="top"
-                  editable={hasPDKSPermission('write')}
-                />
-              </View>
-            </ScrollView>
-
-            <View style={styles.modalFooter}>
-              <TouchableOpacity
-                style={styles.modalCancelButton}
-                onPress={() => {
-                  setShiftChangeModalVisible(false);
-                  setShiftChangeForm({ newShiftType: 'Sabah Vardiyası', startDate: '', reason: '' });
-                  setShowShiftTypeDropdown(false);
-                }}
-              >
-                <Text style={styles.modalCancelText}>Vazgeç</Text>
-              </TouchableOpacity>
-              {hasPDKSPermission('write') && (
-                <TouchableOpacity
-                  style={[
-                    styles.modalSubmitButton,
-                    (!shiftChangeForm.startDate || !shiftChangeForm.reason || shiftLoading) && styles.modalSubmitButtonDisabled
-                  ]}
-                  onPress={handleShiftChange}
-                  disabled={!shiftChangeForm.startDate || !shiftChangeForm.reason || shiftLoading}
-                >
-                  {shiftLoading ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                  ) : (
-                    <Text style={styles.modalSubmitText}>Talep Gönder</Text>
-                  )}
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        visible={shiftSuccessModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShiftSuccessModalVisible(false)}
-      >
-        <View style={styles.successModalOverlay}>
-          <View style={styles.successModalContainer}>
-            <Text style={styles.successTitle}>Vardiya Değişikliği Talebi</Text>
-            <View style={styles.successIconContainer}>
-              <Check size={70} color="#34C759" strokeWidth={4} />
-            </View>
-            <Text style={styles.successMessage}>
-              Vardiya değişikliği talebiniz başarıyla gönderildi.
-            </Text>
-            <TouchableOpacity
-              style={styles.successButton}
-              onPress={() => setShiftSuccessModalVisible(false)}
-            >
-              <Text style={styles.successButtonText}>Tamam</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
       {selectedFile && (
         <FileActionDropdown
@@ -5441,17 +5241,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#1a1a1a',
-  },
-  pdksChangeShiftButton: {
-    backgroundColor: '#7C3AED',
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  pdksChangeShiftButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   pdksHistoryCard: {
     borderBottomWidth: 1,
