@@ -702,6 +702,12 @@ export default function ProfileScreen() {
   };
 
   const handleAddAsset = async () => {
+    console.log('=== handleAddAsset START ===');
+    console.log('hasAssetPermission(write):', hasAssetPermission('write'));
+    console.log('user?.backend_user_id:', user?.backend_user_id);
+    console.log('assetForm:', assetForm);
+    console.log('profileDetails?.modulePermissions:', profileDetails?.modulePermissions);
+
     if (!hasAssetPermission('write')) {
       console.error('No permission to add asset');
       return;
@@ -717,7 +723,7 @@ export default function ProfileScreen() {
       return;
     }
 
-    if (!assetForm.serialNo) {
+    if (!assetForm.serialNo || assetForm.serialNo.trim() === '') {
       console.error('Missing serialNo');
       return;
     }
@@ -729,20 +735,26 @@ export default function ProfileScreen() {
 
     try {
       setAssetLoading(true);
+      console.log('Loading started...');
 
       const formattedDeliveryDate = formatDateForBackend(assetForm.deliveryDate);
+      console.log('formattedDeliveryDate:', formattedDeliveryDate);
 
       const payload = {
         userId: Number(user.backend_user_id),
         categoryId: assetForm.categoryId,
-        serialNo: assetForm.serialNo,
-        description: assetForm.description,
+        serialNo: assetForm.serialNo.trim(),
+        description: assetForm.description?.trim() || '',
         deliveryDate: formattedDeliveryDate,
       };
 
+      console.log('Payload to send:', payload);
+
       const result = await assetService.createAsset(payload);
+      console.log('Create result:', result);
 
       if (result) {
+        console.log('Asset created successfully, resetting form...');
         setAssetForm({
           categoryId: assetCategories.length > 0 ? assetCategories[0].id : 0,
           categoryName: assetCategories.length > 0 ? assetCategories[0].name : '',
@@ -754,12 +766,21 @@ export default function ProfileScreen() {
 
         setCategoryDropdownOpen(false);
         setAssetModalVisible(false);
+        console.log('Reloading assets...');
         await loadAssets();
+        console.log('Assets reloaded');
+      } else {
+        console.error('Create asset returned null/undefined');
       }
     } catch (error) {
       console.error('Error adding asset:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
     } finally {
       setAssetLoading(false);
+      console.log('=== handleAddAsset END ===');
     }
   };
 
@@ -1370,6 +1391,8 @@ export default function ProfileScreen() {
             <TouchableOpacity
               style={styles.addButton}
               onPress={() => {
+                console.log('Zimmet Ekle button clicked');
+                console.log('assetCategories:', assetCategories);
                 setAssetForm({
                   categoryId: assetCategories.length > 0 ? assetCategories[0].id : 0,
                   categoryName: assetCategories.length > 0 ? assetCategories[0].name : '',
@@ -1381,6 +1404,7 @@ export default function ProfileScreen() {
                 setCategoryDropdownOpen(false);
                 loadBadgeCardInfo();
                 setAssetModalVisible(true);
+                console.log('Modal should be visible now');
               }}
             >
               <Text style={styles.addButtonText}>Zimmet Ekle</Text>
@@ -2530,7 +2554,13 @@ export default function ProfileScreen() {
                   styles.modalSubmitButton,
                   (assetLoading || !hasAssetPermission('write')) && styles.modalSubmitButtonDisabled
                 ]}
-                onPress={handleAddAsset}
+                onPress={() => {
+                  console.log('Devam Et button clicked');
+                  console.log('Button disabled?', assetLoading || !hasAssetPermission('write'));
+                  console.log('assetLoading:', assetLoading);
+                  console.log('hasAssetPermission(write):', hasAssetPermission('write'));
+                  handleAddAsset();
+                }}
                 disabled={assetLoading || !hasAssetPermission('write')}
               >
                 {assetLoading ? (
