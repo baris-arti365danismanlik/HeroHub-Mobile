@@ -4,51 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import * as DocumentPicker from 'expo-document-picker';
-import {
-  User as UserIcon,
-  Phone,
-  Mail,
-  MapPin,
-  Briefcase,
-  GraduationCap,
-  Heart,
-  FileText,
-  Award,
-  Globe,
-  Languages,
-  CreditCard,
-  LogOut,
-  Menu,
-  Building2,
-  Users2,
-  DollarSign,
-  Bell,
-  MessageSquare,
-  Package,
-  Download,
-  Pencil,
-  Umbrella,
-  ChevronDown,
-  Folder,
-  File,
-  Search,
-  Plus,
-  Share2,
-  ChevronRight,
-  FolderOpen,
-  Calendar,
-  X,
-  AlignJustify,
-  Linkedin,
-  Facebook,
-  Instagram,
-  Clock,
-  Smartphone,
-  Check,
-  Upload,
-  Users,
-  Link
-} from 'lucide-react-native';
+import { User as UserIcon, Phone, Mail, MapPin, Briefcase, GraduationCap, Heart, FileText, Award, Globe, Languages, CreditCard, LogOut, Menu, Building2, Users as Users2, DollarSign, Bell, MessageSquare, Package, Download, Pencil, Umbrella, ChevronDown, Folder, File, Search, Plus, Share2, ChevronRight, FolderOpen, Calendar, X, TextAlignJustify as AlignJustify, Linkedin, Facebook, Instagram, Clock, Smartphone, Check, Upload, Users, Link } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
