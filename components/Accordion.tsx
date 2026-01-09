@@ -8,20 +8,29 @@ interface AccordionProps {
   children: ReactNode;
   defaultExpanded?: boolean;
   onEdit?: () => void;
+  onPress?: () => void;
 }
 
-export function Accordion({ title, icon, children, defaultExpanded = false, onEdit }: AccordionProps) {
+export function Accordion({ title, icon, children, defaultExpanded = false, onEdit, onPress }: AccordionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   useEffect(() => {
     setIsExpanded(defaultExpanded);
   }, [defaultExpanded]);
 
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else {
+      setIsExpanded(!isExpanded);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.header}
-        onPress={() => setIsExpanded(!isExpanded)}
+        onPress={handlePress}
         activeOpacity={0.7}
       >
         <View style={styles.headerLeft}>

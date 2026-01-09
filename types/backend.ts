@@ -352,6 +352,7 @@ export interface OnboardingTask {
   description?: string;
   assigned_to?: string;
   due_date?: string;
+  category?: string;
   order: number;
   is_active: boolean;
   created_at: string;

@@ -11,6 +11,7 @@ import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { WorkInfoCard } from '@/components/WorkInfoCard';
 import { FileActionDropdown } from '@/components/FileActionDropdown';
 import { OnboardingDropdown } from '@/components/OnboardingDropdown';
+import OnboardingTasksModal from '@/components/OnboardingTasksModal';
 import { assetService } from '@/services/asset.service';
 import { leaveService } from '@/services/leave.service';
 import { inboxService } from '@/services/inbox.service';
@@ -142,6 +143,7 @@ export default function ProfileScreen() {
   const [onboardingLoading, setOnboardingLoading] = useState(false);
   const [answerInputs, setAnswerInputs] = useState<Record<string, string>>({});
   const [welcomePackageModalVisible, setWelcomePackageModalVisible] = useState(false);
+  const [onboardingTasksModalVisible, setOnboardingTasksModalVisible] = useState(false);
   const [userWorkLogs, setUserWorkLogs] = useState<any[]>([]);
   const [userShiftPlan, setUserShiftPlan] = useState<any>(null);
   const [pdksLoading, setPdksLoading] = useState(false);
@@ -1016,6 +1018,36 @@ export default function ProfileScreen() {
       console.error('Error creating PDKS task:', error);
       throw error;
     }
+  };
+
+  const getOnboardingModalData = () => {
+    const categoryMap = new Map<string, any>();
+
+    onboardingData.tasks.forEach((task) => {
+      const category = task.category || 'Diğer';
+      const userTask = onboardingData.userTasks.find((ut) => ut.task_id === task.id);
+      const isCompleted = userTask?.is_completed || false;
+
+      if (!categoryMap.has(category)) {
+        categoryMap.set(category, {
+          id: category,
+          name: category,
+          tasks: [],
+          isExpanded: true,
+        });
+      }
+
+      categoryMap.get(category).tasks.push({
+        id: task.id,
+        title: task.title,
+        assignedTo: task.assigned_to || '-',
+        dueDate: task.due_date || new Date().toISOString(),
+        isCompleted,
+        userTaskId: userTask?.id,
+      });
+    });
+
+    return Array.from(categoryMap.values());
   };
 
   if (!user) {
@@ -2177,6 +2209,7 @@ export default function ProfileScreen() {
           title="İŞE BAŞLAMA GÖREVLERİ"
           icon={<AlignJustify size={18} color="#7C3AED" />}
           defaultExpanded={false}
+          onPress={() => setOnboardingTasksModalVisible(true)}
         >
           {onboardingData.tasks.map((task) => {
             const userTask = onboardingData.userTasks.find((ut) => ut.task_id === task.id);
@@ -3098,6 +3131,15 @@ export default function ProfileScreen() {
         visible={pdksTaskModalVisible}
         onClose={() => setPdksTaskModalVisible(false)}
         onSubmit={handleCreatePDKSTask}
+      />
+
+      <OnboardingTasksModal
+        visible={onboardingTasksModalVisible}
+        onClose={() => setOnboardingTasksModalVisible(false)}
+        categories={getOnboardingModalData()}
+        onCompleteTask={async (userTaskId: number) => {
+          await handleCompleteTask(userTaskId.toString());
+        }}
       />
 
       {user && (
