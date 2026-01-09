@@ -43,7 +43,10 @@ import {
   Instagram,
   Clock,
   Smartphone,
-  Check
+  Check,
+  Upload,
+  Users,
+  Link
 } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
@@ -142,6 +145,13 @@ export default function ProfileScreen() {
   });
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [leaveLoading, setLeaveLoading] = useState(false);
+  const [fileUploadModalVisible, setFileUploadModalVisible] = useState(false);
+  const [fileShareModalVisible, setFileShareModalVisible] = useState(false);
+  const [uploadForm, setUploadForm] = useState({
+    fileName: '',
+    fileType: 'document',
+    description: '',
+  });
   const [dayOffBalance, setDayOffBalance] = useState<number>(0);
   const [incomingDayOffs, setIncomingDayOffs] = useState<any[]>([]);
   const [pastDayOffs, setPastDayOffs] = useState<any[]>([]);
@@ -571,6 +581,27 @@ export default function ProfileScreen() {
         return assetModule.canWrite;
       case 'delete':
         return assetModule.canDelete;
+      default:
+        return false;
+    }
+  };
+
+  const hasDocumentPermission = (permission: 'read' | 'write' | 'delete'): boolean => {
+    if (!profileDetails?.modulePermissions) return false;
+
+    const profileModule = profileDetails.modulePermissions.find(
+      (module) => module.moduleId === 2
+    );
+
+    if (!profileModule) return false;
+
+    switch (permission) {
+      case 'read':
+        return profileModule.canRead;
+      case 'write':
+        return profileModule.canWrite;
+      case 'delete':
+        return profileModule.canDelete;
       default:
         return false;
     }
@@ -2173,12 +2204,29 @@ export default function ProfileScreen() {
               <Text style={styles.filesTitleText}>DOSYALAR</Text>
             </View>
             <View style={styles.filesActions}>
-              <TouchableOpacity style={styles.filesActionButton}>
-                <Plus size={20} color="#7C3AED" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.filesActionButton}>
-                <Share2 size={20} color="#7C3AED" />
-              </TouchableOpacity>
+              {hasDocumentPermission('write') && (
+                <TouchableOpacity
+                  style={styles.filesActionButton}
+                  onPress={() => {
+                    console.log('File upload button clicked');
+                    setUploadForm({ fileName: '', fileType: 'document', description: '' });
+                    setFileUploadModalVisible(true);
+                  }}
+                >
+                  <Plus size={20} color="#7C3AED" />
+                </TouchableOpacity>
+              )}
+              {hasDocumentPermission('read') && (
+                <TouchableOpacity
+                  style={styles.filesActionButton}
+                  onPress={() => {
+                    console.log('File share button clicked');
+                    setFileShareModalVisible(true);
+                  }}
+                >
+                  <Share2 size={20} color="#7C3AED" />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -3054,6 +3102,163 @@ export default function ProfileScreen() {
                   <Text style={styles.renameConfirmButtonText}>Kaydet</Text>
                 </TouchableOpacity>
               </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={fileUploadModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setFileUploadModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Dosya Yükle</Text>
+              <TouchableOpacity
+                onPress={() => setFileUploadModalVisible(false)}
+                style={styles.modalCloseButton}
+              >
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              style={styles.modalContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Dosya Adı</Text>
+                <TextInput
+                  style={styles.formInput}
+                  placeholder="Örn: Özlük Dosyası.pdf"
+                  value={uploadForm.fileName}
+                  onChangeText={(text) => setUploadForm({...uploadForm, fileName: text})}
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Dosya Türü</Text>
+                <TouchableOpacity style={styles.formDropdownTrigger}>
+                  <Text style={styles.formDropdownText}>{uploadForm.fileType}</Text>
+                  <ChevronDown size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>Açıklama (Opsiyonel)</Text>
+                <TextInput
+                  style={[styles.formInput, styles.formTextarea]}
+                  placeholder="Dosya hakkında not ekleyin..."
+                  multiline
+                  numberOfLines={4}
+                  value={uploadForm.description}
+                  onChangeText={(text) => setUploadForm({...uploadForm, description: text})}
+                  textAlignVertical="top"
+                />
+              </View>
+
+              <TouchableOpacity style={styles.uploadButton}>
+                <Upload size={20} color="#7C3AED" />
+                <Text style={styles.uploadButtonText}>Dosya Seç</Text>
+              </TouchableOpacity>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setFileUploadModalVisible(false)}
+              >
+                <Text style={styles.modalCancelText}>Vazgeç</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.modalSubmitButton,
+                  !uploadForm.fileName && styles.modalSubmitButtonDisabled
+                ]}
+                onPress={() => {
+                  console.log('Upload file:', uploadForm);
+                  setFileUploadModalVisible(false);
+                }}
+                disabled={!uploadForm.fileName}
+              >
+                <Text style={styles.modalSubmitText}>Yükle</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={fileShareModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setFileShareModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Dosya Paylaş</Text>
+              <TouchableOpacity
+                onPress={() => setFileShareModalVisible(false)}
+                style={styles.modalCloseButton}
+              >
+                <X size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              style={styles.modalContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <Text style={styles.sectionLabel}>Paylaşılacak Dosyalar</Text>
+              <View style={styles.selectedFilesContainer}>
+                <View style={styles.selectedFileItem}>
+                  <FileText size={24} color="#7C3AED" />
+                  <View style={styles.selectedFileInfo}>
+                    <Text style={styles.selectedFileName}>Seçili dosya yok</Text>
+                    <Text style={styles.selectedFileSize}>Dosya seçmek için listeden seçin</Text>
+                  </View>
+                </View>
+              </View>
+
+              <Text style={styles.sectionLabel}>Paylaşım Türü</Text>
+              <View style={styles.shareOptions}>
+                <TouchableOpacity style={styles.shareOption}>
+                  <Users size={20} color="#7C3AED" />
+                  <Text style={styles.shareOptionText}>Çalışanlarla Paylaş</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.shareOption}>
+                  <Mail size={20} color="#7C3AED" />
+                  <Text style={styles.shareOptionText}>E-posta ile Paylaş</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.shareOption}>
+                  <Link size={20} color="#7C3AED" />
+                  <Text style={styles.shareOptionText}>Link Oluştur</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setFileShareModalVisible(false)}
+              >
+                <Text style={styles.modalCancelText}>Vazgeç</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalSubmitButton}
+                onPress={() => {
+                  console.log('Share file');
+                  setFileShareModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalSubmitText}>Paylaş</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -5089,5 +5294,74 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     color: '#999',
+  },
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#F5F3FF',
+    borderRadius: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+    borderStyle: 'dashed',
+  },
+  uploadButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#7C3AED',
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  selectedFilesContainer: {
+    marginBottom: 20,
+  },
+  selectedFileItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#F9FAFB',
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  selectedFileInfo: {
+    flex: 1,
+  },
+  selectedFileName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  selectedFileSize: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  shareOptions: {
+    gap: 12,
+  },
+  shareOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  shareOptionText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#374151',
   },
 });
