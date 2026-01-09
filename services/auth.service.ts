@@ -37,9 +37,21 @@ class AuthService {
       }
 
       const response = await apiHttpClient.get<User>('/User/current');
-      return response.data || null;
-    } catch (error) {
-      console.error('Error getting current user:', error);
+
+      if (response.succeeded && response.data) {
+        return response.data;
+      }
+
+      return null;
+    } catch (error: any) {
+      const status = error.status;
+      const is401 = status === 401 || error.message?.includes('401') || error.message?.includes('Unauthorized');
+      const is400 = status === 400 || error.message?.includes('400');
+
+      if (is401 || is400) {
+        await tokenStorage.clearTokens();
+      }
+
       return null;
     }
   }
