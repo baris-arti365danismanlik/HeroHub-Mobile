@@ -18,7 +18,7 @@ export const shiftService = {
   async getUserShiftPlan(userId: number): Promise<UserShiftPlan | null> {
     try {
       const response = await apiClient.get(
-        `/shift/list-usershiftplan?userId=${userId}`
+        `/Shift/List-UserShiftPlan?userId=${userId}`
       );
       return (response as any)?.data || null;
     } catch (error) {

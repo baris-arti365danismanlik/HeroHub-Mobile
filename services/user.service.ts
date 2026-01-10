@@ -86,7 +86,7 @@ class UserService {
   }
 
   async getUserProfile(backendUserId: number): Promise<UserProfileDetails> {
-    const response = await apiClient.get<UserProfileDetails>(`/Profile/get-userprofile/${backendUserId}`);
+    const response = await apiClient.get<UserProfileDetails>(`/Profile/Get-UserProfile/${backendUserId}`);
     if (!response.data) {
       throw new Error('User profile not found');
     }
@@ -94,14 +94,14 @@ class UserService {
   }
 
   async getCountries(): Promise<Country[]> {
-    const response = await apiClient.get<Country[]>('/Profile/countries');
+    const response = await apiClient.get<Country[]>('/Profile/Countries');
     return response.data || [];
   }
 
   async getBadgeCardInfo(userId: number): Promise<BadgeCardInfo | null> {
     try {
       const response = await newApiClient.get<BadgeCardInfo>(
-        `/user/badgecard-info?userId=${userId}`
+        `/User/Badgecard-Info?userId=${userId}`
       );
       return response.data || null;
     } catch (error) {
@@ -117,7 +117,7 @@ class UserService {
   ): Promise<GroupedDepartmentUsers | null> {
     try {
       const response = await newApiClient.get<GroupedDepartmentUsers>(
-        `/User/grouped-by-departments?organizationId=${organizationId}&includeHRManagers=${includeHRManagers}&stateKey=${stateKey}`
+        `/User/Grouped-By-Departments?organizationId=${organizationId}&includeHRManagers=${includeHRManagers}&stateKey=${stateKey}`
       );
       return response.data || null;
     } catch (error) {
@@ -128,14 +128,14 @@ class UserService {
 
   async getGroupedByUsers(organizationId: number): Promise<GroupedEmployees[]> {
     const response = await newApiClient.get<GroupedEmployees[]>(
-      `/user/grouped-by-users?organizationId=${organizationId}`
+      `/User/Grouped-By-Users?organizationId=${organizationId}`
     );
     return response.data || [];
   }
 
   async getTreeByUsers(organizationId: number): Promise<TreeEmployee[]> {
     const response = await newApiClient.get<TreeEmployee[]>(
-      `/user/tree-by-users?organizationId=${organizationId}`
+      `/User/Tree-By-Users?organizationId=${organizationId}`
     );
     return response.data || [];
   }
@@ -143,7 +143,7 @@ class UserService {
   async doesOrganizationHaveHRManager(): Promise<boolean> {
     try {
       const response = await newApiClient.get<boolean>(
-        '/User/does-organization-have-hr-manager'
+        '/User/Does-Organization-Have-Hr-Manager'
       );
       return response.data || false;
     } catch (error) {
