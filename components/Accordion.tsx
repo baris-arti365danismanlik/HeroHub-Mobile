@@ -8,29 +8,20 @@ interface AccordionProps {
   children: ReactNode;
   defaultExpanded?: boolean;
   onEdit?: () => void;
-  onPress?: () => void;
 }
 
-export function Accordion({ title, icon, children, defaultExpanded = false, onEdit, onPress }: AccordionProps) {
+export function Accordion({ title, icon, children, defaultExpanded = false, onEdit }: AccordionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   useEffect(() => {
     setIsExpanded(defaultExpanded);
   }, [defaultExpanded]);
 
-  const handlePress = () => {
-    if (onPress) {
-      onPress();
-    } else {
-      setIsExpanded(!isExpanded);
-    }
-  };
-
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.header}
-        onPress={handlePress}
+        onPress={() => setIsExpanded(!isExpanded)}
         activeOpacity={0.7}
       >
         <View style={styles.headerLeft}>
@@ -64,27 +55,24 @@ export function Accordion({ title, icon, children, defaultExpanded = false, onEd
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    marginBottom: 12,
+    borderRadius: 12,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 8,
+    padding: 16,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     flex: 1,
   },
   headerRight: {
@@ -93,10 +81,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   title: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: '#1a1a1a',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   editButton: {
     padding: 4,
@@ -109,8 +97,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 16,
-    paddingTop: 12,
     paddingBottom: 16,
-    backgroundColor: '#fff',
   },
 });

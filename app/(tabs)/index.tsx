@@ -54,35 +54,40 @@ export default function HomeScreen() {
   useEffect(() => {
     if (user) {
       loadDashboardData();
-    } else {
-      setIsLoading(false);
     }
   }, [user]);
 
   const loadDashboardData = async () => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
+    if (!user) return;
 
     try {
       setIsLoading(true);
 
-      const results = await Promise.allSettled([
-        homeService.getNotificationCount(),
-        inboxService.getUnreadCount(user.id),
-        homeService.listNewEmployees(),
-        homeService.listUserAgenda(),
-        homeService.getUserTrainingStatus(),
-        homeService.listOnboardingTasksByCategory(),
+      const [
+        balance,
+        notifications,
+        unread,
+        employees,
+        agenda,
+        training,
+        tasks,
+      ] = await Promise.all([
+        userService.getDayOffBalance(user.backend_user_id?.toString() || user.id).catch(() => null),
+        homeService.getNotificationCount().catch(() => 0),
+        inboxService.getUnreadCount(user.id).catch(() => 0),
+        homeService.listNewEmployees().catch(() => []),
+        homeService.listUserAgenda().catch(() => []),
+        homeService.getUserTrainingStatus().catch(() => null),
+        homeService.listOnboardingTasksByCategory().catch(() => []),
       ]);
 
-      setNotificationCount(results[0].status === 'fulfilled' ? results[0].value : 0);
-      setUnreadCount(results[1].status === 'fulfilled' ? results[1].value : 0);
-      setNewEmployees(results[2].status === 'fulfilled' ? results[2].value.slice(0, 3) : []);
-      setUserAgenda(results[3].status === 'fulfilled' ? results[3].value.slice(0, 5) : []);
-      setTrainingStatus(results[4].status === 'fulfilled' ? results[4].value : null);
-      setOnboardingTasks(results[5].status === 'fulfilled' ? results[5].value : []);
+      setDayOffBalance(balance);
+      setNotificationCount(notifications);
+      setUnreadCount(unread);
+      setNewEmployees(employees.slice(0, 3));
+      setUserAgenda(agenda.slice(0, 5));
+      setTrainingStatus(training);
+      setOnboardingTasks(tasks);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -96,20 +101,10 @@ export default function HomeScreen() {
     loadDashboardData();
   };
 
-  if (!user) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#7C3AED" />
-        <Text style={styles.loadingText}>Yükleniyor...</Text>
-      </View>
-    );
-  }
-
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#7C3AED" />
-        <Text style={styles.loadingText}>Dashboard yükleniyor...</Text>
       </View>
     );
   }
@@ -332,11 +327,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F8F9FA',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
   },
   header: {
     padding: 24,

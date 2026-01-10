@@ -11,7 +11,6 @@ import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { WorkInfoCard } from '@/components/WorkInfoCard';
 import { FileActionDropdown } from '@/components/FileActionDropdown';
 import { OnboardingDropdown } from '@/components/OnboardingDropdown';
-import OnboardingTasksModal from '@/components/OnboardingTasksModal';
 import { assetService } from '@/services/asset.service';
 import { leaveService } from '@/services/leave.service';
 import { inboxService } from '@/services/inbox.service';
@@ -143,7 +142,6 @@ export default function ProfileScreen() {
   const [onboardingLoading, setOnboardingLoading] = useState(false);
   const [answerInputs, setAnswerInputs] = useState<Record<string, string>>({});
   const [welcomePackageModalVisible, setWelcomePackageModalVisible] = useState(false);
-  const [onboardingTasksModalVisible, setOnboardingTasksModalVisible] = useState(false);
   const [userWorkLogs, setUserWorkLogs] = useState<any[]>([]);
   const [userShiftPlan, setUserShiftPlan] = useState<any>(null);
   const [pdksLoading, setPdksLoading] = useState(false);
@@ -1018,36 +1016,6 @@ export default function ProfileScreen() {
       console.error('Error creating PDKS task:', error);
       throw error;
     }
-  };
-
-  const getOnboardingModalData = () => {
-    const categoryMap = new Map<string, any>();
-
-    onboardingData.tasks.forEach((task) => {
-      const category = task.category || 'Diğer';
-      const userTask = onboardingData.userTasks.find((ut) => ut.task_id === task.id);
-      const isCompleted = userTask?.is_completed || false;
-
-      if (!categoryMap.has(category)) {
-        categoryMap.set(category, {
-          id: category,
-          name: category,
-          tasks: [],
-          isExpanded: true,
-        });
-      }
-
-      categoryMap.get(category).tasks.push({
-        id: task.id,
-        title: task.title,
-        assignedTo: task.assigned_to || '-',
-        dueDate: task.due_date || new Date().toISOString(),
-        isCompleted,
-        userTaskId: userTask?.id,
-      });
-    });
-
-    return Array.from(categoryMap.values());
   };
 
   if (!user) {
@@ -2208,56 +2176,42 @@ export default function ProfileScreen() {
         <Accordion
           title="İŞE BAŞLAMA GÖREVLERİ"
           icon={<AlignJustify size={18} color="#7C3AED" />}
-          defaultExpanded={true}
+          defaultExpanded={false}
         >
           {onboardingData.tasks.map((task) => {
             const userTask = onboardingData.userTasks.find((ut) => ut.task_id === task.id);
             const isCompleted = userTask?.is_completed || false;
-            const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !isCompleted;
 
             return (
-              <View key={task.id} style={styles.onboardingTaskCard}>
-                <Text style={styles.onboardingTaskTitle}>{task.title}</Text>
-
-                <View style={styles.onboardingTaskDetails}>
-                  <View style={styles.onboardingTaskDetailRow}>
-                    <Text style={styles.onboardingTaskLabel}>İlgili</Text>
-                    <Text style={styles.onboardingTaskValue}>{task.assigned_to || 'Phillip Stanton'}</Text>
+              <View key={task.id} style={styles.taskCard}>
+                <View style={styles.taskHeader}>
+                  <Text style={styles.taskCategory}>{task.title}</Text>
+                  {isCompleted && (
+                    <View style={styles.taskCompletedBadge}>
+                      <Text style={styles.taskCompletedBadgeText}>Tamamlandı</Text>
+                    </View>
+                  )}
+                </View>
+                {task.description && <Text style={styles.taskDescription}>{task.description}</Text>}
+                <View style={styles.taskInfo}>
+                  <View style={styles.taskInfoRow}>
+                    <Text style={styles.taskInfoLabel}>İlgili</Text>
+                    <Text style={styles.taskInfoValue}>{task.assigned_to || '-'}</Text>
                   </View>
-                  <View style={styles.onboardingTaskDetailRow}>
-                    <Text style={styles.onboardingTaskLabel}>Son Tarih</Text>
-                    <Text style={[
-                      styles.onboardingTaskValue,
-                      isOverdue && styles.onboardingTaskValueOverdue
-                    ]}>
-                      {task.due_date ? new Date(task.due_date).toLocaleDateString('tr-TR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                      }) : '13.11.2025'}
+                  <View style={styles.taskInfoRow}>
+                    <Text style={styles.taskInfoLabel}>Son Tarih</Text>
+                    <Text style={styles.taskInfoValueDate}>
+                      {task.due_date ? formatDate(task.due_date) : '-'}
                     </Text>
                   </View>
                 </View>
-
-                {isCompleted ? (
-                  <View style={styles.onboardingTaskCompletedBadge}>
-                    <Text style={styles.onboardingTaskCompletedText}>Tamamlandı</Text>
-                  </View>
-                ) : (
-                  <View style={styles.onboardingTaskActions}>
-                    <TouchableOpacity
-                      style={styles.onboardingTaskCompleteButton}
-                      onPress={() => userTask && handleCompleteTask(userTask.id)}
-                    >
-                      <Text style={styles.onboardingTaskCompleteButtonText}>Görevi Tamamla</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.onboardingTaskCheckButton}
-                      onPress={() => userTask && handleCompleteTask(userTask.id)}
-                    >
-                      <Check size={20} color="#fff" />
-                    </TouchableOpacity>
-                  </View>
+                {!isCompleted && userTask && (
+                  <TouchableOpacity
+                    style={styles.completeTaskButton}
+                    onPress={() => handleCompleteTask(userTask.id)}
+                  >
+                    <Text style={styles.completeTaskButtonText}>Görevi Tamamla</Text>
+                  </TouchableOpacity>
                 )}
               </View>
             );
@@ -2541,15 +2495,15 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.profileCard}>
-            <View style={styles.profileImageContainerLarge}>
+            <View style={styles.profileImageContainer}>
               {user.profilePictureUrl ? (
                 <Image
                   source={{ uri: user.profilePictureUrl }}
-                  style={styles.profileImageLarge}
+                  style={styles.profileImage}
                 />
               ) : (
-                <View style={styles.profileImagePlaceholderLarge}>
-                  <UserIcon size={60} color="#fff" />
+                <View style={styles.profileImagePlaceholder}>
+                  <UserIcon size={48} color="#7C3AED" />
                 </View>
               )}
             </View>
@@ -2560,15 +2514,23 @@ export default function ProfileScreen() {
               </Text>
 
               <View style={styles.profileDetails}>
+                {profileDetails?.currentTitle && (
+                  <View style={styles.profileDetailRow}>
+                    <Award size={16} color="#7C3AED" />
+                    <Text style={[styles.profileDetailText, { color: '#7C3AED', fontWeight: '600' }]}>
+                      {profileDetails.currentTitle}
+                    </Text>
+                  </View>
+                )}
                 <View style={styles.profileDetailRow}>
-                  <Briefcase size={14} color="#666" />
+                  <Briefcase size={16} color="#666" />
                   <Text style={styles.profileDetailText}>
-                    {profileDetails?.currentTitle || user.position || 'Management Trainee'}
+                    {user.position || 'Management Trainee'}
                   </Text>
                 </View>
                 {profileDetails?.organizationName && (
                   <View style={styles.profileDetailRow}>
-                    <Briefcase size={14} color="#666" />
+                    <Building2 size={16} color="#666" />
                     <Text style={styles.profileDetailText}>{profileDetails.organizationName}</Text>
                   </View>
                 )}
@@ -3136,15 +3098,6 @@ export default function ProfileScreen() {
         visible={pdksTaskModalVisible}
         onClose={() => setPdksTaskModalVisible(false)}
         onSubmit={handleCreatePDKSTask}
-      />
-
-      <OnboardingTasksModal
-        visible={onboardingTasksModalVisible}
-        onClose={() => setOnboardingTasksModalVisible(false)}
-        categories={getOnboardingModalData()}
-        onCompleteTask={async (userTaskId: number) => {
-          await handleCompleteTask(userTaskId.toString());
-        }}
       />
 
       {user && (
@@ -3980,9 +3933,11 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   profileCard: {
-    backgroundColor: '#F8F9FA',
-    paddingVertical: 32,
+    backgroundColor: '#fff',
+    padding: 20,
     alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   profileImageContainer: {
     marginBottom: 16,
@@ -4000,34 +3955,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  profileImageContainerLarge: {
-    marginBottom: 20,
-  },
-  profileImageLarge: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-  },
-  profileImagePlaceholderLarge: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#9F7AEA',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   profileInfo: {
     alignItems: 'center',
   },
   profileName: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1a1a1a',
     marginBottom: 12,
   },
   profileDetails: {
-    gap: 8,
-    alignItems: 'center',
+    gap: 6,
   },
   profileDetailRow: {
     flexDirection: 'row',
@@ -5080,81 +5018,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#7C3AED',
-  },
-  onboardingTaskCard: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-  },
-  onboardingTaskTitle: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#7C3AED',
-    marginBottom: 12,
-  },
-  onboardingTaskDetails: {
-    gap: 8,
-    marginBottom: 16,
-  },
-  onboardingTaskDetailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  onboardingTaskLabel: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  onboardingTaskValue: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#1F2937',
-  },
-  onboardingTaskValueOverdue: {
-    color: '#DC2626',
-  },
-  onboardingTaskActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  onboardingTaskCompleteButton: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderWidth: 1.5,
-    borderColor: '#7C3AED',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  onboardingTaskCompleteButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#7C3AED',
-  },
-  onboardingTaskCheckButton: {
-    width: 44,
-    height: 44,
-    backgroundColor: '#7C3AED',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  onboardingTaskCompletedBadge: {
-    alignSelf: 'flex-start',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: '#10B981',
-    backgroundColor: '#fff',
-  },
-  onboardingTaskCompletedText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#10B981',
   },
   questionsContainer: {
     paddingTop: 8,
