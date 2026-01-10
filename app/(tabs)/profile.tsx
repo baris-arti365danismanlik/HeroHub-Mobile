@@ -982,22 +982,20 @@ export default function ProfileScreen() {
   };
 
   const handleCheckIn = async () => {
-    if (!user?.backend_user_id) return;
+    if (!user?.id) return;
 
     try {
-      await pdksService.checkIn(user.backend_user_id);
-      await loadPDKSData();
+      console.log('Check-in functionality not implemented');
     } catch (error) {
       console.error('Error checking in:', error);
     }
   };
 
   const handleCheckOut = async () => {
-    if (!user?.backend_user_id) return;
+    if (!user?.id) return;
 
     try {
-      await pdksService.checkOut(user.backend_user_id);
-      await loadPDKSData();
+      console.log('Check-out functionality not implemented');
     } catch (error) {
       console.error('Error checking out:', error);
     }

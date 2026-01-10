@@ -29,7 +29,7 @@ export function usePermissions(modulePermissions?: ModulePermission[]) {
   };
 
   const isAdmin = (): boolean => {
-    return user?.backend_user_role === '365 Admin' || user?.backend_user_role === 'SuperAdmin';
+    return user?.role === '365 Admin' || user?.role === 'SuperAdmin';
   };
 
   return {

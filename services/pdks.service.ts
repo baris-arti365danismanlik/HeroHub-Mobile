@@ -40,24 +40,4 @@ export const pdksService = {
       throw error;
     }
   },
-
-  async checkIn(userId: number): Promise<any> {
-    try {
-      const response = await apiClient.post('/pdks/check-in', { userId });
-      return (response as any)?.data || null;
-    } catch (error) {
-      console.error('Error checking in:', error);
-      throw error;
-    }
-  },
-
-  async checkOut(userId: number): Promise<any> {
-    try {
-      const response = await apiClient.post('/pdks/check-out', { userId });
-      return (response as any)?.data || null;
-    } catch (error) {
-      console.error('Error checking out:', error);
-      throw error;
-    }
-  },
 };
