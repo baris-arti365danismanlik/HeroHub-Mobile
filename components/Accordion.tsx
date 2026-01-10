@@ -21,8 +21,9 @@ export function Accordion({ title, icon, children, defaultExpanded = false, onEd
   const handlePress = () => {
     if (onPress) {
       onPress();
+    } else {
+      setIsExpanded(!isExpanded);
     }
-    setIsExpanded(!isExpanded);
   };
 
   return (
@@ -63,24 +64,27 @@ export function Accordion({ title, icon, children, defaultExpanded = false, onEd
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 16,
+    borderRadius: 8,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOpacity: 0.03,
+    shadowRadius: 2,
+    elevation: 1,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
     flex: 1,
   },
   headerRight: {
@@ -89,10 +93,10 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   title: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#1a1a1a',
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
   },
   editButton: {
     padding: 4,
@@ -105,6 +109,8 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 16,
+    paddingTop: 12,
     paddingBottom: 16,
+    backgroundColor: '#fff',
   },
 });
