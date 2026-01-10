@@ -9,7 +9,6 @@ import {
   ScrollView,
 } from 'react-native';
 import { Diamond, ChevronDown, X } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
 import { onboardingService } from '@/services/onboarding.service';
 import { OnboardingProcess, WelcomePackageForm } from '@/types/backend';
 import { WelcomePackageModal } from './WelcomePackageModal';
@@ -21,7 +20,6 @@ interface OnboardingDropdownProps {
 }
 
 export function OnboardingDropdown({ userId, organizationId }: OnboardingDropdownProps) {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [process, setProcess] = useState<OnboardingProcess | null>(null);
@@ -118,15 +116,11 @@ export function OnboardingDropdown({ userId, organizationId }: OnboardingDropdow
     },
   ];
 
-  const handleDropdownPress = () => {
-    router.push(`/onboarding/${userId}`);
-  };
-
   return (
     <>
       <TouchableOpacity
         style={styles.dropdownButton}
-        onPress={handleDropdownPress}
+        onPress={() => setIsOpen(true)}
         activeOpacity={0.7}>
         <Diamond size={20} color="#6B46C1" strokeWidth={2} />
         <Text style={styles.dropdownButtonText}>İşe Başlama</Text>

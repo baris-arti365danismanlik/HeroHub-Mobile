@@ -35,7 +35,7 @@ export default function OnboardingDetailScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [tasksExpanded, setTasksExpanded] = useState(true);
-  const [questionsExpanded, setQuestionsExpanded] = useState(false);
+  const [questionsExpanded, setQuestionsExpanded] = useState(true);
 
   const [userOnboarding, setUserOnboarding] = useState<UserOnboarding | null>(null);
   const [steps, setSteps] = useState<UserOnboardingStep[]>([]);
@@ -335,36 +335,46 @@ export default function OnboardingDetailScreen() {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.sendWelcomeButton} onPress={handleResend}>
-            <Text style={styles.sendWelcomeButtonText}>Hoşgeldin Paketi Gönder</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.resendButton} onPress={handleResend}>
+              <Text style={styles.resendButtonText}>Tekrar Gönder</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+              <Text style={styles.cancelButtonText}>İptal Et</Text>
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.timeline}>
             {steps.map((step, index) => (
               <View key={step.id} style={styles.timelineItem}>
                 <View style={styles.timelineIndicator}>
-                  <View style={[
-                    styles.timelineNumber,
-                    step.is_completed && styles.timelineNumberCompleted
-                  ]}>
-                    <Text style={[
-                      styles.timelineNumberText,
-                      step.is_completed && styles.timelineNumberTextCompleted
-                    ]}>
-                      {index + 1}
-                    </Text>
-                  </View>
+                  {step.is_completed ? (
+                    <CheckCircle2 size={24} color="#10B981" />
+                  ) : (
+                    <View style={styles.timelineNumber}>
+                      <Text style={styles.timelineNumberText}>{index + 1}</Text>
+                    </View>
+                  )}
                   {index < steps.length - 1 && <View style={styles.timelineLine} />}
                 </View>
                 <View style={styles.timelineContent}>
                   <Text
                     style={[
                       styles.timelineTitle,
-                      !step.is_completed && styles.timelineTitleIncomplete,
+                      step.is_completed && styles.timelineTitleCompleted,
                     ]}
                   >
                     {step.step?.title}
                   </Text>
+                  {step.completed_at && (
+                    <Text style={styles.timelineDate}>
+                      {new Date(step.completed_at).toLocaleDateString('tr-TR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </Text>
+                  )}
                 </View>
               </View>
             ))}
@@ -393,115 +403,89 @@ export default function OnboardingDetailScreen() {
                 <Text style={styles.categoryTitle}>Bilgi Teknolojileri</Text>
               </View>
 
-              {tasks.slice(0, 3).map((userTask) => {
-                const isOverdue = !userTask.is_completed && userTask.task?.due_date && new Date(userTask.task.due_date) < new Date();
-
-                return (
-                  <View key={userTask.id} style={styles.taskCard}>
+              {tasks.slice(0, 3).map((userTask) => (
+                <View key={userTask.id} style={styles.taskCard}>
+                  <View style={styles.taskHeader}>
                     <Text style={styles.taskTitle}>{userTask.task?.title}</Text>
-
-                    <View style={styles.taskInfo}>
-                      <View style={styles.taskRow}>
-                        <Text style={styles.taskLabel}>İlgili</Text>
-                        <Text style={styles.taskValue}>
-                          {userTask.task?.assigned_to || 'Atanmamış'}
-                        </Text>
-                      </View>
-                      <View style={styles.taskRow}>
-                        <Text style={styles.taskLabel}>Son Tarih</Text>
-                        <Text
-                          style={[
-                            styles.taskValue,
-                            isOverdue && styles.taskValueOverdue,
-                          ]}
-                        >
-                          {userTask.task?.due_date
-                            ? new Date(userTask.task.due_date).toLocaleDateString('tr-TR')
-                            : '-'}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {userTask.is_completed ? (
-                      <View style={styles.completedBadge}>
-                        <Text style={styles.completedBadgeText}>Tamamlandı</Text>
-                      </View>
-                    ) : (
-                      <View style={styles.taskActions}>
-                        <TouchableOpacity
-                          style={styles.completeButton}
-                          onPress={() => handleCompleteTask(userTask.id)}
-                        >
-                          <Text style={styles.completeButtonText}>Görevi Tamamla</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.checkButton}
-                          onPress={() => handleCompleteTask(userTask.id)}
-                        >
-                          <CheckCircle2 size={20} color="#fff" />
-                        </TouchableOpacity>
-                      </View>
-                    )}
                   </View>
-                );
-              })}
+                  <View style={styles.taskRow}>
+                    <Text style={styles.taskLabel}>İlgili</Text>
+                    <Text style={styles.taskValue}>
+                      {userTask.task?.assigned_to || 'Atanmamış'}
+                    </Text>
+                  </View>
+                  <View style={styles.taskRow}>
+                    <Text style={styles.taskLabel}>Son Tarih</Text>
+                    <Text
+                      style={[
+                        styles.taskValue,
+                        userTask.is_completed && styles.taskValueCompleted,
+                      ]}
+                    >
+                      {userTask.task?.due_date
+                        ? new Date(userTask.task.due_date).toLocaleDateString('tr-TR')
+                        : '-'}
+                    </Text>
+                  </View>
+                  {userTask.is_completed ? (
+                    <View style={styles.completedBadge}>
+                      <Text style={styles.completedBadgeText}>Tamamlandı</Text>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.completeTaskButton}
+                      onPress={() => handleCompleteTask(userTask.id)}
+                    >
+                      <Text style={styles.completeTaskButtonText}>Görevi Tamamla</Text>
+                      <Send size={16} color="#7C3AED" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))}
 
               <View style={styles.categoryHeader}>
                 <Text style={styles.categoryTitle}>İnsan Kaynakları</Text>
               </View>
 
-              {tasks.slice(3).map((userTask) => {
-                const isOverdue = !userTask.is_completed && userTask.task?.due_date && new Date(userTask.task.due_date) < new Date();
-
-                return (
-                  <View key={userTask.id} style={styles.taskCard}>
+              {tasks.slice(3).map((userTask) => (
+                <View key={userTask.id} style={styles.taskCard}>
+                  <View style={styles.taskHeader}>
                     <Text style={styles.taskTitle}>{userTask.task?.title}</Text>
-
-                    <View style={styles.taskInfo}>
-                      <View style={styles.taskRow}>
-                        <Text style={styles.taskLabel}>İlgili</Text>
-                        <Text style={styles.taskValue}>
-                          {userTask.task?.assigned_to || 'Atanmamış'}
-                        </Text>
-                      </View>
-                      <View style={styles.taskRow}>
-                        <Text style={styles.taskLabel}>Son Tarih</Text>
-                        <Text
-                          style={[
-                            styles.taskValue,
-                            isOverdue && styles.taskValueOverdue,
-                          ]}
-                        >
-                          {userTask.task?.due_date
-                            ? new Date(userTask.task.due_date).toLocaleDateString('tr-TR')
-                            : '-'}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {userTask.is_completed ? (
-                      <View style={styles.completedBadge}>
-                        <Text style={styles.completedBadgeText}>Tamamlandı</Text>
-                      </View>
-                    ) : (
-                      <View style={styles.taskActions}>
-                        <TouchableOpacity
-                          style={styles.completeButton}
-                          onPress={() => handleCompleteTask(userTask.id)}
-                        >
-                          <Text style={styles.completeButtonText}>Görevi Tamamla</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.checkButton}
-                          onPress={() => handleCompleteTask(userTask.id)}
-                        >
-                          <CheckCircle2 size={20} color="#fff" />
-                        </TouchableOpacity>
-                      </View>
-                    )}
                   </View>
-                );
-              })}
+                  <View style={styles.taskRow}>
+                    <Text style={styles.taskLabel}>İlgili</Text>
+                    <Text style={styles.taskValue}>
+                      {userTask.task?.assigned_to || 'Atanmamış'}
+                    </Text>
+                  </View>
+                  <View style={styles.taskRow}>
+                    <Text style={styles.taskLabel}>Son Tarih</Text>
+                    <Text
+                      style={[
+                        styles.taskValue,
+                        userTask.is_completed && styles.taskValueCompleted,
+                      ]}
+                    >
+                      {userTask.task?.due_date
+                        ? new Date(userTask.task.due_date).toLocaleDateString('tr-TR')
+                        : '-'}
+                    </Text>
+                  </View>
+                  {userTask.is_completed ? (
+                    <View style={styles.completedBadge}>
+                      <Text style={styles.completedBadgeText}>Tamamlandı</Text>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.completeTaskButton}
+                      onPress={() => handleCompleteTask(userTask.id)}
+                    >
+                      <Text style={styles.completeTaskButtonText}>Görevi Tamamla</Text>
+                      <Send size={16} color="#7C3AED" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))}
             </View>
           )}
         </View>
@@ -708,14 +692,31 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
     letterSpacing: 0.5,
   },
-  sendWelcomeButton: {
-    backgroundColor: '#7C3AED',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
     marginBottom: 24,
   },
-  sendWelcomeButtonText: {
+  resendButton: {
+    flex: 1,
+    backgroundColor: '#7C3AED',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  resendButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#DC2626',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
@@ -725,52 +726,48 @@ const styles = StyleSheet.create({
   },
   timelineItem: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   timelineIndicator: {
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 12,
   },
   timelineNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  timelineNumberCompleted: {
-    backgroundColor: '#D1D5DB',
-    borderColor: '#D1D5DB',
-  },
   timelineNumberText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#9CA3AF',
-  },
-  timelineNumberTextCompleted: {
-    color: '#fff',
+    color: '#666',
   },
   timelineLine: {
     width: 2,
     flex: 1,
     backgroundColor: '#E5E7EB',
     marginTop: 4,
-    minHeight: 24,
+    minHeight: 32,
   },
   timelineContent: {
     flex: 1,
-    paddingTop: 4,
+    paddingTop: 2,
   },
   timelineTitle: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#1F2937',
+    color: '#999',
+    marginBottom: 2,
   },
-  timelineTitleIncomplete: {
-    color: '#9CA3AF',
+  timelineTitleCompleted: {
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  timelineDate: {
+    fontSize: 12,
+    color: '#999',
   },
   accordionSection: {
     backgroundColor: '#fff',
@@ -819,80 +816,67 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   taskCard: {
-    backgroundColor: '#F9FAFB',
-    borderWidth: 0,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     borderRadius: 8,
-    padding: 16,
+    padding: 12,
+    marginBottom: 12,
+  },
+  taskHeader: {
     marginBottom: 12,
   },
   taskTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500',
     color: '#7C3AED',
-    marginBottom: 12,
-  },
-  taskInfo: {
-    gap: 8,
-    marginBottom: 16,
   },
   taskRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    marginBottom: 8,
   },
   taskLabel: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#666',
   },
   taskValue: {
     fontSize: 13,
-    color: '#1F2937',
+    color: '#1a1a1a',
     fontWeight: '500',
   },
-  taskValueOverdue: {
+  taskValueCompleted: {
     color: '#DC2626',
   },
-  taskActions: {
+  completeTaskButton: {
     flexDirection: 'row',
-    gap: 8,
-  },
-  completeButton: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
     borderColor: '#7C3AED',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginTop: 8,
   },
-  completeButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
+  completeTaskButtonText: {
+    fontSize: 13,
     color: '#7C3AED',
-  },
-  checkButton: {
-    width: 44,
-    height: 44,
-    backgroundColor: '#7C3AED',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    fontWeight: '600',
   },
   completedBadge: {
     alignSelf: 'flex-start',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    borderWidth: 1.5,
+    backgroundColor: '#D1FAE5',
+    borderWidth: 1,
     borderColor: '#10B981',
-    backgroundColor: 'transparent',
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    marginTop: 8,
   },
   completedBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
     color: '#10B981',
+    fontWeight: '600',
   },
   questionCard: {
     borderWidth: 1,
