@@ -105,58 +105,60 @@ export default function OnboardingTasksModal({
 
                 {category.isExpanded && (
                   <View style={styles.tasksContainer}>
-                    {category.tasks.map((task) => (
-                      <View key={task.id} style={styles.taskCard}>
-                        <Text style={styles.taskTitle}>{task.title}</Text>
+                    {category.tasks.map((task) => {
+                      const isOverdue = !task.isCompleted && new Date(task.dueDate) < new Date();
 
-                        <View style={styles.taskInfo}>
-                          <View style={styles.taskInfoRow}>
-                            <Text style={styles.taskInfoLabel}>İlgili</Text>
-                            <Text style={styles.taskInfoValue}>{task.assignedTo}</Text>
+                      return (
+                        <View key={task.id} style={styles.taskCard}>
+                          <Text style={styles.taskTitle}>{task.title}</Text>
+
+                          <View style={styles.taskInfo}>
+                            <View style={styles.taskInfoRow}>
+                              <Text style={styles.taskInfoLabel}>İlgili</Text>
+                              <Text style={styles.taskInfoValue}>{task.assignedTo}</Text>
+                            </View>
+                            <View style={styles.taskInfoRow}>
+                              <Text style={styles.taskInfoLabel}>Son Tarih</Text>
+                              <Text
+                                style={[
+                                  styles.taskInfoValue,
+                                  isOverdue && styles.taskInfoValueOverdue,
+                                ]}
+                              >
+                                {formatDate(task.dueDate)}
+                              </Text>
+                            </View>
                           </View>
-                          <View style={styles.taskInfoRow}>
-                            <Text style={styles.taskInfoLabel}>Son Tarih</Text>
-                            <Text
-                              style={[
-                                styles.taskInfoValue,
-                                !task.isCompleted &&
-                                  new Date(task.dueDate) < new Date() &&
-                                  styles.taskInfoValueOverdue,
-                              ]}
-                            >
-                              {formatDate(task.dueDate)}
-                            </Text>
-                          </View>
+
+                          {task.isCompleted ? (
+                            <View style={styles.completedBadge}>
+                              <Text style={styles.completedBadgeText}>Tamamlandı</Text>
+                            </View>
+                          ) : (
+                            <View style={styles.taskActions}>
+                              <TouchableOpacity
+                                style={styles.completeButton}
+                                onPress={() => task.userTaskId && handleCompleteTask(task.userTaskId)}
+                                disabled={loadingTaskId === task.userTaskId}
+                              >
+                                {loadingTaskId === task.userTaskId ? (
+                                  <ActivityIndicator color="#7C3AED" size="small" />
+                                ) : (
+                                  <Text style={styles.completeButtonText}>Görevi Tamamla</Text>
+                                )}
+                              </TouchableOpacity>
+                              <TouchableOpacity
+                                style={styles.checkButton}
+                                onPress={() => task.userTaskId && handleCompleteTask(task.userTaskId)}
+                                disabled={loadingTaskId === task.userTaskId}
+                              >
+                                <Check size={20} color="#fff" />
+                              </TouchableOpacity>
+                            </View>
+                          )}
                         </View>
-
-                        {task.isCompleted ? (
-                          <View style={styles.completedBadge}>
-                            <Text style={styles.completedBadgeText}>Tamamlandı</Text>
-                          </View>
-                        ) : (
-                          <View style={styles.taskActions}>
-                            <TouchableOpacity
-                              style={styles.completeButton}
-                              onPress={() => task.userTaskId && handleCompleteTask(task.userTaskId)}
-                              disabled={loadingTaskId === task.userTaskId}
-                            >
-                              {loadingTaskId === task.userTaskId ? (
-                                <ActivityIndicator color="#7C3AED" size="small" />
-                              ) : (
-                                <Text style={styles.completeButtonText}>Görevi Tamamla</Text>
-                              )}
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                              style={styles.checkButton}
-                              onPress={() => task.userTaskId && handleCompleteTask(task.userTaskId)}
-                              disabled={loadingTaskId === task.userTaskId}
-                            >
-                              <Check size={20} color="#fff" />
-                            </TouchableOpacity>
-                          </View>
-                        )}
-                      </View>
-                    ))}
+                      );
+                    })}
                   </View>
                 )}
               </View>
@@ -242,9 +244,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   taskCard: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+    borderWidth: 0,
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
@@ -257,12 +258,12 @@ const styles = StyleSheet.create({
   },
   taskInfo: {
     marginBottom: 16,
+    gap: 8,
   },
   taskInfoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
   },
   taskInfoLabel: {
     fontSize: 13,
@@ -290,6 +291,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 44,
   },
   completeButtonText: {
     fontSize: 14,
@@ -311,7 +313,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1.5,
     borderColor: '#10B981',
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
   },
   completedBadgeText: {
     fontSize: 12,
