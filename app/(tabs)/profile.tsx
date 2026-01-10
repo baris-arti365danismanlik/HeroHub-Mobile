@@ -2208,60 +2208,10 @@ export default function ProfileScreen() {
         <Accordion
           title="İŞE BAŞLAMA GÖREVLERİ"
           icon={<AlignJustify size={18} color="#7C3AED" />}
-          defaultExpanded={true}
+          defaultExpanded={false}
+          onPress={() => setOnboardingTasksModalVisible(true)}
         >
-          {onboardingData.tasks.map((task) => {
-            const userTask = onboardingData.userTasks.find((ut) => ut.task_id === task.id);
-            const isCompleted = userTask?.is_completed || false;
-            const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !isCompleted;
-
-            return (
-              <View key={task.id} style={styles.onboardingTaskCard}>
-                <Text style={styles.onboardingTaskTitle}>{task.title}</Text>
-
-                <View style={styles.onboardingTaskDetails}>
-                  <View style={styles.onboardingTaskDetailRow}>
-                    <Text style={styles.onboardingTaskLabel}>İlgili</Text>
-                    <Text style={styles.onboardingTaskValue}>{task.assigned_to || 'Phillip Stanton'}</Text>
-                  </View>
-                  <View style={styles.onboardingTaskDetailRow}>
-                    <Text style={styles.onboardingTaskLabel}>Son Tarih</Text>
-                    <Text style={[
-                      styles.onboardingTaskValue,
-                      isOverdue && styles.onboardingTaskValueOverdue
-                    ]}>
-                      {task.due_date ? new Date(task.due_date).toLocaleDateString('tr-TR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                      }) : '13.11.2025'}
-                    </Text>
-                  </View>
-                </View>
-
-                {isCompleted ? (
-                  <View style={styles.onboardingTaskCompletedBadge}>
-                    <Text style={styles.onboardingTaskCompletedText}>Tamamlandı</Text>
-                  </View>
-                ) : (
-                  <View style={styles.onboardingTaskActions}>
-                    <TouchableOpacity
-                      style={styles.onboardingTaskCompleteButton}
-                      onPress={() => userTask && handleCompleteTask(userTask.id)}
-                    >
-                      <Text style={styles.onboardingTaskCompleteButtonText}>Görevi Tamamla</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.onboardingTaskCheckButton}
-                      onPress={() => userTask && handleCompleteTask(userTask.id)}
-                    >
-                      <Check size={20} color="#fff" />
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            );
-          })}
+          <View />
         </Accordion>
 
         <Accordion
