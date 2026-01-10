@@ -430,10 +430,6 @@ export interface UserOnboardingTaskItem {
   dueDate: string;
   isCompleted: boolean;
   completedAt?: string;
-  category?: string;
-  assignedTo?: string;
-  assignedToName?: string;
-  userOnboardingTaskId?: number;
 }
 
 export interface OnboardingProcess {
