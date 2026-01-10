@@ -13,7 +13,7 @@ export const onboardingService = {
   ): Promise<WelcomingPackageDefaultValues | null> {
     try {
       const response = await apiClient.get<WelcomingPackageDefaultValues>(
-        `/OnboardingQuestion/get-welcoming-package-default-values?UserId=${userId}`
+        `/OnboardingQuestion/Get-Welcoming-Package-Default-Values?UserId=${userId}`
       );
 
       if (response.succeeded && response.data) {
@@ -34,7 +34,7 @@ export const onboardingService = {
   async getUserOnboardingQuestions(userId: number): Promise<OnboardingQuestionItem[]> {
     try {
       const response = await apiClient.get<OnboardingQuestionItem[]>(
-        `/OnboardingQuestion/get-user-onboarding-questions?UserId=${userId}`
+        `/OnboardingQuestion/Get-User-Onboarding-Questions?UserId=${userId}`
       );
 
       if (response.succeeded && response.data) {
@@ -51,7 +51,7 @@ export const onboardingService = {
   async listUserOnboardingTasks(userId: number): Promise<UserOnboardingTaskItem[]> {
     try {
       const response = await apiClient.get<UserOnboardingTaskItem[]>(
-        `/userOnboardingTask/list-userOnboardingTasks?userId=${userId}`
+        `/UserOnboardingTask/List-UserOnboardingTasks?userId=${userId}`
       );
 
       if (response.succeeded && response.data) {
@@ -68,7 +68,7 @@ export const onboardingService = {
   async getUserOnboardingProcess(userId: number): Promise<OnboardingProcess | null> {
     try {
       const response = await apiClient.get<OnboardingProcess>(
-        `/userOnboardingTask/get-userOnboardingProcess?userId=${userId}`
+        `/UserOnboardingTask/Get-UserOnboardingProcess?userId=${userId}`
       );
 
       if (response.succeeded && response.data) {
@@ -123,7 +123,7 @@ export const onboardingService = {
       console.log('Sending welcome package with data:', requestBody);
 
       const response = await apiClient.post(
-        `/OnboardingQuestion/send-welcoming-package`,
+        `/OnboardingQuestion/Send-Welcoming-Package`,
         requestBody
       );
 
@@ -151,7 +151,7 @@ export const onboardingService = {
 
   async cancelOnboarding(userId: number): Promise<boolean> {
     try {
-      const response = await apiClient.post(`/userOnboardingTask/cancel-onboarding`, {
+      const response = await apiClient.post(`/UserOnboardingTask/Cancel-Onboarding`, {
         userId,
       });
       return response.succeeded || false;
