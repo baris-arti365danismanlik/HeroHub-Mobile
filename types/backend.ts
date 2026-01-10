@@ -109,6 +109,7 @@ export interface User {
   role?: string;
   position?: string;
   backend_user_id?: number;
+  backend_user_role?: string;
   organization_id?: number;
 }
 

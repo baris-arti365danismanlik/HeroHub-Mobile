@@ -982,10 +982,10 @@ export default function ProfileScreen() {
   };
 
   const handleCheckIn = async () => {
-    if (!user?.id) return;
+    if (!user?.backend_user_id) return;
 
     try {
-      await pdksService.checkIn(user.id);
+      await pdksService.checkIn(user.backend_user_id);
       await loadPDKSData();
     } catch (error) {
       console.error('Error checking in:', error);
@@ -993,10 +993,10 @@ export default function ProfileScreen() {
   };
 
   const handleCheckOut = async () => {
-    if (!user?.id) return;
+    if (!user?.backend_user_id) return;
 
     try {
-      await pdksService.checkOut(user.id);
+      await pdksService.checkOut(user.backend_user_id);
       await loadPDKSData();
     } catch (error) {
       console.error('Error checking out:', error);
