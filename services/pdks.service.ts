@@ -22,7 +22,7 @@ export const pdksService = {
   async getUserWorkLog(userId: number): Promise<UserWorkLog[]> {
     try {
       const response = await apiClient.get(
-        `/EmployeeLog/Get-UserWorkLog?userId=${userId}`
+        `/employeeLog/get-userworklog?userId=${userId}`
       );
       return (response as any)?.data || [];
     } catch (error) {
@@ -33,7 +33,7 @@ export const pdksService = {
 
   async createTask(taskData: PDKSTask): Promise<any> {
     try {
-      const response = await apiClient.post('/Pdks/Create-Task', taskData);
+      const response = await apiClient.post('/pdks/create-task', taskData);
       return (response as any)?.data || null;
     } catch (error) {
       console.error('Error creating PDKS task:', error);

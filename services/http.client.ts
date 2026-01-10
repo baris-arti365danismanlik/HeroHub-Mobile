@@ -55,7 +55,7 @@ class HttpClient {
         throw new Error('No refresh token available');
       }
 
-      const response = await fetch(`${this.baseURL}/Auth/Refresh?refreshToken=${refreshToken}`, {
+      const response = await fetch(`${this.baseURL}/auth/refresh?refreshToken=${refreshToken}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -120,23 +120,8 @@ class HttpClient {
     }
 
     if (!response.ok) {
-      let errorMessage = `HTTP Hata: ${response.status}`;
-
-      try {
-        const errorData = await response.json();
-
-        if (errorData.friendlyMessage) {
-          errorMessage = errorData.friendlyMessage;
-        } else if (errorData.message) {
-          errorMessage = errorData.message;
-        } else if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
-          errorMessage = errorData.errors[0];
-        }
-      } catch (parseError) {
-        console.error('Error parsing error response:', parseError);
-      }
-
-      throw new Error(errorMessage);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP Error: ${response.status}`);
     }
 
     const data = await response.json();

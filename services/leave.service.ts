@@ -41,7 +41,7 @@ export const leaveService = {
   async getDayOffBalance(userId: number): Promise<DayOffBalanceResponse> {
     console.log('getDayOffBalance - Requesting with userId:', userId);
     const response = await apiHttpClient.get<DayOffBalanceResponse>(
-      '/UserDayOffBalance/Get-UserDayOffBalance',
+      '/userDayOffBalance/get-userDayOffBalance',
       { userId }
     );
     console.log('getDayOffBalance - Response:', response);
@@ -55,7 +55,7 @@ export const leaveService = {
     const params = userId ? { userId } : undefined;
     console.log('getPastDayOffs - Requesting with userId:', userId, 'params:', params);
     const response = await apiHttpClient.get<DayOffRecord[]>(
-      '/UserDayOff/Get-PastDayOff',
+      '/userDayOff/get-pastDayOff',
       params
     );
     console.log('getPastDayOffs - Response:', response);
@@ -65,7 +65,7 @@ export const leaveService = {
   async getIncomingDayOffs(userId: number): Promise<DayOffRecord[]> {
     console.log('getIncomingDayOffs - Requesting with userId:', userId);
     const response = await apiHttpClient.get<DayOffRecord[]>(
-      '/UserDayOff/Get-IncomingDayOff',
+      '/userDayOff/get-incomingDayOff',
       { userId }
     );
     console.log('getIncomingDayOffs - Response:', response);

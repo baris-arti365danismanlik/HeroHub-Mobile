@@ -14,7 +14,7 @@ import type {
 export const employmentService = {
   async getWorkingInformation(userId: number): Promise<WorkingInformation[]> {
     const response = await apiClient.get<WorkingInformation[]>(
-      `/UserEmployment/Get-WorkingInformation?userId=${userId}`
+      `/userEmployment/get-workinginformation?userId=${userId}`
     );
     return response.data || [];
   },
@@ -22,7 +22,7 @@ export const employmentService = {
   async getPositions(userId: number): Promise<Position[]> {
     try {
       const response = await apiClient.get<Position[]>(
-        `/UserEmployment/Get-Positions?userId=${userId}`
+        `/userEmployment/get-positions?userId=${userId}`
       );
       return response.data || [];
     } catch (error) {
@@ -33,7 +33,7 @@ export const employmentService = {
   async getUserSalary(userId: number): Promise<UserSalary | null> {
     try {
       const response = await apiClient.get<UserSalary>(
-        `/UserEmployment/Get-UserSalary?userId=${userId}`
+        `/userEmployment/get-userSalary?userId=${userId}`
       );
       return response.data || null;
     } catch (error) {
@@ -43,35 +43,35 @@ export const employmentService = {
 
   async getUserTitles(): Promise<UserTitle[]> {
     const response = await apiClient.get<UserTitle[]>(
-      '/UserEmployment/Get-UserTitles'
+      '/userEmployment/get-userTitles'
     );
     return response.data || [];
   },
 
   async getManagerUsers(): Promise<ManagerUser[]> {
     const response = await apiClient.get<ManagerUser[]>(
-      '/UserEmployment/Get-ManagerUsers'
+      '/userEmployment/get-managerUsers'
     );
     return response.data || [];
   },
 
   async getOrganizationDepartments(): Promise<Department[]> {
     const response = await apiClient.get<Department[]>(
-      '/UserEmployment/Get-OrganizationDepartments'
+      '/userEmployment/get-organizationdepartments'
     );
     return response.data || [];
   },
 
   async getWorkplaces(): Promise<Workplace[]> {
     const response = await apiClient.get<Workplace[]>(
-      '/Workplace/List'
+      '/workplace/list'
     );
     return response.data || [];
   },
 
   async getCities(countryId: number = 1): Promise<City[]> {
     const response = await apiClient.get<City[]>(
-      `/Profile/Cities?countryId=${countryId}`
+      `/Profile/cities?countryId=${countryId}`
     );
     return response.data || [];
   },

@@ -28,13 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const currentUser = await authService.getCurrentUser();
         if (currentUser) {
           setUser(currentUser);
-        } else {
-          await authService.logout();
         }
       }
     } catch (error) {
       console.error('Error checking auth:', error);
-      await authService.logout();
     } finally {
       setIsLoading(false);
     }
