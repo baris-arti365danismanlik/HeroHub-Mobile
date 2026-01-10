@@ -55,37 +55,37 @@ export const homeService = {
   },
 
   async listOnboardingTasksByCategory(): Promise<OnboardingTaskCategory[]> {
-    const response = await apiClient.get<OnboardingTaskCategory[]>('/OnboardingTask/List-OnboardingTaskbyCategory');
+    const response = await apiClient.get<OnboardingTaskCategory[]>('/onboardingTask/list-onboardingTaskbyCategory');
     return response.data || [];
   },
 
   async listMyOnboardingTasks(): Promise<OnboardingTask[]> {
-    const response = await apiClient.get<OnboardingTask[]>('/HomePage/List-MyOnboardingTasks');
+    const response = await apiClient.get<OnboardingTask[]>('/homePage/list-myOnboardingTasks');
     return response.data || [];
   },
 
   async listNewEmployees(): Promise<NewEmployee[]> {
-    const response = await apiClient.get<NewEmployee[]>('/HomePage/List-NewEmployees');
+    const response = await apiClient.get<NewEmployee[]>('/homePage/list-newEmployees');
     return response.data || [];
   },
 
   async listUpcomingDayOffs(): Promise<any[]> {
-    const response = await apiClient.get<any[]>('/HomePage/List-UpcomingDayOffs');
+    const response = await apiClient.get<any[]>('/homePage/list-upcomingDayOffs');
     return response.data || [];
   },
 
   async getUserTrainingStatus(): Promise<UserTrainingStatus> {
-    const response = await apiClient.get<UserTrainingStatus>('/HomePage/Get-UserTrainingStatus');
+    const response = await apiClient.get<UserTrainingStatus>('/homePage/get-userTrainingStatus');
     return response.data || { userId: 0, plannedCount: 0, overdueCount: 0 };
   },
 
   async listUserRequests(): Promise<any[]> {
-    const response = await apiClient.get<any[]>('/HomePage/List-UserRequests');
+    const response = await apiClient.get<any[]>('/homePage/list-userRequests');
     return response.data || [];
   },
 
   async listUserAgenda(): Promise<UserAgendaItem[]> {
-    const response = await apiClient.get<UserAgendaItem[]>('/HomePage/List-UserAgenda');
+    const response = await apiClient.get<UserAgendaItem[]>('/homePage/list-userAgenda');
     return response.data || [];
   },
 };

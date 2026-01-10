@@ -7,7 +7,7 @@ class AuthService {
     try {
       console.log('Login attempt with:', credentials.userName);
 
-      const response = await authHttpClient.post<LoginResponse>('/Auth/Login', credentials, false);
+      const response = await authHttpClient.post<LoginResponse>('/auth/login', credentials, false);
 
       const isSuccess = response.success || response.succeeded;
 
@@ -18,11 +18,10 @@ class AuthService {
         return response.data;
       }
 
-      throw new Error(response.message || response.friendlyMessage || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+      throw new Error(response.message || response.friendlyMessage || 'Login failed');
     } catch (error: any) {
       console.error('Login Error:', error);
-      const errorMessage = error?.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
-      throw new Error(errorMessage);
+      throw error;
     }
   }
 
@@ -37,13 +36,8 @@ class AuthService {
         return null;
       }
 
-      const response = await apiHttpClient.get<User>('/User/Current');
-
-      if (response.data) {
-        return response.data;
-      }
-
-      return null;
+      const response = await apiHttpClient.get<User>('/User/current');
+      return response.data || null;
     } catch (error) {
       console.error('Error getting current user:', error);
       return null;
