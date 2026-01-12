@@ -55,8 +55,10 @@ export default function EmployeesScreen() {
   const { user } = useAuth();
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (user?.organization_id) {
+      loadData();
+    }
+  }, [user]);
 
   const loadData = async () => {
     try {

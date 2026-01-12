@@ -52,7 +52,7 @@ export default function HomeScreen() {
   const [onboardingTasks, setOnboardingTasks] = useState<OnboardingTaskCategory[]>([]);
 
   useEffect(() => {
-    if (user) {
+    if (user?.backend_user_id) {
       loadDashboardData();
     }
   }, [user]);

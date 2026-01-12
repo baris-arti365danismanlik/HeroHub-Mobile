@@ -110,11 +110,16 @@ class HttpClient {
           const newResponse = await retryRequest();
           return await newResponse.json() as ApiResponse<T>;
         } else {
-          throw new Error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+          this.isRefreshing = false;
+          await tokenStorage.clearTokens();
+          const error: any = new Error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+          error.isAuthError = true;
+          throw error;
         }
-      } catch (error) {
+      } catch (error: any) {
         this.isRefreshing = false;
         await tokenStorage.clearTokens();
+        error.isAuthError = true;
         throw error;
       }
     }
