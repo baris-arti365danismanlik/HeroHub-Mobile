@@ -33,13 +33,32 @@ class AuthService {
     try {
       const token = await tokenStorage.getToken();
       if (!token) {
+        console.log('No token found, skipping getCurrentUser');
         return null;
       }
 
+      console.log('Fetching current user with token:', token.substring(0, 20) + '...');
       const response = await apiHttpClient.get<User>('/User/current');
-      return response.data || null;
-    } catch (error) {
-      console.error('Error getting current user:', error);
+
+      if (response.data) {
+        console.log('Current user fetched successfully:', response.data.email);
+        return response.data;
+      }
+
+      console.warn('No user data in response');
+      return null;
+    } catch (error: any) {
+      console.error('Error getting current user:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+
+      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        console.log('Clearing tokens due to unauthorized error');
+        await tokenStorage.clearTokens();
+      }
+
       return null;
     }
   }

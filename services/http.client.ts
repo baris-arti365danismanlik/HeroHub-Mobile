@@ -121,6 +121,23 @@ class HttpClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('HTTP Error Details:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+        errorData
+      });
+
+      if (response.status === 400) {
+        const errorMessage = errorData.friendlyMessage ||
+                           errorData.message ||
+                           errorData.title ||
+                           (errorData.errors && typeof errorData.errors === 'object'
+                             ? Object.values(errorData.errors).flat().join(', ')
+                             : 'Geçersiz istek. Lütfen tekrar deneyin.');
+        throw new Error(errorMessage);
+      }
+
       throw new Error(errorData.message || `HTTP Error: ${response.status}`);
     }
 
