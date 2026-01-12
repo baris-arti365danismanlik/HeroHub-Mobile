@@ -121,12 +121,6 @@ class HttpClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('HTTP Error Details:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url,
-        errorData
-      });
 
       if (response.status === 400) {
         const errorMessage = errorData.friendlyMessage ||
@@ -156,8 +150,6 @@ class HttpClient {
       });
     }
 
-    console.log(`[HTTP GET] ${url.toString()}`);
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -185,8 +177,6 @@ class HttpClient {
     const makeRequest = async () => {
       const headers = await this.getHeaders(includeAuth);
       const url = `${this.baseURL}${endpoint}`;
-
-      console.log(`curl -X POST -H 'Content-Type: application/json' ${includeAuth && await tokenStorage.getToken() ? `-H 'Authorization: Bearer ${(await tokenStorage.getToken())?.substring(0, 20)}...' ` : ''}-d '${JSON.stringify(body)}' '${url}'`);
 
       return fetch(url, {
         method: 'POST',

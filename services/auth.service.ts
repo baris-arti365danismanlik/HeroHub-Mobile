@@ -5,8 +5,6 @@ import type { LoginRequest, LoginResponse, User } from '@/types/backend';
 class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      console.log('Login attempt with:', credentials.userName);
-
       const response = await authHttpClient.post<LoginResponse>('/auth/login', credentials, false);
 
       const isSuccess = response.success || response.succeeded;
@@ -27,13 +25,11 @@ class AuthService {
         };
 
         await tokenStorage.setUserData(userData);
-        console.log('Login successful, token and user data saved');
         return response.data;
       }
 
       throw new Error(response.message || response.friendlyMessage || 'Login failed');
     } catch (error: any) {
-      console.error('Login Error:', error);
       throw error;
     }
   }
@@ -52,7 +48,6 @@ class AuthService {
       const userData = await tokenStorage.getUserData();
       return userData;
     } catch (error: any) {
-      console.error('Error getting current user:', error);
       return null;
     }
   }

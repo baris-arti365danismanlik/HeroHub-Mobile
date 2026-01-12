@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (error) {
-      console.error('Error checking auth:', error);
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await authService.logout();
       setUser(null);
     } catch (error) {
-      console.error('Error during logout:', error);
+      setUser(null);
     }
   };
 
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(currentUser);
       }
     } catch (error) {
-      console.error('Error refreshing user:', error);
+      setUser(null);
     }
   };
 

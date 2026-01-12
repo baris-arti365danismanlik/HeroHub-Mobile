@@ -20,13 +20,8 @@ export const onboardingService = {
         return response.data;
       }
 
-      if (!response.succeeded && response.errors && response.errors.length > 0) {
-        console.warn('Failed to fetch welcoming package default values:', response.errors[0]);
-      }
-
       return null;
     } catch (error) {
-      console.error('Error fetching welcoming package default values:', error);
       return null;
     }
   },
@@ -43,7 +38,6 @@ export const onboardingService = {
 
       return [];
     } catch (error) {
-      console.error('Error fetching user onboarding questions:', error);
       return [];
     }
   },
@@ -60,7 +54,6 @@ export const onboardingService = {
 
       return [];
     } catch (error) {
-      console.error('Error fetching user onboarding tasks:', error);
       return [];
     }
   },
@@ -75,13 +68,8 @@ export const onboardingService = {
         return response.data;
       }
 
-      if (!response.succeeded && response.errors && response.errors.length > 0) {
-        console.warn('Failed to fetch user onboarding process:', response.errors[0]);
-      }
-
       return null;
     } catch (error) {
-      console.error('Error fetching user onboarding process:', error);
       return null;
     }
   },
@@ -120,14 +108,10 @@ export const onboardingService = {
         };
       }
 
-      console.log('Sending welcome package with data:', requestBody);
-
       const response = await apiClient.post(
         `/OnboardingQuestion/send-welcoming-package`,
         requestBody
       );
-
-      console.log('Welcome package response:', response);
 
       if (response.succeeded) {
         return { success: true };
@@ -141,7 +125,6 @@ export const onboardingService = {
         };
       }
     } catch (error: any) {
-      console.error('Error sending welcome package:', error);
       return {
         success: false,
         error: error.message || 'Hoşgeldin paketi gönderilemedi',
@@ -156,7 +139,6 @@ export const onboardingService = {
       });
       return response.succeeded || false;
     } catch (error) {
-      console.error('Error cancelling onboarding:', error);
       return false;
     }
   },

@@ -32,26 +32,14 @@ class ApiClient {
 
       if (response.status === 404) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('404 Error - Endpoint not found:', response.url);
         throw new Error(errorData.message || 'Endpoint bulunamadı. Backend geliştiricisiyle iletişime geçin.');
       }
 
       const errorData = await response.json().catch(() => ({}));
-      console.error('Error data:', errorData);
       throw new Error(errorData.message || `HTTP Error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('Response data:', data);
-
-    if (data && typeof data === 'object' && 'succeeded' in data && !data.succeeded) {
-      const errorMessage = data.friendlyMessage ||
-        (data.errors && Array.isArray(data.errors) && data.errors.length > 0
-          ? data.errors[0]
-          : 'Bir hata oluştu');
-      console.warn('API returned succeeded: false with message:', errorMessage);
-    }
-
     return data as ApiResponse<T>;
   }
 
@@ -90,9 +78,6 @@ class ApiClient {
 
     try {
       const url = `${this.baseURL}${endpoint}`;
-      console.log('POST Request:', url);
-      console.log('Body:', JSON.stringify(body, null, 2));
-      console.log('Headers:', headers);
 
       const response = await fetch(url, {
         method: 'POST',
@@ -101,14 +86,8 @@ class ApiClient {
         signal: controller.signal,
       });
 
-      console.log('Response status:', response.status);
-
       return await this.handleResponse<T>(response);
     } catch (error: any) {
-      console.error('POST Error:', error);
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-
       if (error.name === 'AbortError') {
         throw new Error('Request timeout - Server took too long to respond');
       }
