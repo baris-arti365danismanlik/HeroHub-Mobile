@@ -23,21 +23,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      console.log('[AuthContext] Checking authentication...');
       const isAuth = await authService.isAuthenticated();
-      console.log('[AuthContext] Is authenticated:', isAuth);
-
       if (isAuth) {
         const currentUser = await authService.getCurrentUser();
-        console.log('[AuthContext] Current user:', currentUser);
         if (currentUser) {
           setUser(currentUser);
         }
       }
     } catch (error) {
-      console.error('[AuthContext] Error checking auth:', error);
+      console.error('Error checking auth:', error);
     } finally {
-      console.log('[AuthContext] Setting isLoading to false');
       setIsLoading(false);
     }
   };
