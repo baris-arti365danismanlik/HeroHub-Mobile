@@ -14,7 +14,20 @@ class AuthService {
       if (isSuccess && response.data) {
         await tokenStorage.setToken(response.data.token);
         await tokenStorage.setRefreshToken(response.data.refreshToken);
-        console.log('Login successful, token saved');
+
+        const userData: User = {
+          id: response.data.id.toString(),
+          firstName: response.data.firstName,
+          lastName: response.data.lastName,
+          email: response.data.email,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          backend_user_id: response.data.id,
+          organization_id: response.data.organizationId,
+        };
+
+        await tokenStorage.setUserData(userData);
+        console.log('Login successful, token and user data saved');
         return response.data;
       }
 
@@ -33,32 +46,13 @@ class AuthService {
     try {
       const token = await tokenStorage.getToken();
       if (!token) {
-        console.log('No token found, skipping getCurrentUser');
         return null;
       }
 
-      console.log('Fetching current user with token:', token.substring(0, 20) + '...');
-      const response = await apiHttpClient.get<User>('/User/current');
-
-      if (response.data) {
-        console.log('Current user fetched successfully:', response.data.email);
-        return response.data;
-      }
-
-      console.warn('No user data in response');
-      return null;
+      const userData = await tokenStorage.getUserData();
+      return userData;
     } catch (error: any) {
-      console.error('Error getting current user:', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      });
-
-      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
-        console.log('Clearing tokens due to unauthorized error');
-        await tokenStorage.clearTokens();
-      }
-
+      console.error('Error getting current user:', error);
       return null;
     }
   }

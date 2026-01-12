@@ -39,20 +39,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (credentials: LoginRequest) => {
     try {
-      const response = await authService.login(credentials);
-
-      const userData: User = {
-        id: response.id.toString(),
-        firstName: response.firstName,
-        lastName: response.lastName,
-        email: response.email,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        backend_user_id: response.id,
-        organization_id: response.organizationId,
-      };
-
-      setUser(userData);
+      await authService.login(credentials);
+      const currentUser = await authService.getCurrentUser();
+      setUser(currentUser);
     } catch (error) {
       throw error;
     }

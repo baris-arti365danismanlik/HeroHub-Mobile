@@ -1,9 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { User } from '@/types/backend';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://your-dotnet-api.com';
 
 const TOKEN_KEY = '@herof2_token';
 const REFRESH_TOKEN_KEY = '@herof2_refresh_token';
+const USER_DATA_KEY = '@herof2_user_data';
 
 export const apiConfig = {
   baseURL: API_BASE_URL,
@@ -48,9 +50,27 @@ export const tokenStorage = {
     }
   },
 
+  async getUserData(): Promise<User | null> {
+    try {
+      const data = await AsyncStorage.getItem(USER_DATA_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('Error getting user data:', error);
+      return null;
+    }
+  },
+
+  async setUserData(user: User): Promise<void> {
+    try {
+      await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+    } catch (error) {
+      console.error('Error saving user data:', error);
+    }
+  },
+
   async clearTokens(): Promise<void> {
     try {
-      await AsyncStorage.multiRemove([TOKEN_KEY, REFRESH_TOKEN_KEY]);
+      await AsyncStorage.multiRemove([TOKEN_KEY, REFRESH_TOKEN_KEY, USER_DATA_KEY]);
     } catch (error) {
       console.error('Error clearing tokens:', error);
     }
