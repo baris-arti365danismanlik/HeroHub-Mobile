@@ -162,13 +162,17 @@ export default function EmployeeDetailScreen() {
             ) : (
               <View style={styles.profileAvatarPlaceholder}>
                 <Text style={styles.profileAvatarText}>
-                  {`${employee.personalInformation.firstName[0]}${employee.personalInformation.lastName[0]}`}
+                  {employee.personalInformation?.firstName && employee.personalInformation?.lastName
+                    ? `${employee.personalInformation.firstName[0]}${employee.personalInformation.lastName[0]}`
+                    : '?'}
                 </Text>
               </View>
             )}
           </View>
           <Text style={styles.profileName}>
-            {`${employee.personalInformation.firstName} ${employee.personalInformation.lastName}`}
+            {employee.personalInformation?.firstName && employee.personalInformation?.lastName
+              ? `${employee.personalInformation.firstName} ${employee.personalInformation.lastName}`
+              : 'İsimsiz'}
           </Text>
           {employee.currentTitle && (
             <View style={styles.profileBadge}>
@@ -192,13 +196,13 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditEmployee}
             onEdit={() => handleEditSection('personal')}
           >
-            {renderInfoRow('TC Kimlik No', employee.personalInformation.tckn || '-')}
-            {renderInfoRow('Ad', employee.personalInformation.firstName || '-')}
-            {renderInfoRow('Soyad', employee.personalInformation.lastName || '-')}
-            {renderInfoRow('Doğum Tarihi', formatDate(employee.personalInformation.birthdate))}
-            {renderInfoRow('Doğum Yeri', employee.personalInformation.birthPlace || '-')}
-            {renderInfoRow('Cinsiyet', getGenderText(employee.personalInformation.gender))}
-            {renderInfoRow('Medeni Durum', getMaritalStatusText(employee.personalInformation.maritalStatus))}
+            {renderInfoRow('TC Kimlik No', employee.personalInformation?.tckn || '-')}
+            {renderInfoRow('Ad', employee.personalInformation?.firstName || '-')}
+            {renderInfoRow('Soyad', employee.personalInformation?.lastName || '-')}
+            {renderInfoRow('Doğum Tarihi', employee.personalInformation?.birthdate ? formatDate(employee.personalInformation.birthdate) : '-')}
+            {renderInfoRow('Doğum Yeri', employee.personalInformation?.birthPlace || '-')}
+            {renderInfoRow('Cinsiyet', employee.personalInformation?.gender !== undefined ? getGenderText(employee.personalInformation.gender) : '-')}
+            {renderInfoRow('Medeni Durum', employee.personalInformation?.maritalStatus !== undefined ? getMaritalStatusText(employee.personalInformation.maritalStatus) : '-')}
           </Accordion>
 
           <Accordion
@@ -207,12 +211,12 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditEmployee}
             onEdit={() => handleEditSection('contact')}
           >
-            {renderInfoRow('E-posta', employee.userContact.email || '-')}
-            {renderInfoRow('Telefon', employee.userContact.phoneNumber || '-')}
-            {renderInfoRow('İş E-postası', employee.userContact.businessEmail || '-')}
-            {renderInfoRow('İş Telefonu', employee.userContact.businessPhone || '-')}
-            {renderInfoRow('Ev Telefonu', employee.userContact.homePhone || '-')}
-            {renderInfoRow('Diğer E-posta', employee.userContact.otherEmail || '-')}
+            {renderInfoRow('E-posta', employee.userContact?.email || '-')}
+            {renderInfoRow('Telefon', employee.userContact?.phoneNumber || '-')}
+            {renderInfoRow('İş E-postası', employee.userContact?.businessEmail || '-')}
+            {renderInfoRow('İş Telefonu', employee.userContact?.businessPhone || '-')}
+            {renderInfoRow('Ev Telefonu', employee.userContact?.homePhone || '-')}
+            {renderInfoRow('Diğer E-posta', employee.userContact?.otherEmail || '-')}
           </Accordion>
 
           <Accordion
@@ -221,10 +225,10 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditEmployee}
             onEdit={() => handleEditSection('address')}
           >
-            {renderInfoRow('Adres', employee.userAddress.address || '-')}
-            {renderInfoRow('İlçe', employee.userAddress.districtName || '-')}
-            {renderInfoRow('İl', employee.userAddress.cityName || '-')}
-            {renderInfoRow('Ülke', employee.userAddress.countryName || '-')}
+            {renderInfoRow('Adres', employee.userAddress?.address || '-')}
+            {renderInfoRow('İlçe', employee.userAddress?.districtName || '-')}
+            {renderInfoRow('İl', employee.userAddress?.cityName || '-')}
+            {renderInfoRow('Ülke', employee.userAddress?.countryName || '-')}
           </Accordion>
 
           <Accordion
@@ -233,12 +237,12 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditEmployee}
             onEdit={() => handleEditSection('health')}
           >
-            {renderInfoRow('Boy', employee.userHealth.height ? `${employee.userHealth.height} cm` : '-')}
-            {renderInfoRow('Kilo', employee.userHealth.weight ? `${employee.userHealth.weight} kg` : '-')}
-            {renderInfoRow('Beden', employee.userHealth.size ? employee.userHealth.size.toString() : '-')}
-            {renderInfoRow('Kan Grubu', getBloodTypeText(employee.userHealth.bloodType))}
-            {renderInfoRow('Alerjiler', employee.userHealth.allergies || '-')}
-            {renderInfoRow('Kullandığı İlaçlar', employee.userHealth.drugs || '-')}
+            {renderInfoRow('Boy', employee.userHealth?.height ? `${employee.userHealth.height} cm` : '-')}
+            {renderInfoRow('Kilo', employee.userHealth?.weight ? `${employee.userHealth.weight} kg` : '-')}
+            {renderInfoRow('Beden', employee.userHealth?.size ? employee.userHealth.size.toString() : '-')}
+            {renderInfoRow('Kan Grubu', employee.userHealth?.bloodType !== undefined ? getBloodTypeText(employee.userHealth.bloodType) : '-')}
+            {renderInfoRow('Alerjiler', employee.userHealth?.allergies || '-')}
+            {renderInfoRow('Kullandığı İlaçlar', employee.userHealth?.drugs || '-')}
           </Accordion>
 
           <Accordion
@@ -267,9 +271,9 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditEmployee}
             onEdit={() => handleEditSection('military')}
           >
-            {renderInfoRow('Askerlik Durumu', getMilitaryStatusText(employee.userMilitary.militaryStatus))}
-            {renderInfoRow('Tecil Durumu', employee.userMilitary.militaryPostpone || '-')}
-            {renderInfoRow('Notlar', employee.userMilitary.militaryNote || '-')}
+            {renderInfoRow('Askerlik Durumu', employee.userMilitary?.militaryStatus !== undefined ? getMilitaryStatusText(employee.userMilitary.militaryStatus) : '-')}
+            {renderInfoRow('Tecil Durumu', employee.userMilitary?.militaryPostpone || '-')}
+            {renderInfoRow('Notlar', employee.userMilitary?.militaryNote || '-')}
           </Accordion>
 
           <Accordion
@@ -377,8 +381,8 @@ export default function EmployeeDetailScreen() {
             icon={<FileText size={20} color="#1a1a1a" />}
             canEdit={false}
           >
-            {renderInfoRow('Pasaport No', employee.userPassport.passportNumber || '-')}
-            {renderInfoRow('Geçerlilik Tarihi', formatDate(employee.userPassport.passportValidityDate))}
+            {renderInfoRow('Pasaport No', employee.userPassport?.passportNumber || '-')}
+            {renderInfoRow('Geçerlilik Tarihi', employee.userPassport?.passportValidityDate ? formatDate(employee.userPassport.passportValidityDate) : '-')}
           </Accordion>
 
           <Accordion
