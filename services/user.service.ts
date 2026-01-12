@@ -86,11 +86,28 @@ class UserService {
   }
 
   async getUserProfile(backendUserId: number): Promise<UserProfileDetails> {
-    const response = await apiClient.get<UserProfileDetails>(`/Profile/get-userprofile/${backendUserId}`);
+    const response = await apiClient.get<any>(`/Profile/get-userprofile/${backendUserId}`);
     if (!response.data) {
       throw new Error('User profile not found');
     }
-    return response.data;
+
+    const profileData = response.data;
+
+    if (profileData.socialMedia && typeof profileData.socialMedia === 'object' && profileData.socialMedia.socialMediaLinks) {
+      try {
+        const links = JSON.parse(profileData.socialMedia.socialMediaLinks);
+        profileData.socialMedia = {
+          linkedin: links.linkedinLink || '',
+          facebook: links.facebookLink || '',
+          instagram: links.instagramLink || '',
+          twitter: links.twitterLink || links.tiktokLink || '',
+        };
+      } catch (error) {
+        profileData.socialMedia = null;
+      }
+    }
+
+    return profileData as UserProfileDetails;
   }
 
   async getCountries(): Promise<Country[]> {

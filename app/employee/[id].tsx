@@ -29,6 +29,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
 import type { UserProfileDetails } from '@/types/backend';
+import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
+import EditEmployeeModal from '@/components/EditEmployeeModal';
 
 export default function EmployeeDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -36,6 +38,10 @@ export default function EmployeeDetailScreen() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [employee, setEmployee] = useState<UserProfileDetails | null>(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+
+  const permissions = usePermissions(employee?.modulePermissions);
+  const canEditEmployee = permissions.canWrite(MODULE_IDS.EMPLOYEES);
 
   useEffect(() => {
     loadEmployeeData();
@@ -153,6 +159,19 @@ export default function EmployeeDetailScreen() {
 
   const handleGoToProfile = () => {
     router.push('/(tabs)/profile');
+  };
+
+  const handleEditEmployee = () => {
+    setEditModalVisible(true);
+  };
+
+  const handleSaveEmployee = async (updatedEmployee: Partial<UserProfileDetails>) => {
+    try {
+      setEditModalVisible(false);
+      await loadEmployeeData();
+    } catch (error) {
+      console.error('Error saving employee:', error);
+    }
   };
 
   return (
@@ -400,13 +419,22 @@ export default function EmployeeDetailScreen() {
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.profileButton} onPress={handleGoToProfile}>
-          <Text style={styles.profileButtonText}>Profile Git</Text>
-        </TouchableOpacity>
+        {canEditEmployee && (
+          <TouchableOpacity style={styles.editButton} onPress={handleEditEmployee}>
+            <Text style={styles.editButtonText}>Düzenle</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
           <Text style={styles.closeButtonText}>Kapat</Text>
         </TouchableOpacity>
       </View>
+
+      <EditEmployeeModal
+        visible={editModalVisible}
+        employee={employee}
+        onClose={() => setEditModalVisible(false)}
+        onSave={handleSaveEmployee}
+      />
     </SafeAreaView>
   );
 }
@@ -678,7 +706,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#E5E5E5',
     gap: 12,
   },
-  profileButton: {
+  editButton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
@@ -688,7 +716,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  profileButtonText: {
+  editButtonText: {
     fontSize: 15,
     fontWeight: '600',
     color: '#7C3AED',
