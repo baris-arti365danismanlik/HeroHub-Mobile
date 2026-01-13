@@ -58,10 +58,15 @@ export default function HomeScreen() {
   }, [user]);
 
   const loadDashboardData = async () => {
-    if (!user) return;
+    if (!user?.backend_user_id) {
+      console.log('No user or backend_user_id, skipping dashboard load');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       setIsLoading(true);
+      console.log('Loading dashboard data for user:', user.backend_user_id);
 
       const [
         balance,
@@ -72,13 +77,13 @@ export default function HomeScreen() {
         training,
         tasks,
       ] = await Promise.all([
-        userService.getDayOffBalance(user.backend_user_id?.toString() || user.id).catch(() => null),
-        homeService.getNotificationCount().catch(() => 0),
-        inboxService.getUnreadCount(user.id).catch(() => 0),
-        homeService.listNewEmployees().catch(() => []),
-        homeService.listUserAgenda().catch(() => []),
-        homeService.getUserTrainingStatus().catch(() => null),
-        homeService.listOnboardingTasksByCategory().catch(() => []),
+        userService.getDayOffBalance(user.backend_user_id.toString()).catch((err) => { console.error('getDayOffBalance error:', err); return null; }),
+        homeService.getNotificationCount().catch((err) => { console.error('getNotificationCount error:', err); return 0; }),
+        inboxService.getUnreadCount(user.id).catch((err) => { console.error('getUnreadCount error:', err); return 0; }),
+        homeService.listNewEmployees().catch((err) => { console.error('listNewEmployees error:', err); return []; }),
+        homeService.listUserAgenda().catch((err) => { console.error('listUserAgenda error:', err); return []; }),
+        homeService.getUserTrainingStatus().catch((err) => { console.error('getUserTrainingStatus error:', err); return null; }),
+        homeService.listOnboardingTasksByCategory().catch((err) => { console.error('listOnboardingTasksByCategory error:', err); return []; }),
       ]);
 
       setDayOffBalance(balance);

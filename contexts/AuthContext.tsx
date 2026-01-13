@@ -24,13 +24,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = async () => {
     try {
       const isAuth = await authService.isAuthenticated();
+      console.log('Is authenticated:', isAuth);
       if (isAuth) {
         const currentUser = await authService.getCurrentUser();
+        console.log('Current user from storage:', currentUser);
         if (currentUser) {
           setUser(currentUser);
+        } else {
+          console.log('No user data, clearing tokens');
+          await authService.logout();
         }
       }
     } catch (error) {
+      console.error('Check auth error:', error);
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -41,8 +47,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await authService.login(credentials);
       const currentUser = await authService.getCurrentUser();
+      console.log('Current user after login:', currentUser);
       setUser(currentUser);
     } catch (error) {
+      console.error('Login error in AuthContext:', error);
       throw error;
     }
   };

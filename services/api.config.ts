@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { User } from '@/types/backend';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://your-dotnet-api.com';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://faz2-api.herotr.com/api';
 
 const TOKEN_KEY = '@herof2_token';
 const REFRESH_TOKEN_KEY = '@herof2_refresh_token';
@@ -18,7 +18,9 @@ export const apiConfig = {
 export const tokenStorage = {
   async getToken(): Promise<string | null> {
     try {
-      return await AsyncStorage.getItem(TOKEN_KEY);
+      const token = await AsyncStorage.getItem(TOKEN_KEY);
+      console.log('Getting token, exists:', !!token);
+      return token;
     } catch (error) {
       console.error('Error getting token:', error);
       return null;
@@ -28,6 +30,7 @@ export const tokenStorage = {
   async setToken(token: string): Promise<void> {
     try {
       await AsyncStorage.setItem(TOKEN_KEY, token);
+      console.log('Token set successfully');
     } catch (error) {
       console.error('Error setting token:', error);
     }
