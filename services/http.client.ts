@@ -60,10 +60,20 @@ class HttpClient {
       }
 
       if (response.status === 404) {
-        throw new Error('İstenen kaynak bulunamadı');
+        return {
+          data: null,
+          success: false,
+          succeeded: false,
+          message: 'Kaynak bulunamadı'
+        } as ApiResponse<T>;
       }
 
-      throw new Error(errorData.message || `HTTP Error: ${response.status}`);
+      return {
+        data: null,
+        success: false,
+        succeeded: false,
+        message: errorData.message || `HTTP Error: ${response.status}`
+      } as ApiResponse<T>;
     }
 
     const data = await response.json().catch(() => ({ data: null }));

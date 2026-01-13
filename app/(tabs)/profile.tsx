@@ -950,7 +950,7 @@ export default function ProfileScreen() {
       <Accordion
         title="İZİN BİLGİLERİ"
         icon={<Umbrella size={18} color="#7C3AED" />}
-        defaultExpanded={false}
+        isExpandedDefault={false}
       >
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>YILLIK İZİN</Text>
@@ -968,7 +968,7 @@ export default function ProfileScreen() {
       <Accordion
         title="PLANLANAN İZİNLER"
         icon={<Umbrella size={18} color="#7C3AED" />}
-        defaultExpanded={false}
+        isExpandedDefault={false}
       >
         {leaveLoading ? (
           <View style={styles.loadingContainer}>
@@ -1052,7 +1052,7 @@ export default function ProfileScreen() {
       <Accordion
         title="GEÇMİŞ İZİNLER"
         icon={<Umbrella size={18} color="#7C3AED" />}
-        defaultExpanded={false}
+        isExpandedDefault={false}
       >
         {leaveLoading ? (
           <View style={styles.loadingContainer}>
@@ -1155,7 +1155,7 @@ export default function ProfileScreen() {
         <Accordion
           title="ÇALIŞAN BİLGİLERİ"
           icon={<UserIcon size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           {employmentLoading ? (
             <View style={styles.loadingContainer}>
@@ -1193,7 +1193,7 @@ export default function ProfileScreen() {
         <Accordion
           title="POZİSYON BİLGİLERİ"
           icon={<Briefcase size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           {employmentLoading ? (
             <View style={styles.loadingContainer}>
@@ -1234,7 +1234,7 @@ export default function ProfileScreen() {
         <Accordion
           title="MAAŞ BİLGİLERİ"
           icon={<DollarSign size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           {employmentLoading ? (
             <View style={styles.loadingContainer}>
@@ -1582,7 +1582,7 @@ export default function ProfileScreen() {
         <Accordion
           title="PROFİL BİLGİLERİ"
           icon={<UserIcon size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
           onEdit={canEditProfile ? () => handleEdit('profile') : undefined}
         >
           <InfoRow label="Personel No" value={personalInformation?.personnelNumber || '-'} />
@@ -1597,7 +1597,7 @@ export default function ProfileScreen() {
         <Accordion
           title="İLETİŞİM BİLGİLERİ"
           icon={<Phone size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
           onEdit={canEditProfile ? () => handleEdit('contact') : undefined}
         >
           <InfoRow label="Cep Telefonu" value={userContact?.phoneNumber ? formatPhone(userContact.phoneNumber) : '-'} />
@@ -1611,7 +1611,7 @@ export default function ProfileScreen() {
         <Accordion
           title="ADRES BİLGİLERİ"
           icon={<MapPin size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
           onEdit={canEditProfile ? () => handleEdit('address') : undefined}
         >
           <InfoRow label="Adres" value={userAddress?.address || '-'} />
@@ -1623,7 +1623,7 @@ export default function ProfileScreen() {
         <Accordion
           title="SAĞLIK BİLGİLERİ"
           icon={<Heart size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
           onEdit={canEditProfile ? () => handleEdit('health') : undefined}
         >
           <InfoRow label="Kan Grubu" value={userHealth?.bloodType ? formatBloodType(userHealth.bloodType) : '-'} />
@@ -1636,7 +1636,7 @@ export default function ProfileScreen() {
         <Accordion
           title="EHLİYET BİLGİLERİ"
           icon={<CreditCard size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
           onEdit={canEditProfile ? () => handleEdit('driverLicense') : undefined}
         >
           {driverLicenses.length > 0 ? (
@@ -1656,7 +1656,7 @@ export default function ProfileScreen() {
         <Accordion
           title="ASKERLİK BİLGİLERİ"
           icon={<Award size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
           onEdit={canEditProfile ? () => handleEdit('military') : undefined}
         >
           <InfoRow
@@ -1670,7 +1670,7 @@ export default function ProfileScreen() {
         <Accordion
           title="AİLE BİLGİLERİ"
           icon={<Users2 size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           {profileDetails.userFamilies.length > 0 ? (
             profileDetails.userFamilies.map((family, index) => (
@@ -1689,7 +1689,7 @@ export default function ProfileScreen() {
         <Accordion
           title="EĞİTİM BİLGİLERİ"
           icon={<GraduationCap size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           {profileDetails.educations.length > 0 ? (
             profileDetails.educations.map((education, index) => (
@@ -1713,7 +1713,7 @@ export default function ProfileScreen() {
         <Accordion
           title="SOSYAL LİNKLER"
           icon={<Globe size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           {profileDetails.socialMedia ? (
             <>
@@ -1730,7 +1730,7 @@ export default function ProfileScreen() {
         <Accordion
           title="DİL BİLGİLERİ"
           icon={<Languages size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           {profileDetails.userLanguages.length > 0 ? (
             profileDetails.userLanguages.map((lang, index) => (
@@ -1747,7 +1747,7 @@ export default function ProfileScreen() {
         <Accordion
           title="SERTİFİKALAR"
           icon={<Award size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           {profileDetails.certificates.length > 0 ? (
             profileDetails.certificates.map((cert, index) => (
@@ -1769,7 +1769,7 @@ export default function ProfileScreen() {
         <Accordion
           title="PASAPORT BİLGİLERİ"
           icon={<CreditCard size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           <InfoRow label="Pasaport Tipi" value={profileDetails.userPassport?.passportType?.toString() || '-'} />
           <InfoRow label="Pasaport No" value={profileDetails.userPassport?.passportNumber || '-'} />
@@ -1779,7 +1779,7 @@ export default function ProfileScreen() {
         <Accordion
           title="VİZE BİLGİLERİ"
           icon={<FileText size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           {profileDetails.userVisas.length > 0 ? (
             profileDetails.userVisas.map((visa, index) => (
@@ -2081,7 +2081,7 @@ export default function ProfileScreen() {
         <Accordion
           title="İŞE BAŞLAMA GÖREVLERİ"
           icon={<AlignJustify size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           {onboardingData.tasks.map((task) => {
             const userTask = onboardingData.userTasks.find((ut) => ut.task_id === task.id);
@@ -2126,7 +2126,7 @@ export default function ProfileScreen() {
         <Accordion
           title="SENİ TANIYALIM"
           icon={<UserIcon size={18} color="#7C3AED" />}
-          defaultExpanded={false}
+          isExpandedDefault={false}
         >
           <View style={styles.questionsContainer}>
             <Text style={styles.questionsSubtitle}>Seni Tanıyalım Soruları</Text>

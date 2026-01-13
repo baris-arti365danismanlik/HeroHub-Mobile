@@ -12,9 +12,9 @@ function RootNavigator() {
   useEffect(() => {
     if (isLoading) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
-    const inTabsGroup = segments[0] === '(tabs)';
-    const isIndexRoute = segments.length === 0 || (segments.length > 0 && segments[0] === 'index');
+    const firstSegment = segments[0];
+    const inAuthGroup = firstSegment === '(auth)';
+    const isIndexRoute = !firstSegment || firstSegment === 'index';
 
     if (!isAuthenticated && !inAuthGroup && !isIndexRoute) {
       router.replace('/(auth)/login');

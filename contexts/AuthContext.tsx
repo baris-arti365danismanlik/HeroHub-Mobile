@@ -19,16 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     checkAuth();
-
-    const interval = setInterval(async () => {
-      const token = await authService.isAuthenticated();
-      if (!token && user) {
-        setUser(null);
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [user]);
+  }, []);
 
   const checkAuth = async () => {
     try {
