@@ -52,7 +52,6 @@ export default function PDKSTaskModal({ visible, onClose, onSubmit }: PDKSTaskMo
       setEndDate('');
       onClose();
     } catch (error) {
-      console.error('Error submitting task:', error);
       alert('Görev tanımlanırken bir hata oluştu');
     } finally {
       setLoading(false);

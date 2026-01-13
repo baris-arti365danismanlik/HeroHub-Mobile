@@ -122,7 +122,6 @@ class UserService {
       );
       return response.data || null;
     } catch (error) {
-      console.error('Error fetching badge card info:', error);
       return null;
     }
   }
@@ -138,7 +137,6 @@ class UserService {
       );
       return response.data || null;
     } catch (error) {
-      console.error('Error fetching grouped departments:', error);
       return null;
     }
   }
