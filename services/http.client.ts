@@ -11,8 +11,6 @@ class HttpClient {
   private baseURL: string;
   private timeout: number;
   private defaultHeaders: HeadersInit;
-  private isRefreshing = false;
-  private refreshSubscribers: Array<(token: string) => void> = [];
 
   constructor(config: HttpClientConfig) {
     this.baseURL = config.baseURL;
@@ -39,95 +37,13 @@ class HttpClient {
     return headers;
   }
 
-  private onRefreshed(token: string) {
-    this.refreshSubscribers.forEach(callback => callback(token));
-    this.refreshSubscribers = [];
-  }
-
-  private addRefreshSubscriber(callback: (token: string) => void) {
-    this.refreshSubscribers.push(callback);
-  }
-
-  private async refreshToken(): Promise<string | null> {
-    try {
-      const refreshToken = await tokenStorage.getRefreshToken();
-      if (!refreshToken) {
-        throw new Error('No refresh token available');
-      }
-
-      const response = await fetch(`${this.baseURL}/auth/refresh?refreshToken=${refreshToken}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Refresh token failed');
-      }
-
-      const data: ApiResponse<{ token: string; refreshToken: string }> = await response.json();
-
-      const isSuccess = data.success || data.succeeded;
-
-      if (isSuccess && data.data) {
-        await tokenStorage.setToken(data.data.token);
-        await tokenStorage.setRefreshToken(data.data.refreshToken);
-        return data.data.token;
-      }
-
-      throw new Error('Invalid refresh response');
-    } catch (error) {
-      await tokenStorage.clearTokens();
-      return null;
-    }
-  }
-
-  private async handleResponse<T>(response: Response, retryRequest?: () => Promise<Response>): Promise<ApiResponse<T>> {
+  private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     if (response.status === 401) {
-      if (retryRequest) {
-        if (this.isRefreshing) {
-          return new Promise((resolve, reject) => {
-            this.addRefreshSubscriber(async (token: string) => {
-              try {
-                const newResponse = await retryRequest();
-                const data = await newResponse.json();
-                resolve(data as ApiResponse<T>);
-              } catch (error) {
-                reject(error);
-              }
-            });
-          });
-        }
+      await tokenStorage.clearTokens();
 
-        this.isRefreshing = true;
-
-        try {
-          const newToken = await this.refreshToken();
-          if (newToken) {
-            this.isRefreshing = false;
-            this.onRefreshed(newToken);
-            const newResponse = await retryRequest();
-            return await newResponse.json() as ApiResponse<T>;
-          } else {
-            this.isRefreshing = false;
-            await tokenStorage.clearTokens();
-            const error: any = new Error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
-            error.isAuthError = true;
-            throw error;
-          }
-        } catch (error: any) {
-          this.isRefreshing = false;
-          await tokenStorage.clearTokens();
-          error.isAuthError = true;
-          throw error;
-        }
-      } else {
-        await tokenStorage.clearTokens();
-        const error: any = new Error('Unauthorized - Please login again');
-        error.isAuthError = true;
-        throw error;
-      }
+      const error: any = new Error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+      error.isAuthError = true;
+      throw error;
     }
 
     if (!response.ok) {
@@ -179,7 +95,7 @@ class HttpClient {
 
     try {
       const response = await makeRequest();
-      return await this.handleResponse<T>(response, includeAuth ? makeRequest : undefined);
+      return await this.handleResponse<T>(response);
     } finally {
       clearTimeout(timeoutId);
     }
@@ -203,7 +119,7 @@ class HttpClient {
 
     try {
       const response = await makeRequest();
-      return await this.handleResponse<T>(response, includeAuth ? makeRequest : undefined);
+      return await this.handleResponse<T>(response);
     } catch (error: any) {
       if (error.name === 'AbortError') {
         throw new Error('Request timeout');
@@ -233,7 +149,7 @@ class HttpClient {
 
     try {
       const response = await makeRequest();
-      return await this.handleResponse<T>(response, includeAuth ? makeRequest : undefined);
+      return await this.handleResponse<T>(response);
     } finally {
       clearTimeout(timeoutId);
     }
@@ -254,7 +170,7 @@ class HttpClient {
 
     try {
       const response = await makeRequest();
-      return await this.handleResponse<T>(response, includeAuth ? makeRequest : undefined);
+      return await this.handleResponse<T>(response);
     } finally {
       clearTimeout(timeoutId);
     }

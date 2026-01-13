@@ -14,7 +14,7 @@ function RootNavigator() {
 
     const inAuthGroup = segments[0] === '(auth)';
     const inTabsGroup = segments[0] === '(tabs)';
-    const isIndexRoute = segments.length === 0 || segments[0] === 'index';
+    const isIndexRoute = segments.length === 0 || (segments.length > 0 && segments[0] === 'index');
 
     if (!isAuthenticated && !inAuthGroup && !isIndexRoute) {
       router.replace('/(auth)/login');
