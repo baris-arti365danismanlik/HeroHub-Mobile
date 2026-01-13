@@ -26,7 +26,6 @@ export const pdksService = {
       );
       return (response as any)?.data || [];
     } catch (error) {
-      console.error('Error fetching user work log:', error);
       return [];
     }
   },
@@ -36,7 +35,6 @@ export const pdksService = {
       const response = await apiClient.post('/pdks/create-task', taskData);
       return (response as any)?.data || null;
     } catch (error) {
-      console.error('Error creating PDKS task:', error);
       throw error;
     }
   },
