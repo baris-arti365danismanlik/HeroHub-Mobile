@@ -42,7 +42,6 @@ export function InboxModal({ visible, onClose, userId, onUnreadCountChange }: In
       const unreadCount = data.filter(m => !m.is_read).length;
       onUnreadCountChange?.(unreadCount);
     } catch (error) {
-      console.error('Error loading messages:', error);
     } finally {
       setLoading(false);
     }
@@ -55,7 +54,6 @@ export function InboxModal({ visible, onClose, userId, onUnreadCountChange }: In
         await inboxService.markAsRead(message.id);
         await loadMessages();
       } catch (error) {
-        console.error('Error marking message as read:', error);
       }
     }
   };
@@ -66,7 +64,6 @@ export function InboxModal({ visible, onClose, userId, onUnreadCountChange }: In
   };
 
   const handleSendReply = () => {
-    console.log('Reply sent:', replyText);
     setReplyText('');
   };
 

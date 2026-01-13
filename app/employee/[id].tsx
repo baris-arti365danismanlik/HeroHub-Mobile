@@ -30,6 +30,8 @@ import {
   Building2,
   Briefcase,
   Car,
+  CreditCard,
+  FolderOpen,
 } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -180,25 +182,23 @@ export default function EmployeeDetailScreen() {
               <Text style={styles.profileBadgeText}>{employee.currentTitle}</Text>
             </View>
           )}
-          {employee.organizationName && (
-            <View style={styles.profileBadge}>
-              <Building2 size={14} color="#666" />
-              <Text style={styles.profileBadgeText}>{employee.organizationName}</Text>
-            </View>
-          )}
+          <TouchableOpacity style={styles.pinnedFilesButton}>
+            <FolderOpen size={16} color="#7C3AED" />
+            <Text style={styles.pinnedFilesText}>Anıtlı Dosyalar</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.accordionContainer}>
           <Accordion
-            title="KİŞİSEL BİLGİLER"
+            title="PERSONELİ BİLGİLER"
             icon={<User size={20} color="#1a1a1a" />}
             isExpandedDefault={true}
             canEdit={canEditEmployee}
             onEdit={() => handleEditSection('personal')}
           >
-            {renderInfoRow('TC Kimlik No', employee.personalInformation?.tckn || '-')}
-            {renderInfoRow('Ad', employee.personalInformation?.firstName || '-')}
-            {renderInfoRow('Soyad', employee.personalInformation?.lastName || '-')}
+            {renderInfoRow('Personel No', employee.personalInformation?.tckn || '-')}
+            {renderInfoRow('TC Kimlik', employee.personalInformation?.tckn || '-')}
+            {renderInfoRow('Ad Soyad', employee.personalInformation?.firstName && employee.personalInformation?.lastName ? `${employee.personalInformation.firstName} ${employee.personalInformation.lastName}` : '-')}
             {renderInfoRow('Doğum Tarihi', employee.personalInformation?.birthdate ? formatDate(employee.personalInformation.birthdate) : '-')}
             {renderInfoRow('Doğum Yeri', employee.personalInformation?.birthPlace || '-')}
             {renderInfoRow('Cinsiyet', employee.personalInformation?.gender !== undefined ? getGenderText(employee.personalInformation.gender) : '-')}
@@ -211,20 +211,22 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditEmployee}
             onEdit={() => handleEditSection('contact')}
           >
-            {renderInfoRow('E-posta', employee.userContact?.email || '-')}
-            {renderInfoRow('Telefon', employee.userContact?.phoneNumber || '-')}
+            {renderInfoRow('Şirket Telefonu', employee.userContact?.businessPhone || '-')}
+            {renderInfoRow('Şahıs Telefonu', employee.userContact?.phoneNumber || '-')}
             {renderInfoRow('İş E-postası', employee.userContact?.businessEmail || '-')}
-            {renderInfoRow('İş Telefonu', employee.userContact?.businessPhone || '-')}
+            {renderInfoRow('Şahıs E-postası', employee.userContact?.email || '-')}
             {renderInfoRow('Ev Telefonu', employee.userContact?.homePhone || '-')}
             {renderInfoRow('Diğer E-posta', employee.userContact?.otherEmail || '-')}
           </Accordion>
 
           <Accordion
-            title="ADRES BİLGİLERİ"
-            icon={<MapPin size={20} color="#1a1a1a" />}
+            title="ÇALIŞMA YERİ BİLGİLERİ"
+            icon={<Building2 size={20} color="#1a1a1a" />}
             canEdit={canEditEmployee}
-            onEdit={() => handleEditSection('address')}
+            onEdit={() => handleEditSection('workplace')}
           >
+            {renderInfoRow('Kurum', employee.organizationName || '-')}
+            {renderInfoRow('Yer', employee.userAddress?.cityName || '-')}
             {renderInfoRow('Adres', employee.userAddress?.address || '-')}
             {renderInfoRow('İlçe', employee.userAddress?.districtName || '-')}
             {renderInfoRow('İl', employee.userAddress?.cityName || '-')}
@@ -232,48 +234,14 @@ export default function EmployeeDetailScreen() {
           </Accordion>
 
           <Accordion
-            title="SAĞLIK BİLGİLERİ"
-            icon={<Heart size={20} color="#1a1a1a" />}
+            title="BANKA BİLGİLERİ"
+            icon={<CreditCard size={20} color="#1a1a1a" />}
             canEdit={canEditEmployee}
-            onEdit={() => handleEditSection('health')}
+            onEdit={() => handleEditSection('bank')}
           >
-            {renderInfoRow('Boy', employee.userHealth?.height ? `${employee.userHealth.height} cm` : '-')}
-            {renderInfoRow('Kilo', employee.userHealth?.weight ? `${employee.userHealth.weight} kg` : '-')}
-            {renderInfoRow('Beden', employee.userHealth?.size ? employee.userHealth.size.toString() : '-')}
-            {renderInfoRow('Kan Grubu', employee.userHealth?.bloodType !== undefined ? getBloodTypeText(employee.userHealth.bloodType) : '-')}
-            {renderInfoRow('Alerjiler', employee.userHealth?.allergies || '-')}
-            {renderInfoRow('Kullandığı İlaçlar', employee.userHealth?.drugs || '-')}
-          </Accordion>
-
-          <Accordion
-            title="EHLİYET BİLGİLERİ"
-            icon={<Car size={20} color="#1a1a1a" />}
-            canEdit={false}
-          >
-            {employee.driverLicenses && employee.driverLicenses.length > 0 ? (
-              employee.driverLicenses.map((license, index) => (
-                <View key={index} style={styles.listItem}>
-                  {renderInfoRow('Ehliyet Tipi', license.licenseType || '-')}
-                  {renderInfoRow('Ehliyet No', license.licenseNumber || '-')}
-                  {renderInfoRow('Veriliş Tarihi', formatDate(license.issueDate))}
-                  {renderInfoRow('Geçerlilik Tarihi', formatDate(license.expiryDate))}
-                  {index < employee.driverLicenses.length - 1 && <View style={styles.divider} />}
-                </View>
-              ))
-            ) : (
-              <Text style={styles.emptyText}>Ehliyet bilgisi bulunmuyor</Text>
-            )}
-          </Accordion>
-
-          <Accordion
-            title="ASKERLİK BİLGİLERİ"
-            icon={<Shield size={20} color="#1a1a1a" />}
-            canEdit={canEditEmployee}
-            onEdit={() => handleEditSection('military')}
-          >
-            {renderInfoRow('Askerlik Durumu', employee.userMilitary?.militaryStatus !== undefined ? getMilitaryStatusText(employee.userMilitary.militaryStatus) : '-')}
-            {renderInfoRow('Tecil Durumu', employee.userMilitary?.militaryPostpone || '-')}
-            {renderInfoRow('Notlar', employee.userMilitary?.militaryNote || '-')}
+            {renderInfoRow('Banka Adı', '-')}
+            {renderInfoRow('IBAN', '-')}
+            {renderInfoRow('Hesap Sahibi', employee.personalInformation?.firstName && employee.personalInformation?.lastName ? `${employee.personalInformation.firstName} ${employee.personalInformation.lastName}` : '-')}
           </Accordion>
 
           <Accordion
@@ -359,6 +327,17 @@ export default function EmployeeDetailScreen() {
           </Accordion>
 
           <Accordion
+            title="İŞ BİLGİLERİ"
+            icon={<Briefcase size={20} color="#1a1a1a" />}
+            canEdit={canEditEmployee}
+            onEdit={() => handleEditSection('work')}
+          >
+            {renderInfoRow('Unvan', employee.currentTitle || '-')}
+            {renderInfoRow('Çalışma Şekli', employee.userEmploymentDetails?.workType !== undefined ? getWorkTypeText(employee.userEmploymentDetails.workType) : '-')}
+            {renderInfoRow('İşe Başlama Tarihi', employee.userEmploymentDetails?.startDate ? formatDate(employee.userEmploymentDetails.startDate) : '-')}
+          </Accordion>
+
+          <Accordion
             title="DİL BİLGİLERİ"
             icon={<Globe size={20} color="#1a1a1a" />}
             canEdit={false}
@@ -378,7 +357,7 @@ export default function EmployeeDetailScreen() {
 
           <Accordion
             title="PASAPORT BİLGİLERİ"
-            icon={<FileText size={20} color="#1a1a1a" />}
+            icon={<Plane size={20} color="#1a1a1a" />}
             canEdit={false}
           >
             {renderInfoRow('Pasaport No', employee.userPassport?.passportNumber || '-')}
@@ -503,6 +482,21 @@ const styles = StyleSheet.create({
   profileBadgeText: {
     fontSize: 14,
     color: '#666',
+  },
+  pinnedFilesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#F0E7FF',
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  pinnedFilesText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#7C3AED',
   },
   accordionContainer: {
     paddingHorizontal: 16,

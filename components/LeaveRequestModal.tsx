@@ -58,11 +58,9 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
 
   const handleSubmit = () => {
     if (!leaveType || !startDate || !endDate || !duration) {
-      console.log('Form validation failed:', { leaveType, startDate, endDate, duration });
       return;
     }
 
-    console.log('Submitting leave request from modal');
     onSubmit({
       leaveType,
       startDate,

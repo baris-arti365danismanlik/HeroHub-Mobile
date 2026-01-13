@@ -67,7 +67,6 @@ export default function EditEmployeeModal({
       const countriesData = await userService.getCountries();
       setCountries(countriesData);
     } catch (error) {
-      console.error('Error loading countries:', error);
     }
   };
 
