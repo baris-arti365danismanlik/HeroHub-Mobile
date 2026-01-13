@@ -52,16 +52,13 @@ export default function HomeScreen() {
   const [onboardingTasks, setOnboardingTasks] = useState<OnboardingTaskCategory[]>([]);
 
   useEffect(() => {
-    if (user?.backend_user_id) {
+    if (user) {
       loadDashboardData();
     }
   }, [user]);
 
   const loadDashboardData = async () => {
-    if (!user?.backend_user_id) {
-      setIsLoading(false);
-      return;
-    }
+    if (!user) return;
 
     try {
       setIsLoading(true);
@@ -75,7 +72,7 @@ export default function HomeScreen() {
         training,
         tasks,
       ] = await Promise.all([
-        userService.getDayOffBalance(user.backend_user_id.toString()).catch(() => null),
+        userService.getDayOffBalance(user.backend_user_id?.toString() || user.id).catch(() => null),
         homeService.getNotificationCount().catch(() => 0),
         inboxService.getUnreadCount(user.id).catch(() => 0),
         homeService.listNewEmployees().catch(() => []),
@@ -92,6 +89,7 @@ export default function HomeScreen() {
       setTrainingStatus(training);
       setOnboardingTasks(tasks);
     } catch (error) {
+      console.error('Error loading dashboard data:', error);
     } finally {
       setIsLoading(false);
       setRefreshing(false);
