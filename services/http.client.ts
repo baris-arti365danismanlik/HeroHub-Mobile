@@ -78,7 +78,6 @@ class HttpClient {
 
       throw new Error('Invalid refresh response');
     } catch (error) {
-      console.error('Refresh token error:', error);
       await tokenStorage.clearTokens();
       return null;
     }
@@ -144,10 +143,14 @@ class HttpClient {
         throw new Error(errorMessage);
       }
 
+      if (response.status === 404) {
+        throw new Error('İstenen kaynak bulunamadı');
+      }
+
       throw new Error(errorData.message || `HTTP Error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({ data: null }));
     return data as ApiResponse<T>;
   }
 

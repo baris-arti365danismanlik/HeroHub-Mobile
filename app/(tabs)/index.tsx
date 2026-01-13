@@ -92,7 +92,6 @@ export default function HomeScreen() {
       setTrainingStatus(training);
       setOnboardingTasks(tasks);
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
     } finally {
       setIsLoading(false);
       setRefreshing(false);
