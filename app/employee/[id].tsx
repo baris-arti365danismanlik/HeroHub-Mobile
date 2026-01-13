@@ -46,7 +46,8 @@ export default function EmployeeDetailScreen() {
   const [employee, setEmployee] = useState<UserProfileDetails | null>(null);
 
   const permissions = usePermissions(employee?.modulePermissions);
-  const canEditEmployee = permissions.canWrite(MODULE_IDS.EMPLOYEES);
+  const canViewProfile = permissions.canRead(MODULE_IDS.PROFILE);
+  const canEditProfile = permissions.canWrite(MODULE_IDS.PROFILE);
 
   useEffect(() => {
     loadEmployeeData();
@@ -193,7 +194,7 @@ export default function EmployeeDetailScreen() {
             title="KİŞİSEL BİLGİLER"
             icon={<User size={20} color="#1a1a1a" />}
             isExpandedDefault={true}
-            canEdit={canEditEmployee}
+            canEdit={canEditProfile}
             onEdit={() => handleEditSection('personal')}
           >
             {renderInfoRow('TC Kimlik No', employee.personalInformation?.tckn || '-')}
@@ -208,7 +209,7 @@ export default function EmployeeDetailScreen() {
           <Accordion
             title="İLETİŞİM BİLGİLERİ"
             icon={<Phone size={20} color="#1a1a1a" />}
-            canEdit={canEditEmployee}
+            canEdit={canEditProfile}
             onEdit={() => handleEditSection('contact')}
           >
             {renderInfoRow('E-posta', employee.userContact?.email || '-')}
@@ -222,7 +223,7 @@ export default function EmployeeDetailScreen() {
           <Accordion
             title="ADRES BİLGİLERİ"
             icon={<MapPin size={20} color="#1a1a1a" />}
-            canEdit={canEditEmployee}
+            canEdit={canEditProfile}
             onEdit={() => handleEditSection('address')}
           >
             {renderInfoRow('Adres', employee.userAddress?.address || '-')}
@@ -234,7 +235,7 @@ export default function EmployeeDetailScreen() {
           <Accordion
             title="SAĞLIK BİLGİLERİ"
             icon={<Heart size={20} color="#1a1a1a" />}
-            canEdit={canEditEmployee}
+            canEdit={canEditProfile}
             onEdit={() => handleEditSection('health')}
           >
             {renderInfoRow('Boy', employee.userHealth?.height ? `${employee.userHealth.height} cm` : '-')}
@@ -268,7 +269,7 @@ export default function EmployeeDetailScreen() {
           <Accordion
             title="ASKERLİK BİLGİLERİ"
             icon={<Shield size={20} color="#1a1a1a" />}
-            canEdit={canEditEmployee}
+            canEdit={canEditProfile}
             onEdit={() => handleEditSection('military')}
           >
             {renderInfoRow('Askerlik Durumu', employee.userMilitary?.militaryStatus !== undefined ? getMilitaryStatusText(employee.userMilitary.militaryStatus) : '-')}
