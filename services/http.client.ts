@@ -78,43 +78,54 @@ class HttpClient {
 
       throw new Error('Invalid refresh response');
     } catch (error) {
-      console.error('Refresh token error:', error);
       await tokenStorage.clearTokens();
       return null;
     }
   }
 
   private async handleResponse<T>(response: Response, retryRequest?: () => Promise<Response>): Promise<ApiResponse<T>> {
-    if (response.status === 401 && retryRequest) {
-      if (this.isRefreshing) {
-        return new Promise((resolve, reject) => {
-          this.addRefreshSubscriber(async (token: string) => {
-            try {
-              const newResponse = await retryRequest();
-              const data = await newResponse.json();
-              resolve(data as ApiResponse<T>);
-            } catch (error) {
-              reject(error);
-            }
+    if (response.status === 401) {
+      if (retryRequest) {
+        if (this.isRefreshing) {
+          return new Promise((resolve, reject) => {
+            this.addRefreshSubscriber(async (token: string) => {
+              try {
+                const newResponse = await retryRequest();
+                const data = await newResponse.json();
+                resolve(data as ApiResponse<T>);
+              } catch (error) {
+                reject(error);
+              }
+            });
           });
-        });
-      }
-
-      this.isRefreshing = true;
-
-      try {
-        const newToken = await this.refreshToken();
-        if (newToken) {
-          this.isRefreshing = false;
-          this.onRefreshed(newToken);
-          const newResponse = await retryRequest();
-          return await newResponse.json() as ApiResponse<T>;
-        } else {
-          throw new Error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
         }
-      } catch (error) {
-        this.isRefreshing = false;
+
+        this.isRefreshing = true;
+
+        try {
+          const newToken = await this.refreshToken();
+          if (newToken) {
+            this.isRefreshing = false;
+            this.onRefreshed(newToken);
+            const newResponse = await retryRequest();
+            return await newResponse.json() as ApiResponse<T>;
+          } else {
+            this.isRefreshing = false;
+            await tokenStorage.clearTokens();
+            const error: any = new Error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
+            error.isAuthError = true;
+            throw error;
+          }
+        } catch (error: any) {
+          this.isRefreshing = false;
+          await tokenStorage.clearTokens();
+          error.isAuthError = true;
+          throw error;
+        }
+      } else {
         await tokenStorage.clearTokens();
+        const error: any = new Error('Unauthorized - Please login again');
+        error.isAuthError = true;
         throw error;
       }
     }
@@ -132,10 +143,14 @@ class HttpClient {
         throw new Error(errorMessage);
       }
 
+      if (response.status === 404) {
+        throw new Error('İstenen kaynak bulunamadı');
+      }
+
       throw new Error(errorData.message || `HTTP Error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({ data: null }));
     return data as ApiResponse<T>;
   }
 

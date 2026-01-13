@@ -10,7 +10,6 @@ export const assetService = {
       }
       return [];
     } catch (error) {
-      console.error('Error fetching user assets:', error);
       return [];
     }
   },
@@ -23,7 +22,6 @@ export const assetService = {
       }
       return [];
     } catch (error) {
-      console.error('Error fetching asset categories:', error);
       return [];
     }
   },
@@ -36,7 +34,6 @@ export const assetService = {
       }
       return null;
     } catch (error) {
-      console.error('Error fetching badge card info:', error);
       return null;
     }
   },
@@ -56,7 +53,6 @@ export const assetService = {
       }
       return null;
     } catch (error) {
-      console.error('Error creating asset:', error);
       throw error;
     }
   },
@@ -66,7 +62,6 @@ export const assetService = {
       const response = await apiClient.delete(`/userAsset/delete-userAsset?id=${assetId}`);
       return response.succeeded || false;
     } catch (error) {
-      console.error('Error deleting asset:', error);
       return false;
     }
   },
@@ -79,7 +74,6 @@ export const assetService = {
       });
       return response.succeeded || false;
     } catch (error) {
-      console.error('Error returning asset:', error);
       return false;
     }
   },

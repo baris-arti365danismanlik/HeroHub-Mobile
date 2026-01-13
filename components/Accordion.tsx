@@ -6,16 +6,17 @@ interface AccordionProps {
   title: string;
   icon?: ReactNode;
   children: ReactNode;
-  defaultExpanded?: boolean;
+  isExpandedDefault?: boolean;
+  canEdit?: boolean;
   onEdit?: () => void;
 }
 
-export function Accordion({ title, icon, children, defaultExpanded = false, onEdit }: AccordionProps) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+export function Accordion({ title, icon, children, isExpandedDefault = false, canEdit = false, onEdit }: AccordionProps) {
+  const [isExpanded, setIsExpanded] = useState(isExpandedDefault);
 
   useEffect(() => {
-    setIsExpanded(defaultExpanded);
-  }, [defaultExpanded]);
+    setIsExpanded(isExpandedDefault);
+  }, [isExpandedDefault]);
 
   return (
     <View style={styles.container}>
@@ -29,7 +30,7 @@ export function Accordion({ title, icon, children, defaultExpanded = false, onEd
           <Text style={styles.title}>{title}</Text>
         </View>
         <View style={styles.headerRight}>
-          {onEdit && (
+          {canEdit && onEdit && (
             <TouchableOpacity
               onPress={(e) => {
                 e.stopPropagation();

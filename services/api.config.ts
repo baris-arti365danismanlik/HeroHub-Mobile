@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { User } from '@/types/backend';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://your-dotnet-api.com';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://faz2-api.herotr.com/api';
 
 const TOKEN_KEY = '@herof2_token';
 const REFRESH_TOKEN_KEY = '@herof2_refresh_token';
@@ -20,7 +20,6 @@ export const tokenStorage = {
     try {
       return await AsyncStorage.getItem(TOKEN_KEY);
     } catch (error) {
-      console.error('Error getting token:', error);
       return null;
     }
   },
@@ -29,7 +28,7 @@ export const tokenStorage = {
     try {
       await AsyncStorage.setItem(TOKEN_KEY, token);
     } catch (error) {
-      console.error('Error setting token:', error);
+      return;
     }
   },
 
@@ -37,7 +36,6 @@ export const tokenStorage = {
     try {
       return await AsyncStorage.getItem(REFRESH_TOKEN_KEY);
     } catch (error) {
-      console.error('Error getting refresh token:', error);
       return null;
     }
   },
@@ -46,7 +44,7 @@ export const tokenStorage = {
     try {
       await AsyncStorage.setItem(REFRESH_TOKEN_KEY, token);
     } catch (error) {
-      console.error('Error setting refresh token:', error);
+      return;
     }
   },
 
@@ -55,7 +53,6 @@ export const tokenStorage = {
       const data = await AsyncStorage.getItem(USER_DATA_KEY);
       return data ? JSON.parse(data) : null;
     } catch (error) {
-      console.error('Error getting user data:', error);
       return null;
     }
   },
@@ -64,7 +61,7 @@ export const tokenStorage = {
     try {
       await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
     } catch (error) {
-      console.error('Error saving user data:', error);
+      return;
     }
   },
 
@@ -72,7 +69,7 @@ export const tokenStorage = {
     try {
       await AsyncStorage.multiRemove([TOKEN_KEY, REFRESH_TOKEN_KEY, USER_DATA_KEY]);
     } catch (error) {
-      console.error('Error clearing tokens:', error);
+      return;
     }
   },
 };

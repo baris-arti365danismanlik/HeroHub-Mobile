@@ -115,7 +115,6 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
       setManagerUsers(mgrs);
       setSubordinateUsers(subs);
     } catch (error) {
-      console.error('Error loading form data:', error);
     }
   };
 
