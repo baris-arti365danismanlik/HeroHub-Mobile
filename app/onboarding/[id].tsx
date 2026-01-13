@@ -240,7 +240,6 @@ export default function OnboardingDetailScreen() {
       });
       setQuestionStates(initialStates);
     } catch (error) {
-      console.error('Error loading onboarding data:', error);
     } finally {
       setLoading(false);
     }
@@ -251,7 +250,6 @@ export default function OnboardingDetailScreen() {
       await onboardingService.completeTask(taskId);
       await loadData();
     } catch (error) {
-      console.error('Error completing task:', error);
     }
   };
 

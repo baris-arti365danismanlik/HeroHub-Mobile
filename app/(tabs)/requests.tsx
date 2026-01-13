@@ -33,10 +33,10 @@ export default function RequestsScreen() {
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       loadRequests();
     }
-  }, [user]);
+  }, [user?.id]);
 
   const loadRequests = async () => {
     if (!user) return;
@@ -46,7 +46,6 @@ export default function RequestsScreen() {
       const data = await userService.getUserRequests(user.id);
       setRequests(data);
     } catch (error) {
-      console.error('Error loading requests:', error);
     } finally {
       setIsLoading(false);
     }
@@ -56,13 +55,10 @@ export default function RequestsScreen() {
     if (!user) return;
 
     try {
-      console.log('Creating leave request:', data);
-
       const startDateISO = parseDateToISO(data.startDate);
       const endDateISO = parseDateToISO(data.endDate);
 
       if (!startDateISO || !endDateISO) {
-        console.error('Invalid date format');
         return;
       }
 
@@ -75,13 +71,11 @@ export default function RequestsScreen() {
         notes: data.notes,
       });
 
-      console.log('Leave request created successfully');
       setLeaveModalVisible(false);
       setSuccessModalVisible(true);
 
       loadRequests();
     } catch (error) {
-      console.error('Error creating leave request:', error);
     }
   };
 

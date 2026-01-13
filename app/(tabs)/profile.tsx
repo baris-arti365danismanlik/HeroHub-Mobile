@@ -230,32 +230,25 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      console.log('User object:', user);
-      console.log('Backend user ID:', user?.backend_user_id);
-
       if (!user?.backend_user_id) {
-        console.warn('Backend user ID is missing');
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        console.log('Fetching profile for user ID:', user.backend_user_id);
 
         const [profile, countriesList] = await Promise.all([
           userService.getUserProfile(user.backend_user_id),
           userService.getCountries(),
         ]);
 
-        console.log('Profile fetched:', profile);
         setProfileDetails(profile);
         setCountries(countriesList);
         setModulePermissions(profile.modulePermissions);
 
         loadShiftPlan();
       } catch (error) {
-        console.error('Error fetching profile data:', error);
       } finally {
         setLoading(false);
       }
@@ -283,7 +276,6 @@ export default function ProfileScreen() {
         setIncomingDayOffs(incoming);
         setPastDayOffs(past);
       } catch (error) {
-        console.error('Error fetching leave data:', error);
       } finally {
         setLeaveLoading(false);
       }
@@ -336,7 +328,7 @@ export default function ProfileScreen() {
         setMilitaryEditModalVisible(true);
         break;
       default:
-        console.log('Edit section:', section);
+        break;
     }
   };
 
@@ -349,25 +341,21 @@ export default function ProfileScreen() {
 
   const handleFileCopy = () => {
     if (selectedFile) {
-      console.log('Copy file:', selectedFile.name);
     }
   };
 
   const handleFileDownload = () => {
     if (selectedFile) {
-      console.log('Download file:', selectedFile.name);
     }
   };
 
   const handleFileDelete = () => {
     if (selectedFile) {
-      console.log('Delete file:', selectedFile.name);
     }
   };
 
   const confirmRename = () => {
     if (selectedFile && renameInput.trim()) {
-      console.log('Rename', selectedFile.name, 'to', renameInput);
       setRenameModalVisible(false);
       setRenameInput('');
       setSelectedFile(null);
@@ -375,32 +363,26 @@ export default function ProfileScreen() {
   };
 
   const saveProfileInfo = () => {
-    console.log('Save profile info:', profileEditForm);
     setProfileEditModalVisible(false);
   };
 
   const saveContactInfo = () => {
-    console.log('Save contact info:', contactEditForm);
     setContactEditModalVisible(false);
   };
 
   const saveAddressInfo = () => {
-    console.log('Save address info:', addressEditForm);
     setAddressEditModalVisible(false);
   };
 
   const saveHealthInfo = () => {
-    console.log('Save health info:', healthEditForm);
     setHealthEditModalVisible(false);
   };
 
   const saveDriverLicenseInfo = () => {
-    console.log('Save driver license info:', driverLicenseEditForm);
     setDriverLicenseEditModalVisible(false);
   };
 
   const saveMilitaryInfo = () => {
-    console.log('Save military info:', militaryEditForm);
     setMilitaryEditModalVisible(false);
   };
 
@@ -439,7 +421,6 @@ export default function ProfileScreen() {
       setWorkplaces(workplacesData);
       setCities(citiesData);
     } catch (error) {
-      console.error('Error loading employment data:', error);
     } finally {
       setEmploymentLoading(false);
     }
@@ -483,7 +464,6 @@ export default function ProfileScreen() {
       const count = await inboxService.getUnreadCount(user.id);
       setUnreadCount(count);
     } catch (error) {
-      console.error('Error loading unread count:', error);
     }
   };
 
@@ -495,7 +475,6 @@ export default function ProfileScreen() {
       const data = await assetService.getUserAssets(Number(user.backend_user_id));
       setAssets(data);
     } catch (error) {
-      console.error('Error loading assets:', error);
     } finally {
       setAssetLoading(false);
     }
@@ -513,7 +492,6 @@ export default function ProfileScreen() {
         }));
       }
     } catch (error) {
-      console.error('Error loading asset categories:', error);
     }
   };
 
@@ -524,7 +502,6 @@ export default function ProfileScreen() {
       const info = await assetService.getBadgeCardInfo(Number(user.backend_user_id));
       setBadgeCardInfo(info);
     } catch (error) {
-      console.error('Error loading badge card info:', error);
     }
   };
 
@@ -533,7 +510,6 @@ export default function ProfileScreen() {
       const countriesData = await userService.getCountries();
       setCountries(countriesData);
     } catch (error) {
-      console.error('Error loading countries:', error);
     }
   };
 
@@ -608,7 +584,6 @@ export default function ProfileScreen() {
       const data = await leaveService.getPendingLeaveRequests(user.id);
       setLeaveRequests(data);
     } catch (error) {
-      console.error('Error loading leave requests:', error);
     } finally {
       setLeaveLoading(false);
     }
@@ -672,7 +647,6 @@ export default function ProfileScreen() {
         userAnswers,
       });
     } catch (error) {
-      console.error('Error loading onboarding data:', error);
     } finally {
       setOnboardingLoading(false);
     }
@@ -708,7 +682,6 @@ export default function ProfileScreen() {
 
       await loadLeaveRequests();
     } catch (error) {
-      console.error('Error submitting leave request:', error);
     } finally {
       setLeaveLoading(false);
     }
@@ -726,43 +699,30 @@ export default function ProfileScreen() {
   };
 
   const handleAddAsset = async () => {
-    console.log('=== handleAddAsset START ===');
-    console.log('hasAssetPermission(write):', hasAssetPermission('write'));
-    console.log('user?.backend_user_id:', user?.backend_user_id);
-    console.log('assetForm:', assetForm);
-    console.log('profileDetails?.modulePermissions:', profileDetails?.modulePermissions);
-
     if (!hasAssetPermission('write')) {
-      console.error('No permission to add asset');
       return;
     }
 
     if (!user?.backend_user_id) {
-      console.error('Missing user.backend_user_id');
       return;
     }
 
     if (!assetForm.categoryId) {
-      console.error('Missing categoryId');
       return;
     }
 
     if (!assetForm.serialNo || assetForm.serialNo.trim() === '') {
-      console.error('Missing serialNo');
       return;
     }
 
     if (!assetForm.deliveryDate) {
-      console.error('Missing deliveryDate');
       return;
     }
 
     try {
       setAssetLoading(true);
-      console.log('Loading started...');
 
       const formattedDeliveryDate = formatDateForBackend(assetForm.deliveryDate);
-      console.log('formattedDeliveryDate:', formattedDeliveryDate);
 
       const payload = {
         userId: Number(user.backend_user_id),
@@ -772,13 +732,9 @@ export default function ProfileScreen() {
         deliveryDate: formattedDeliveryDate,
       };
 
-      console.log('Payload to send:', payload);
-
       const result = await assetService.createAsset(payload);
-      console.log('Create result:', result);
 
       if (result) {
-        console.log('Asset created successfully, resetting form...');
         setAssetForm({
           categoryId: assetCategories.length > 0 ? assetCategories[0].id : 0,
           categoryName: assetCategories.length > 0 ? assetCategories[0].name : '',
@@ -790,27 +746,16 @@ export default function ProfileScreen() {
 
         setCategoryDropdownOpen(false);
         setAssetModalVisible(false);
-        console.log('Reloading assets...');
         await loadAssets();
-        console.log('Assets reloaded');
-      } else {
-        console.error('Create asset returned null/undefined');
       }
     } catch (error) {
-      console.error('Error adding asset:', error);
-      if (error instanceof Error) {
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-      }
     } finally {
       setAssetLoading(false);
-      console.log('=== handleAddAsset END ===');
     }
   };
 
   const handlePickDocument = async () => {
     if (!hasDocumentPermission('write')) {
-      console.error('No permission to upload documents');
       return;
     }
 
@@ -820,8 +765,6 @@ export default function ProfileScreen() {
         copyToCacheDirectory: true,
       });
 
-      console.log('Document picker result:', result);
-
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const file = result.assets[0];
         setSelectedFileForUpload(file);
@@ -830,41 +773,30 @@ export default function ProfileScreen() {
           fileName: file.name || 'Untitled',
           fileType: file.mimeType || 'document',
         });
-        console.log('File selected:', file);
       }
     } catch (error) {
-      console.error('Error picking document:', error);
     }
   };
 
   const handleUploadFile = async () => {
     if (!hasDocumentPermission('write')) {
-      console.error('No permission to upload documents');
       return;
     }
 
     if (!selectedFileForUpload || !uploadForm.fileName.trim()) {
-      console.error('No file selected or filename missing');
       return;
     }
 
     try {
-      console.log('Uploading file:', {
-        file: selectedFileForUpload,
-        form: uploadForm,
-      });
-
       setFileUploadModalVisible(false);
       setSelectedFileForUpload(null);
       setUploadForm({ fileName: '', fileType: 'document', description: '' });
     } catch (error) {
-      console.error('Error uploading file:', error);
     }
   };
 
   const handleSelectFileForShare = (file: any) => {
     if (!hasDocumentPermission('read')) {
-      console.error('No permission to share documents');
       return;
     }
 
@@ -879,26 +811,18 @@ export default function ProfileScreen() {
 
   const handleShareFiles = async () => {
     if (!hasDocumentPermission('read')) {
-      console.error('No permission to share documents');
       return;
     }
 
     if (selectedFilesForShare.length === 0) {
-      console.error('No files selected for sharing');
       return;
     }
 
     if (!selectedShareType) {
-      console.error('No share type selected');
       return;
     }
 
     try {
-      console.log('Sharing files:', {
-        files: selectedFilesForShare,
-        shareType: selectedShareType,
-      });
-
       setFileShareModalVisible(false);
       setFileShareSuccessVisible(true);
 
@@ -907,7 +831,6 @@ export default function ProfileScreen() {
         setSelectedShareType(null);
       }, 500);
     } catch (error) {
-      console.error('Error sharing files:', error);
     }
   };
 
@@ -919,7 +842,6 @@ export default function ProfileScreen() {
       setWelcomePackageModalVisible(false);
       await loadOnboardingData();
     } catch (error) {
-      console.error('Error sending welcome package:', error);
     }
   };
 
@@ -934,7 +856,6 @@ export default function ProfileScreen() {
       const shiftPlan = await shiftService.getUserShiftPlan(Number(user.backend_user_id));
       setCurrentShiftPlan(shiftPlan);
     } catch (error) {
-      console.error('Error loading shift plan:', error);
     }
   };
 
@@ -943,7 +864,6 @@ export default function ProfileScreen() {
       await onboardingService.completeTask(userTaskId);
       await loadOnboardingData();
     } catch (error) {
-      console.error('Error completing task:', error);
     }
   };
 
@@ -954,7 +874,6 @@ export default function ProfileScreen() {
       await onboardingService.saveAnswer(onboardingData.userOnboarding.id, questionId, answer);
       setAnswerInputs((prev) => ({ ...prev, [questionId]: answer }));
     } catch (error) {
-      console.error('Error saving answer:', error);
     }
   };
 
@@ -969,13 +888,9 @@ export default function ProfileScreen() {
         shiftService.getUserShiftPlan(Number(user.backend_user_id)),
       ]);
 
-      console.log('Work logs:', workLogs);
-      console.log('Shift plan:', shiftPlan);
-
       setUserWorkLogs(workLogs);
       setUserShiftPlan(shiftPlan);
     } catch (error) {
-      console.error('Error loading PDKS data:', error);
     } finally {
       setPdksLoading(false);
     }
@@ -985,9 +900,7 @@ export default function ProfileScreen() {
     if (!user?.id) return;
 
     try {
-      console.log('Check-in functionality not implemented');
     } catch (error) {
-      console.error('Error checking in:', error);
     }
   };
 
@@ -995,9 +908,7 @@ export default function ProfileScreen() {
     if (!user?.id) return;
 
     try {
-      console.log('Check-out functionality not implemented');
     } catch (error) {
-      console.error('Error checking out:', error);
     }
   };
 
@@ -1011,7 +922,6 @@ export default function ProfileScreen() {
       });
       await loadPDKSData();
     } catch (error) {
-      console.error('Error creating PDKS task:', error);
       throw error;
     }
   };
@@ -1110,7 +1020,7 @@ export default function ProfileScreen() {
                       <Umbrella size={16} color="#666" />
                       <Text style={styles.dayOffType}>{getLeaveTypeName(request.dayOffType)}</Text>
                     </View>
-                    <TouchableOpacity onPress={() => console.log('Edit', request.userDayOffId)}>
+                    <TouchableOpacity onPress={() => {}}>
                       <Pencil size={16} color="#666" />
                     </TouchableOpacity>
                   </View>
@@ -1531,7 +1441,7 @@ export default function ProfileScreen() {
           {hasAssetPermission('read') && (
             <TouchableOpacity
               style={styles.downloadButton}
-              onPress={() => console.log('Download report')}
+              onPress={() => {}}
             >
               <Download size={18} color="#7C3AED" />
               <Text style={styles.downloadButtonText}>Zimmet Raporu İndir</Text>
@@ -1542,8 +1452,6 @@ export default function ProfileScreen() {
             <TouchableOpacity
               style={styles.addButton}
               onPress={() => {
-                console.log('Zimmet Ekle button clicked');
-                console.log('assetCategories:', assetCategories);
                 setAssetForm({
                   categoryId: assetCategories.length > 0 ? assetCategories[0].id : 0,
                   categoryName: assetCategories.length > 0 ? assetCategories[0].name : '',
@@ -1555,7 +1463,6 @@ export default function ProfileScreen() {
                 setCategoryDropdownOpen(false);
                 loadBadgeCardInfo();
                 setAssetModalVisible(true);
-                console.log('Modal should be visible now');
               }}
             >
               <Text style={styles.addButtonText}>Zimmet Ekle</Text>
@@ -2314,7 +2221,6 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   style={styles.filesActionButton}
                   onPress={() => {
-                    console.log('File upload button clicked');
                     setUploadForm({ fileName: '', fileType: 'document', description: '' });
                     setSelectedFileForUpload(null);
                     setFileUploadModalVisible(true);
@@ -2327,7 +2233,6 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   style={styles.filesActionButton}
                   onPress={() => {
-                    console.log('File share button clicked');
                     setSelectedFilesForShare([]);
                     setSelectedShareType(null);
                     setFileShareModalVisible(true);
@@ -2712,10 +2617,6 @@ export default function ProfileScreen() {
                   (assetLoading || !hasAssetPermission('write')) && styles.modalSubmitButtonDisabled
                 ]}
                 onPress={() => {
-                  console.log('Devam Et button clicked');
-                  console.log('Button disabled?', assetLoading || !hasAssetPermission('write'));
-                  console.log('assetLoading:', assetLoading);
-                  console.log('hasAssetPermission(write):', hasAssetPermission('write'));
                   handleAddAsset();
                 }}
                 disabled={assetLoading || !hasAssetPermission('write')}
@@ -2834,7 +2735,6 @@ export default function ProfileScreen() {
               <TouchableOpacity
                 style={styles.modalSubmitButton}
                 onPress={() => {
-                  console.log('Vize başvurusu:', visaForm);
                   setVisaModalVisible(false);
                 }}
               >

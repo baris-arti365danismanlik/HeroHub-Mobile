@@ -58,7 +58,7 @@ export default function EmployeesScreen() {
     if (user?.organization_id) {
       loadData();
     }
-  }, [user]);
+  }, [user?.organization_id]);
 
   const loadData = async () => {
     try {
@@ -77,14 +77,12 @@ export default function EmployeesScreen() {
       setDepartments(departmentsData);
       setTitles(titlesData);
     } catch (error) {
-      console.error('Error loading employees:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleSaveEmployee = (data: EmployeeFormData) => {
-    console.log('Saving employee:', data);
     loadData();
   };
 

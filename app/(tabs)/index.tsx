@@ -55,7 +55,7 @@ export default function HomeScreen() {
     if (user?.backend_user_id) {
       loadDashboardData();
     }
-  }, [user]);
+  }, [user?.backend_user_id]);
 
   const loadDashboardData = async () => {
     if (!user?.backend_user_id) {
