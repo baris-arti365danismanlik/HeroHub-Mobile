@@ -22,6 +22,7 @@ export const shiftService = {
       );
       return (response as any)?.data || null;
     } catch (error) {
+      console.error('Error fetching user shift plan:', error);
       return null;
     }
   },

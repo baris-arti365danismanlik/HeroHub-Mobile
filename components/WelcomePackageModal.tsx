@@ -80,6 +80,11 @@ export function WelcomePackageModal({
           onboardingService.getUserOnboardingProcess(userId),
         ]);
 
+      console.log('Default values:', defaultValues);
+      console.log('Onboarding questions:', questions);
+      console.log('Onboarding tasks:', tasks);
+      console.log('Onboarding process:', process);
+
       setBadgeInfo(badge);
       setGreeters(greeterData);
       setManagers(managerData);
@@ -101,6 +106,7 @@ export function WelcomePackageModal({
         }
       }
     } catch (error) {
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
@@ -136,6 +142,7 @@ export function WelcomePackageModal({
         alert(`Hata: ${result.error || 'Hoşgeldin paketi gönderilemedi'}`);
       }
     } catch (error: any) {
+      console.error('Submit error:', error);
       alert(`Hata: ${error.message || 'Hoşgeldin paketi gönderilemedi'}`);
     } finally {
       setSubmitting(false);

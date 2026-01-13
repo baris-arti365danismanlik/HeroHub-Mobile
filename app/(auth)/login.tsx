@@ -22,9 +22,11 @@ export default function LoginScreen() {
     setError('');
 
     try {
+      console.log('Login attempt with:', userName);
       await login({ userName, password });
       router.replace('/(tabs)');
     } catch (err: any) {
+      console.error('Login error:', err);
       setError(err.message || 'Giriş başarısız. Lütfen tekrar deneyin.');
     } finally {
       setIsLoading(false);
