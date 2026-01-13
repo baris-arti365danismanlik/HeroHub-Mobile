@@ -110,6 +110,11 @@ export interface User {
   position?: string;
   backend_user_id?: number;
   organization_id?: number;
+  businessEmail?: string;
+  tckn?: string;
+  department?: string;
+  reportsToId?: number;
+  userStatus?: number;
 }
 
 export interface UserDayOffBalance {
