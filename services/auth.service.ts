@@ -10,7 +10,6 @@ class AuthService {
       const isSuccess = response.success || response.succeeded;
 
       if (isSuccess && response.data) {
-        console.log('Login successful, saving tokens...');
         await tokenStorage.setToken(response.data.token);
         await tokenStorage.setRefreshToken(response.data.refreshToken);
 
@@ -26,14 +25,11 @@ class AuthService {
         };
 
         await tokenStorage.setUserData(userData);
-        console.log('User data saved:', userData);
-        console.log('Token saved, length:', response.data.token.length);
         return response.data;
       }
 
       throw new Error(response.message || response.friendlyMessage || 'Login failed');
     } catch (error: any) {
-      console.error('Login error in auth.service:', error);
       throw error;
     }
   }

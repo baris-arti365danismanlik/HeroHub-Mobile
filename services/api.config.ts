@@ -18,11 +18,8 @@ export const apiConfig = {
 export const tokenStorage = {
   async getToken(): Promise<string | null> {
     try {
-      const token = await AsyncStorage.getItem(TOKEN_KEY);
-      console.log('Getting token, exists:', !!token);
-      return token;
+      return await AsyncStorage.getItem(TOKEN_KEY);
     } catch (error) {
-      console.error('Error getting token:', error);
       return null;
     }
   },
@@ -30,7 +27,6 @@ export const tokenStorage = {
   async setToken(token: string): Promise<void> {
     try {
       await AsyncStorage.setItem(TOKEN_KEY, token);
-      console.log('Token set successfully');
     } catch (error) {
       console.error('Error setting token:', error);
     }

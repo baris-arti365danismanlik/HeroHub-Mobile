@@ -33,9 +33,6 @@ class HttpClient {
       const token = await tokenStorage.getToken();
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-        console.log('Authorization header added, token length:', token.length);
-      } else {
-        console.log('No token available for authorization header');
       }
     }
 
@@ -89,8 +86,6 @@ class HttpClient {
 
   private async handleResponse<T>(response: Response, retryRequest?: () => Promise<Response>): Promise<ApiResponse<T>> {
     if (response.status === 401) {
-      console.log('Received 401 error, retryRequest available:', !!retryRequest);
-
       if (retryRequest) {
         if (this.isRefreshing) {
           return new Promise((resolve, reject) => {
@@ -109,18 +104,15 @@ class HttpClient {
         this.isRefreshing = true;
 
         try {
-          console.log('Attempting to refresh token...');
           const newToken = await this.refreshToken();
           if (newToken) {
             this.isRefreshing = false;
             this.onRefreshed(newToken);
-            console.log('Token refreshed successfully, retrying request');
             const newResponse = await retryRequest();
             return await newResponse.json() as ApiResponse<T>;
           } else {
             this.isRefreshing = false;
             await tokenStorage.clearTokens();
-            console.log('Token refresh failed, clearing tokens');
             const error: any = new Error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
             error.isAuthError = true;
             throw error;
@@ -128,12 +120,10 @@ class HttpClient {
         } catch (error: any) {
           this.isRefreshing = false;
           await tokenStorage.clearTokens();
-          console.error('Token refresh error:', error);
           error.isAuthError = true;
           throw error;
         }
       } else {
-        console.log('No retry function, clearing tokens');
         await tokenStorage.clearTokens();
         const error: any = new Error('Unauthorized - Please login again');
         error.isAuthError = true;
