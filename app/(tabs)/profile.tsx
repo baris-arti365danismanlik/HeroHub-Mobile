@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, TextInput, Modal, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePermissions } from '@/hooks/usePermissions';
+import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
+import { profileService } from '@/services/profile.service';
 import * as DocumentPicker from 'expo-document-picker';
 import { User as UserIcon, Phone, Mail, MapPin, Briefcase, GraduationCap, Heart, FileText, Award, Globe, Languages, CreditCard, LogOut, Menu, Building2, Users as Users2, DollarSign, Bell, MessageSquare, Package, Download, Pencil, Umbrella, ChevronDown, Folder, File, Search, Plus, Share2, ChevronRight, FolderOpen, Calendar, X, TextAlignJustify as AlignJustify, Linkedin, Facebook, Instagram, Clock, Smartphone, Check, Upload, Users, Link } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
@@ -239,8 +240,8 @@ export default function ProfileScreen() {
         setLoading(true);
 
         const [profile, countriesList] = await Promise.all([
-          userService.getUserProfile(user.backend_user_id),
-          userService.getCountries(),
+          profileService.getUserProfile(user.backend_user_id),
+          profileService.getCountries(),
         ]);
 
         setProfileDetails(profile);
@@ -409,7 +410,7 @@ export default function ProfileScreen() {
         employmentService.getManagerUsers(),
         employmentService.getOrganizationDepartments(),
         employmentService.getWorkplaces(),
-        employmentService.getCities(1),
+        profileService.getCities(1),
       ]);
 
       setWorkingInformation(workingInfo);
