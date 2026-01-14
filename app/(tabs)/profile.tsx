@@ -304,7 +304,7 @@ export default function ProfileScreen() {
             )}
             {renderInfoRow(
               'Beden',
-              profileDetails.userHealth?.size
+              profileDetails.userHealth?.size !== undefined
                 ? profileDetails.userHealth.size.toString()
                 : '-'
             )}
@@ -390,7 +390,9 @@ export default function ProfileScreen() {
                   {renderInfoRow('Bölüm', education.department || '-')}
                   {renderInfoRow(
                     'Not Ortalaması',
-                    education.gpa ? `${education.gpa}/${education.gpaSystem}` : '-'
+                    education.gpa !== undefined && education.gpaSystem !== undefined
+                      ? `${education.gpa}/${education.gpaSystem}`
+                      : '-'
                   )}
                   {renderInfoRow('Başlangıç', formatDate(education.startDate))}
                   {renderInfoRow('Bitiş', formatDate(education.endDate))}
@@ -462,7 +464,7 @@ export default function ProfileScreen() {
               profileDetails.userLanguages.map((lang, index) => (
                 <View key={lang.id} style={styles.listItem}>
                   {renderInfoRow('Dil', lang.language || '-')}
-                  {renderInfoRow('Seviye', lang.level.toString())}
+                  {renderInfoRow('Seviye', lang.level !== undefined ? lang.level.toString() : '-')}
                   {index < profileDetails.userLanguages.length - 1 && (
                     <View style={styles.divider} />
                   )}
