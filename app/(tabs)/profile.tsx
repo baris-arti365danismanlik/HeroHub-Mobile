@@ -41,8 +41,8 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedSection, setSelectedSection] = useState('Profil Bilgileri');
 
-  const permissions = usePermissions(profile?.modulePermissions || user?.modulePermissions);
-  const canEditProfile = permissions.canWrite(MODULE_IDS.PROFILE);
+  const permissions = usePermissions(profile?.modulePermissions);
+  const canEdit = permissions.canWrite(MODULE_IDS.PROFILE);
 
   useEffect(() => {
     loadProfile();
@@ -224,7 +224,7 @@ export default function ProfileScreen() {
           <Accordion
             title="KİŞİSEL BİLGİLER"
             icon={<User size={18} color="#1a1a1a" />}
-            canEdit={canEditProfile}
+            canEdit={canEdit}
             onEdit={() => handleEdit('personal')}
             isExpandedDefault={false}
           >
@@ -239,7 +239,7 @@ export default function ProfileScreen() {
           <Accordion
             title="İLETİŞİM BİLGİLERİ"
             icon={<Phone size={18} color="#1a1a1a" />}
-            canEdit={canEditProfile}
+            canEdit={canEdit}
             onEdit={() => handleEdit('contact')}
             isExpandedDefault={false}
           >
@@ -257,7 +257,7 @@ export default function ProfileScreen() {
           <Accordion
             title="ADRES BİLGİLERİ"
             icon={<MapPin size={18} color="#1a1a1a" />}
-            canEdit={canEditProfile}
+            canEdit={canEdit}
             onEdit={() => handleEdit('address')}
             isExpandedDefault={false}
           >
@@ -270,7 +270,7 @@ export default function ProfileScreen() {
           <Accordion
             title="SAĞLIK BİLGİLERİ"
             icon={<Heart size={18} color="#1a1a1a" />}
-            canEdit={canEditProfile}
+            canEdit={canEdit}
             onEdit={() => handleEdit('health')}
             isExpandedDefault={false}
           >
@@ -304,7 +304,7 @@ export default function ProfileScreen() {
           <Accordion
             title="ASKERLİK BİLGİLERİ"
             icon={<Shield size={18} color="#1a1a1a" />}
-            canEdit={canEditProfile}
+            canEdit={canEdit}
             onEdit={() => handleEdit('military')}
             isExpandedDefault={false}
           >
