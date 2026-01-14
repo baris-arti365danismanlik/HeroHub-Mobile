@@ -225,8 +225,17 @@ export default function ProfileScreen() {
   const [calendarMonth, setCalendarMonth] = useState(new Date(2025, 2, 1));
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
 
+  const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
+  const [maritalStatusDropdownOpen, setMaritalStatusDropdownOpen] = useState(false);
+  const [bloodTypeDropdownOpen, setBloodTypeDropdownOpen] = useState(false);
+  const [militaryStatusDropdownOpen, setMilitaryStatusDropdownOpen] = useState(false);
+
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
   const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
+  const genders = ['Erkek', 'Kadın'];
+  const maritalStatuses = ['Bekar', 'Evli', 'Boşanmış', 'Dul'];
+  const bloodTypes = ['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-'];
+  const militaryStatuses = ['Yapıldı', 'Ertelendi', 'Muaf', 'Uygulanmaz'];
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -308,23 +317,84 @@ export default function ProfileScreen() {
   };
 
   const handleEdit = (section: string) => {
+    if (!profileDetails) return;
+
     switch (section) {
       case 'profile':
+        setProfileEditForm({
+          personnelNo: profileDetails.personalInformation?.personnelNumber || '',
+          identityNo: profileDetails.personalInformation?.tckn || '',
+          fullName: profileDetails.personalInformation
+            ? `${profileDetails.personalInformation.firstName} ${profileDetails.personalInformation.lastName}`
+            : '',
+          birthPlace: profileDetails.personalInformation?.birthPlace || '',
+          birthDate: profileDetails.personalInformation?.birthdate
+            ? formatDate(profileDetails.personalInformation.birthdate)
+            : '',
+          gender: profileDetails.personalInformation?.gender !== undefined
+            ? formatGender(profileDetails.personalInformation.gender)
+            : '',
+          maritalStatus: profileDetails.personalInformation?.maritalStatus !== undefined
+            ? formatMaritalStatus(profileDetails.personalInformation.maritalStatus)
+            : '',
+        });
         setProfileEditModalVisible(true);
         break;
       case 'contact':
+        setContactEditForm({
+          internalPhone: profileDetails.userContact?.businessPhone || '',
+          mobilePhone1: profileDetails.userContact?.phoneNumber || '',
+          mobilePhone2: profileDetails.userContact?.homePhone || '',
+          workEmail: profileDetails.userContact?.businessEmail || '',
+          otherEmail: profileDetails.userContact?.otherEmail || '',
+        });
         setContactEditModalVisible(true);
         break;
       case 'address':
+        setAddressEditForm({
+          neighborhood: profileDetails.userAddress?.address || '',
+          city: profileDetails.userAddress?.cityName || '',
+          country: profileDetails.userAddress?.countryName || '',
+        });
         setAddressEditModalVisible(true);
         break;
       case 'health':
+        setHealthEditForm({
+          bloodType: profileDetails.userHealth?.bloodType !== undefined
+            ? formatBloodType(profileDetails.userHealth.bloodType)
+            : '',
+          chronicDiseases: '',
+          allergies: profileDetails.userHealth?.allergies || '',
+          emergencyContactName: '',
+          emergencyContactPhone: '',
+        });
         setHealthEditModalVisible(true);
         break;
       case 'driverLicense':
+        if (profileDetails.driverLicenses.length > 0) {
+          const license = profileDetails.driverLicenses[0];
+          setDriverLicenseEditForm({
+            licenseType: license.licenseType || '',
+            licenseNo: license.licenseNumber || '',
+            issueDate: formatDate(license.issueDate),
+            expiryDate: formatDate(license.expiryDate),
+          });
+        }
         setDriverLicenseEditModalVisible(true);
         break;
       case 'military':
+        setMilitaryEditForm({
+          status: profileDetails.userMilitary?.militaryStatus === 0
+            ? 'Yapıldı'
+            : profileDetails.userMilitary?.militaryStatus === 1
+            ? 'Ertelendi'
+            : profileDetails.userMilitary?.militaryStatus === 2
+            ? 'Muaf'
+            : 'Uygulanmaz',
+          startDate: '',
+          endDate: '',
+          postponementReason: profileDetails.userMilitary?.militaryPostpone || '',
+        });
         setMilitaryEditModalVisible(true);
         break;
       default:
@@ -362,28 +432,151 @@ export default function ProfileScreen() {
     }
   };
 
-  const saveProfileInfo = () => {
-    setProfileEditModalVisible(false);
+  const saveProfileInfo = async () => {
+    if (!user?.backend_user_id || !profileDetails) return;
+
+    try {
+      setLoading(true);
+      const [firstName, ...lastNameParts] = profileEditForm.fullName.trim().split(' ');
+      const lastName = lastNameParts.join(' ');
+
+      const genderMap: Record<string, number> = { 'Erkek': 0, 'Kadın': 1 };
+      const maritalStatusMap: Record<string, number> = {
+        'Bekar': 0,
+        'Evli': 1,
+        'Boşanmış': 2,
+        'Dul': 3
+      };
+
+      await userService.updatePersonalInformation(user.backend_user_id, {
+        tckn: profileEditForm.identityNo,
+        firstName,
+        lastName,
+        birthPlace: profileEditForm.birthPlace,
+        birthdate: profileEditForm.birthDate,
+        gender: genderMap[profileEditForm.gender],
+        maritalStatus: maritalStatusMap[profileEditForm.maritalStatus],
+        personnelNumber: profileEditForm.personnelNo,
+      });
+
+      const updatedProfile = await userService.getUserProfile(user.backend_user_id);
+      setProfileDetails(updatedProfile);
+      setProfileEditModalVisible(false);
+    } catch (error) {
+      alert('Profil bilgileri güncellenirken bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const saveContactInfo = () => {
-    setContactEditModalVisible(false);
+  const saveContactInfo = async () => {
+    if (!user?.backend_user_id) return;
+
+    try {
+      setLoading(true);
+      await userService.updateContactInformation(user.backend_user_id, {
+        businessPhone: contactEditForm.internalPhone,
+        phoneNumber: contactEditForm.mobilePhone1,
+        homePhone: contactEditForm.mobilePhone2,
+        businessEmail: contactEditForm.workEmail,
+        otherEmail: contactEditForm.otherEmail,
+      });
+
+      const updatedProfile = await userService.getUserProfile(user.backend_user_id);
+      setProfileDetails(updatedProfile);
+      setContactEditModalVisible(false);
+    } catch (error) {
+      alert('İletişim bilgileri güncellenirken bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const saveAddressInfo = () => {
-    setAddressEditModalVisible(false);
+  const saveAddressInfo = async () => {
+    if (!user?.backend_user_id || !profileDetails) return;
+
+    try {
+      setLoading(true);
+      await userService.updateAddressInformation(user.backend_user_id, {
+        address: addressEditForm.neighborhood,
+        cityId: profileDetails.userAddress?.cityId || undefined,
+        countryId: profileDetails.userAddress?.countryId || undefined,
+      });
+
+      const updatedProfile = await userService.getUserProfile(user.backend_user_id);
+      setProfileDetails(updatedProfile);
+      setAddressEditModalVisible(false);
+    } catch (error) {
+      alert('Adres bilgileri güncellenirken bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const saveHealthInfo = () => {
-    setHealthEditModalVisible(false);
+  const saveHealthInfo = async () => {
+    if (!user?.backend_user_id || !profileDetails) return;
+
+    try {
+      setLoading(true);
+      const bloodTypeMap: Record<string, number> = {
+        'A Rh+': 0,
+        'A Rh-': 1,
+        'B Rh+': 2,
+        'B Rh-': 3,
+        'AB Rh+': 4,
+        'AB Rh-': 5,
+        '0 Rh+': 6,
+        '0 Rh-': 7,
+      };
+
+      await userService.updateHealthInformation(user.backend_user_id, {
+        bloodType: bloodTypeMap[healthEditForm.bloodType] ?? profileDetails.userHealth?.bloodType,
+        allergies: healthEditForm.allergies,
+        height: profileDetails.userHealth?.height,
+        weight: profileDetails.userHealth?.weight,
+        drugs: profileDetails.userHealth?.drugs,
+      });
+
+      const updatedProfile = await userService.getUserProfile(user.backend_user_id);
+      setProfileDetails(updatedProfile);
+      setHealthEditModalVisible(false);
+    } catch (error) {
+      alert('Sağlık bilgileri güncellenirken bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const saveDriverLicenseInfo = () => {
     setDriverLicenseEditModalVisible(false);
   };
 
-  const saveMilitaryInfo = () => {
-    setMilitaryEditModalVisible(false);
+  const saveMilitaryInfo = async () => {
+    if (!user?.backend_user_id) return;
+
+    try {
+      setLoading(true);
+      const militaryStatusMap: Record<string, number> = {
+        'Yapıldı': 0,
+        'Ertelendi': 1,
+        'Muaf': 2,
+        'Uygulanmaz': 3,
+      };
+
+      await userService.updateMilitaryInformation(user.backend_user_id, {
+        militaryStatus: militaryStatusMap[militaryEditForm.status],
+        militaryPostpone: militaryEditForm.postponementReason,
+        militaryNote: '',
+      });
+
+      const updatedProfile = await userService.getUserProfile(user.backend_user_id);
+      setProfileDetails(updatedProfile);
+      setMilitaryEditModalVisible(false);
+    } catch (error) {
+      alert('Askerlik bilgileri güncellenirken bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loadEmploymentData = async () => {
@@ -3439,19 +3632,55 @@ export default function ProfileScreen() {
               </View>
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Cinsiyet</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={profileEditForm.gender}
-                  onChangeText={(text) => setProfileEditForm({ ...profileEditForm, gender: text })}
-                />
+                <TouchableOpacity
+                  style={styles.dropdownButton}
+                  onPress={() => setGenderDropdownOpen(!genderDropdownOpen)}
+                >
+                  <Text style={styles.dropdownButtonText}>{profileEditForm.gender || 'Seçiniz'}</Text>
+                  <ChevronDown size={20} color="#666" />
+                </TouchableOpacity>
+                {genderDropdownOpen && (
+                  <View style={styles.dropdownMenu}>
+                    {genders.map((gender) => (
+                      <TouchableOpacity
+                        key={gender}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setProfileEditForm({ ...profileEditForm, gender });
+                          setGenderDropdownOpen(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{gender}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Medeni Hal</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={profileEditForm.maritalStatus}
-                  onChangeText={(text) => setProfileEditForm({ ...profileEditForm, maritalStatus: text })}
-                />
+                <TouchableOpacity
+                  style={styles.dropdownButton}
+                  onPress={() => setMaritalStatusDropdownOpen(!maritalStatusDropdownOpen)}
+                >
+                  <Text style={styles.dropdownButtonText}>{profileEditForm.maritalStatus || 'Seçiniz'}</Text>
+                  <ChevronDown size={20} color="#666" />
+                </TouchableOpacity>
+                {maritalStatusDropdownOpen && (
+                  <View style={styles.dropdownMenu}>
+                    {maritalStatuses.map((status) => (
+                      <TouchableOpacity
+                        key={status}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setProfileEditForm({ ...profileEditForm, maritalStatus: status });
+                          setMaritalStatusDropdownOpen(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{status}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
             </ScrollView>
             <TouchableOpacity style={styles.saveButton} onPress={saveProfileInfo}>
@@ -3574,11 +3803,29 @@ export default function ProfileScreen() {
             <ScrollView style={styles.modalContent}>
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Kan Grubu</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={healthEditForm.bloodType}
-                  onChangeText={(text) => setHealthEditForm({ ...healthEditForm, bloodType: text })}
-                />
+                <TouchableOpacity
+                  style={styles.dropdownButton}
+                  onPress={() => setBloodTypeDropdownOpen(!bloodTypeDropdownOpen)}
+                >
+                  <Text style={styles.dropdownButtonText}>{healthEditForm.bloodType || 'Seçiniz'}</Text>
+                  <ChevronDown size={20} color="#666" />
+                </TouchableOpacity>
+                {bloodTypeDropdownOpen && (
+                  <View style={styles.dropdownMenu}>
+                    {bloodTypes.map((type) => (
+                      <TouchableOpacity
+                        key={type}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setHealthEditForm({ ...healthEditForm, bloodType: type });
+                          setBloodTypeDropdownOpen(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{type}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Kronik Hastalıklar</Text>
@@ -3682,11 +3929,29 @@ export default function ProfileScreen() {
             <ScrollView style={styles.modalContent}>
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Durum</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={militaryEditForm.status}
-                  onChangeText={(text) => setMilitaryEditForm({ ...militaryEditForm, status: text })}
-                />
+                <TouchableOpacity
+                  style={styles.dropdownButton}
+                  onPress={() => setMilitaryStatusDropdownOpen(!militaryStatusDropdownOpen)}
+                >
+                  <Text style={styles.dropdownButtonText}>{militaryEditForm.status || 'Seçiniz'}</Text>
+                  <ChevronDown size={20} color="#666" />
+                </TouchableOpacity>
+                {militaryStatusDropdownOpen && (
+                  <View style={styles.dropdownMenu}>
+                    {militaryStatuses.map((status) => (
+                      <TouchableOpacity
+                        key={status}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setMilitaryEditForm({ ...militaryEditForm, status });
+                          setMilitaryStatusDropdownOpen(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{status}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Başlangıç Tarihi</Text>
@@ -4672,6 +4937,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  dropdownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  dropdownButtonText: {
+    fontSize: 15,
+    color: '#1a1a1a',
   },
   dropdownMenu: {
     backgroundColor: '#fff',

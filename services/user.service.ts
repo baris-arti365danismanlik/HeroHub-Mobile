@@ -165,6 +165,57 @@ class UserService {
       return false;
     }
   }
+
+  async updatePersonalInformation(userId: number, data: {
+    tckn?: string;
+    firstName?: string;
+    lastName?: string;
+    birthPlace?: string;
+    birthdate?: string;
+    gender?: number;
+    maritalStatus?: number;
+    personnelNumber?: string;
+  }): Promise<void> {
+    await apiClient.put(`/Profile/personal-information/${userId}`, data);
+  }
+
+  async updateContactInformation(userId: number, data: {
+    phoneNumber?: string;
+    homePhone?: string;
+    businessPhone?: string;
+    email?: string;
+    businessEmail?: string;
+    otherEmail?: string;
+  }): Promise<void> {
+    await apiClient.put(`/Profile/contact-information/${userId}`, data);
+  }
+
+  async updateAddressInformation(userId: number, data: {
+    address?: string;
+    districtId?: number;
+    cityId?: number;
+    countryId?: number;
+  }): Promise<void> {
+    await apiClient.put(`/Profile/address-information/${userId}`, data);
+  }
+
+  async updateHealthInformation(userId: number, data: {
+    height?: number;
+    weight?: number;
+    bloodType?: number;
+    allergies?: string;
+    drugs?: string;
+  }): Promise<void> {
+    await apiClient.put(`/Profile/health-information/${userId}`, data);
+  }
+
+  async updateMilitaryInformation(userId: number, data: {
+    militaryStatus?: number;
+    militaryPostpone?: string;
+    militaryNote?: string;
+  }): Promise<void> {
+    await apiClient.put(`/Profile/military-information/${userId}`, data);
+  }
 }
 
 export const userService = new UserService();
