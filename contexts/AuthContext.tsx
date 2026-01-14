@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authService } from '@/services/auth.service';
+import { userService } from '@/services/user.service';
 import type { User, LoginRequest } from '@/types/backend';
 
 interface AuthContextType {
@@ -27,6 +28,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (isAuth) {
         const currentUser = await authService.getCurrentUser();
         if (currentUser) {
+          if (currentUser.backend_user_id && !currentUser.modulePermissions) {
+            try {
+              const profile = await userService.getUserProfile(currentUser.backend_user_id);
+              if (profile?.modulePermissions) {
+                currentUser.modulePermissions = profile.modulePermissions;
+              }
+            } catch (error) {
+            }
+          }
           setUser(currentUser);
         } else {
           await authService.logout();
@@ -61,7 +71,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = async () => {
     try {
       const currentUser = await authService.getCurrentUser();
-      if (currentUser) {
+      if (currentUser && currentUser.backend_user_id) {
+        try {
+          const profile = await userService.getUserProfile(currentUser.backend_user_id);
+          if (profile?.modulePermissions) {
+            currentUser.modulePermissions = profile.modulePermissions;
+          }
+        } catch (error) {
+        }
+        setUser(currentUser);
+      } else if (currentUser) {
         setUser(currentUser);
       }
     } catch (error) {

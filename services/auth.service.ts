@@ -1,6 +1,6 @@
 import { authHttpClient, apiHttpClient } from './http.client';
 import { tokenStorage } from './api.config';
-import type { LoginRequest, LoginResponse, User } from '@/types/backend';
+import type { LoginRequest, LoginResponse, User, UserProfileDetails, ModulePermission } from '@/types/backend';
 
 class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -13,6 +13,17 @@ class AuthService {
         await tokenStorage.setToken(response.data.token);
         await tokenStorage.setRefreshToken(response.data.refreshToken);
 
+        let modulePermissions: ModulePermission[] = [];
+        try {
+          const profileResponse = await apiHttpClient.get<UserProfileDetails>(
+            `/Profile/get-userprofile/${response.data.id}`
+          );
+          if (profileResponse.data?.modulePermissions) {
+            modulePermissions = profileResponse.data.modulePermissions;
+          }
+        } catch (error) {
+        }
+
         const userData: User = {
           id: response.data.id.toString(),
           firstName: response.data.firstName,
@@ -22,6 +33,7 @@ class AuthService {
           createdAt: new Date().toISOString(),
           backend_user_id: response.data.id,
           organization_id: response.data.organizationId,
+          modulePermissions,
         };
 
         await tokenStorage.setUserData(userData);
