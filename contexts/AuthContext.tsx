@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authService } from '@/services/auth.service';
-import { userService } from '@/services/user.service';
 import type { User, LoginRequest } from '@/types/backend';
 
 interface AuthContextType {
@@ -17,64 +16,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
+    checkAuth();
+  }, []);
 
-    const checkAuth = async () => {
-      try {
-        const isAuth = await authService.isAuthenticated();
-        if (!mounted) return;
-
-        if (isAuth) {
-          const currentUser = await authService.getCurrentUser();
-          if (!mounted) return;
-
-          if (currentUser) {
-            if (currentUser.backend_user_id && !currentUser.modulePermissions) {
-              try {
-                const profile = await userService.getUserProfile(currentUser.backend_user_id);
-                if (mounted && profile) {
-                  currentUser.modulePermissions = profile.modulePermissions || [];
-                }
-              } catch (error) {
-                console.log('Error loading user profile:', error);
-              }
-            }
-            if (mounted) {
-              setUser(currentUser);
-            }
-          } else {
-            await authService.logout();
-            if (mounted) {
-              setUser(null);
-            }
-          }
+  const checkAuth = async () => {
+    try {
+      const isAuth = await authService.isAuthenticated();
+      if (isAuth) {
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
         } else {
-          if (mounted) {
-            setUser(null);
-          }
-        }
-      } catch (error) {
-        console.log('Auth check error:', error);
-        if (mounted) {
-          setUser(null);
-        }
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-          setIsInitialized(true);
+          await authService.logout();
         }
       }
-    };
-
-    checkAuth();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    } catch (error) {
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const login = async (credentials: LoginRequest) => {
     try {
@@ -98,18 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = async () => {
     try {
       const currentUser = await authService.getCurrentUser();
-      if (currentUser && currentUser.backend_user_id) {
-        const profile = await userService.getUserProfile(currentUser.backend_user_id);
-        if (profile) {
-          const updatedUser: User = {
-            ...currentUser,
-            modulePermissions: profile.modulePermissions || [],
-          };
-          setUser(updatedUser);
-        } else {
-          setUser(currentUser);
-        }
-      } else if (currentUser) {
+      if (currentUser) {
         setUser(currentUser);
       }
     } catch (error) {

@@ -1,6 +1,6 @@
 import { authHttpClient, apiHttpClient } from './http.client';
 import { tokenStorage } from './api.config';
-import type { LoginRequest, LoginResponse, User, UserProfileDetails } from '@/types/backend';
+import type { LoginRequest, LoginResponse, User } from '@/types/backend';
 
 class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -13,20 +13,15 @@ class AuthService {
         await tokenStorage.setToken(response.data.token);
         await tokenStorage.setRefreshToken(response.data.refreshToken);
 
-        const profileResponse = await apiHttpClient.get<UserProfileDetails>(`/User/GetUserProfile/${response.data.id}`);
-        const profileData = profileResponse.data;
-
         const userData: User = {
           id: response.data.id.toString(),
           firstName: response.data.firstName,
           lastName: response.data.lastName,
           email: response.data.email,
-          role: response.data.role,
           isActive: true,
           createdAt: new Date().toISOString(),
           backend_user_id: response.data.id,
           organization_id: response.data.organizationId,
-          modulePermissions: profileData?.modulePermissions || [],
         };
 
         await tokenStorage.setUserData(userData);

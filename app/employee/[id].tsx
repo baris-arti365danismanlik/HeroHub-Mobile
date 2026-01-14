@@ -34,7 +34,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
-import type { UserProfileDetails, Country } from '@/types/backend';
+import type { UserProfileDetails } from '@/types/backend';
 import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
 import { Accordion } from '@/components/Accordion';
 
@@ -44,15 +44,13 @@ export default function EmployeeDetailScreen() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [employee, setEmployee] = useState<UserProfileDetails | null>(null);
-  const [countries, setCountries] = useState<Country[]>([]);
 
-  const permissions = usePermissions(user?.modulePermissions);
-  const canViewProfile = permissions.isAdmin() || permissions.canRead(MODULE_IDS.PROFILE);
-  const canEditProfile = permissions.isAdmin() || permissions.canWrite(MODULE_IDS.PROFILE);
+  const permissions = usePermissions(employee?.modulePermissions);
+  const canViewProfile = permissions.canRead(MODULE_IDS.PROFILE);
+  const canEditProfile = permissions.canWrite(MODULE_IDS.PROFILE);
 
   useEffect(() => {
     loadEmployeeData();
-    loadCountries();
   }, [id]);
 
   const loadEmployeeData = async () => {
@@ -66,15 +64,6 @@ export default function EmployeeDetailScreen() {
       setEmployee(null);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadCountries = async () => {
-    try {
-      const data = await userService.getCountries();
-      setCountries(data);
-    } catch (error) {
-      setCountries([]);
     }
   };
 
@@ -116,17 +105,6 @@ export default function EmployeeDetailScreen() {
     return types[workType] || '-';
   };
 
-  const getNationalityName = (nationalityId: number): string => {
-    if (!nationalityId) return '-';
-    const country = countries.find(c => c.id === nationalityId);
-    return country?.name || '-';
-  };
-
-  const getEducationLevelText = (level: number): string => {
-    const levels = ['İlkokul', 'Ortaokul', 'Lise', 'Ön Lisans', 'Lisans', 'Yüksek Lisans', 'Doktora'];
-    return levels[level] || '-';
-  };
-
   const handleEditSection = (sectionId: string) => {
   };
 
@@ -142,23 +120,6 @@ export default function EmployeeDetailScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#7C3AED" />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (!canViewProfile && !loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft size={24} color="#1a1a1a" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profil Bilgileri</Text>
-          <View style={{ width: 24 }} />
-        </View>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Bu sayfayı görüntüleme yetkiniz bulunmamaktadır.</Text>
         </View>
       </SafeAreaView>
     );
@@ -226,15 +187,6 @@ export default function EmployeeDetailScreen() {
               <Text style={styles.profileBadgeText}>{employee.organizationName}</Text>
             </View>
           )}
-          {employee.reportsTo && (
-            <TouchableOpacity
-              style={styles.reportsToContainer}
-              onPress={() => router.push(`/employee/${employee.reportsTo.id}`)}
-            >
-              <Text style={styles.reportsToLabel}>Bağlı Olduğu Kişi:</Text>
-              <Text style={styles.reportsToName}>{employee.reportsTo.fullName || employee.reportsTo.name}</Text>
-            </TouchableOpacity>
-          )}
         </View>
 
         <View style={styles.accordionContainer}>
@@ -250,25 +202,8 @@ export default function EmployeeDetailScreen() {
             {renderInfoRow('Soyad', employee.personalInformation?.lastName || '-')}
             {renderInfoRow('Doğum Tarihi', employee.personalInformation?.birthdate ? formatDate(employee.personalInformation.birthdate) : '-')}
             {renderInfoRow('Doğum Yeri', employee.personalInformation?.birthPlace || '-')}
-            {renderInfoRow('Uyruk', employee.personalInformation?.nationality ? getNationalityName(employee.personalInformation.nationality) : '-')}
             {renderInfoRow('Cinsiyet', employee.personalInformation?.gender !== undefined ? getGenderText(employee.personalInformation.gender) : '-')}
             {renderInfoRow('Medeni Durum', employee.personalInformation?.maritalStatus !== undefined ? getMaritalStatusText(employee.personalInformation.maritalStatus) : '-')}
-          </Accordion>
-
-          <Accordion
-            title="İŞ BİLGİLERİ"
-            icon={<Briefcase size={20} color="#1a1a1a" />}
-            canEdit={canEditProfile}
-            onEdit={() => handleEditSection('work')}
-          >
-            {renderInfoRow('Personel Numarası', employee.personalInformation?.personnelNumber || '-')}
-            {renderInfoRow('İşe Başlama Tarihi', employee.personalInformation?.jobStartDate ? formatDate(employee.personalInformation.jobStartDate) : '-')}
-            {renderInfoRow('Ünvan', employee.personalInformation?.title || employee.currentTitle || '-')}
-            {renderInfoRow('Departman', employee.personalInformation?.department || employee.department || '-')}
-            {renderInfoRow('İş Yeri', employee.personalInformation?.workPlace || '-')}
-            {renderInfoRow('Çalışma Tipi', employee.personalInformation?.workType !== undefined ? getWorkTypeText(employee.personalInformation.workType) : '-')}
-            {renderInfoRow('Vardiya Saatleri', employee.personalInformation?.currentShiftHours || employee.currentShiftHours || '-')}
-            {renderInfoRow('İzin Bakiyesi', `${employee.dayOffBalance || 0} gün`)}
           </Accordion>
 
           <Accordion
@@ -370,7 +305,6 @@ export default function EmployeeDetailScreen() {
             {employee.educations && employee.educations.length > 0 ? (
               employee.educations.map((education, index) => (
                 <View key={education.educationId} style={styles.listItem}>
-                  {renderInfoRow('Seviye', getEducationLevelText(education.level))}
                   {renderInfoRow('Okul Adı', education.schoolName || '-')}
                   {renderInfoRow('Bölüm', education.department || '-')}
                   {renderInfoRow('Not Ortalaması', education.gpa ? `${education.gpa}/${education.gpaSystem}` : '-')}
@@ -469,53 +403,6 @@ export default function EmployeeDetailScreen() {
               ))
             ) : (
               <Text style={styles.emptyText}>Vize bilgisi bulunmuyor</Text>
-            )}
-          </Accordion>
-
-          <Accordion
-            title="MESLEKTAŞLAR"
-            icon={<Users size={20} color="#1a1a1a" />}
-            canEdit={false}
-          >
-            {employee.colleagues && employee.colleagues.length > 0 ? (
-              <View style={styles.colleaguesContainer}>
-                {employee.colleagues.map((colleague, index) => (
-                  <TouchableOpacity
-                    key={colleague.id}
-                    style={styles.colleagueCard}
-                    onPress={() => router.push(`/employee/${colleague.id}`)}
-                  >
-                    <View style={styles.colleagueLeft}>
-                      {colleague.profilePhoto && colleague.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
-                        <Image
-                          source={{
-                            uri: colleague.profilePhoto.startsWith('/')
-                              ? `https://faz2-cdn.herotr.com${colleague.profilePhoto}`
-                              : colleague.profilePhoto
-                          }}
-                          style={styles.colleagueAvatar}
-                        />
-                      ) : (
-                        <View style={styles.colleagueAvatarPlaceholder}>
-                          <Text style={styles.colleagueAvatarText}>
-                            {colleague.fullName
-                              ? colleague.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)
-                              : '?'}
-                          </Text>
-                        </View>
-                      )}
-                      <View style={styles.colleagueInfo}>
-                        <Text style={styles.colleagueName}>{colleague.fullName}</Text>
-                        {colleague.title && (
-                          <Text style={styles.colleagueTitle}>{colleague.title}</Text>
-                        )}
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ) : (
-              <Text style={styles.emptyText}>Meslektaş bilgisi bulunmuyor</Text>
             )}
           </Accordion>
         </View>
@@ -618,22 +505,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  reportsToContainer: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-  },
-  reportsToLabel: {
-    fontSize: 12,
-    color: '#999',
-    marginBottom: 4,
-  },
-  reportsToName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#7C3AED',
-  },
   accordionContainer: {
     paddingHorizontal: 16,
     paddingTop: 16,
@@ -667,51 +538,5 @@ const styles = StyleSheet.create({
     color: '#999',
     fontStyle: 'italic',
     paddingVertical: 8,
-  },
-  colleaguesContainer: {
-    gap: 8,
-  },
-  colleagueCard: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-  },
-  colleagueLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  colleagueAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  colleagueAvatarPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F0E7FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  colleagueAvatarText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#7C3AED',
-  },
-  colleagueInfo: {
-    flex: 1,
-  },
-  colleagueName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 2,
-  },
-  colleagueTitle: {
-    fontSize: 13,
-    color: '#666',
   },
 });
