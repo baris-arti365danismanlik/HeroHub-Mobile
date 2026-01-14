@@ -14,6 +14,11 @@ import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
 import type { UserProfileDetails } from '@/types/backend';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
+import { EditPersonalInfoModal } from '@/components/EditPersonalInfoModal';
+import { EditContactModal } from '@/components/EditContactModal';
+import { EditAddressModal } from '@/components/EditAddressModal';
+import { EditHealthModal } from '@/components/EditHealthModal';
+import { EditMilitaryModal } from '@/components/EditMilitaryModal';
 import {
   User,
   Phone,
@@ -41,8 +46,14 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedSection, setSelectedSection] = useState('Profil Bilgileri');
 
-  const permissions = usePermissions(profile?.modulePermissions);
-  const canEdit = permissions.canWrite(MODULE_IDS.PROFILE);
+  const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [showHealthModal, setShowHealthModal] = useState(false);
+  const [showMilitaryModal, setShowMilitaryModal] = useState(false);
+
+  const permissions = usePermissions(profile?.modulePermissions || user?.modulePermissions);
+  const canEditProfile = permissions.canWrite(MODULE_IDS.PROFILE);
 
   useEffect(() => {
     loadProfile();
@@ -112,7 +123,43 @@ export default function ProfileScreen() {
   };
 
   const handleEdit = (section: string) => {
-    console.log('Edit section:', section);
+    switch (section) {
+      case 'personal':
+        setShowPersonalInfoModal(true);
+        break;
+      case 'contact':
+        setShowContactModal(true);
+        break;
+      case 'address':
+        setShowAddressModal(true);
+        break;
+      case 'health':
+        setShowHealthModal(true);
+        break;
+      case 'military':
+        setShowMilitaryModal(true);
+        break;
+    }
+  };
+
+  const handleSavePersonalInfo = async (data: any) => {
+    console.log('Saving personal info:', data);
+  };
+
+  const handleSaveContact = async (data: any) => {
+    console.log('Saving contact:', data);
+  };
+
+  const handleSaveAddress = async (data: any) => {
+    console.log('Saving address:', data);
+  };
+
+  const handleSaveHealth = async (data: any) => {
+    console.log('Saving health:', data);
+  };
+
+  const handleSaveMilitary = async (data: any) => {
+    console.log('Saving military:', data);
   };
 
   if (loading) {
@@ -224,7 +271,7 @@ export default function ProfileScreen() {
           <Accordion
             title="KİŞİSEL BİLGİLER"
             icon={<User size={18} color="#1a1a1a" />}
-            canEdit={canEdit}
+            canEdit={canEditProfile}
             onEdit={() => handleEdit('personal')}
             isExpandedDefault={false}
           >
@@ -239,7 +286,7 @@ export default function ProfileScreen() {
           <Accordion
             title="İLETİŞİM BİLGİLERİ"
             icon={<Phone size={18} color="#1a1a1a" />}
-            canEdit={canEdit}
+            canEdit={canEditProfile}
             onEdit={() => handleEdit('contact')}
             isExpandedDefault={false}
           >
@@ -257,7 +304,7 @@ export default function ProfileScreen() {
           <Accordion
             title="ADRES BİLGİLERİ"
             icon={<MapPin size={18} color="#1a1a1a" />}
-            canEdit={canEdit}
+            canEdit={canEditProfile}
             onEdit={() => handleEdit('address')}
             isExpandedDefault={false}
           >
@@ -270,7 +317,7 @@ export default function ProfileScreen() {
           <Accordion
             title="SAĞLIK BİLGİLERİ"
             icon={<Heart size={18} color="#1a1a1a" />}
-            canEdit={canEdit}
+            canEdit={canEditProfile}
             onEdit={() => handleEdit('health')}
             isExpandedDefault={false}
           >
@@ -304,7 +351,7 @@ export default function ProfileScreen() {
           <Accordion
             title="ASKERLİK BİLGİLERİ"
             icon={<Shield size={18} color="#1a1a1a" />}
-            canEdit={canEdit}
+            canEdit={canEditProfile}
             onEdit={() => handleEdit('military')}
             isExpandedDefault={false}
           >
@@ -473,6 +520,41 @@ export default function ProfileScreen() {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      <EditPersonalInfoModal
+        visible={showPersonalInfoModal}
+        onClose={() => setShowPersonalInfoModal(false)}
+        onSave={handleSavePersonalInfo}
+        initialData={profile?.personalInformation}
+      />
+
+      <EditContactModal
+        visible={showContactModal}
+        onClose={() => setShowContactModal(false)}
+        onSave={handleSaveContact}
+        initialData={profile?.userContact}
+      />
+
+      <EditAddressModal
+        visible={showAddressModal}
+        onClose={() => setShowAddressModal(false)}
+        onSave={handleSaveAddress}
+        initialData={profile?.userAddress}
+      />
+
+      <EditHealthModal
+        visible={showHealthModal}
+        onClose={() => setShowHealthModal(false)}
+        onSave={handleSaveHealth}
+        initialData={profile?.userHealth}
+      />
+
+      <EditMilitaryModal
+        visible={showMilitaryModal}
+        onClose={() => setShowMilitaryModal(false)}
+        onSave={handleSaveMilitary}
+        initialData={profile?.userMilitary}
+      />
     </View>
   );
 }
