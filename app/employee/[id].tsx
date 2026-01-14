@@ -240,7 +240,7 @@ export default function EmployeeDetailScreen() {
           >
             {renderInfoRow('Boy', employee.userHealth?.height ? `${employee.userHealth.height} cm` : '-')}
             {renderInfoRow('Kilo', employee.userHealth?.weight ? `${employee.userHealth.weight} kg` : '-')}
-            {renderInfoRow('Beden', employee.userHealth?.size !== undefined ? employee.userHealth.size.toString() : '-')}
+            {renderInfoRow('Beden', employee.userHealth?.size ? employee.userHealth.size.toString() : '-')}
             {renderInfoRow('Kan Grubu', employee.userHealth?.bloodType !== undefined ? getBloodTypeText(employee.userHealth.bloodType) : '-')}
             {renderInfoRow('Alerjiler', employee.userHealth?.allergies || '-')}
             {renderInfoRow('Kullandığı İlaçlar', employee.userHealth?.drugs || '-')}
@@ -307,7 +307,7 @@ export default function EmployeeDetailScreen() {
                 <View key={education.educationId} style={styles.listItem}>
                   {renderInfoRow('Okul Adı', education.schoolName || '-')}
                   {renderInfoRow('Bölüm', education.department || '-')}
-                  {renderInfoRow('Not Ortalaması', education.gpa !== undefined && education.gpaSystem !== undefined ? `${education.gpa}/${education.gpaSystem}` : '-')}
+                  {renderInfoRow('Not Ortalaması', education.gpa ? `${education.gpa}/${education.gpaSystem}` : '-')}
                   {renderInfoRow('Başlangıç', formatDate(education.startDate))}
                   {renderInfoRow('Bitiş', formatDate(education.endDate))}
                   {index < employee.educations.length - 1 && <View style={styles.divider} />}
@@ -368,7 +368,7 @@ export default function EmployeeDetailScreen() {
               employee.userLanguages.map((lang, index) => (
                 <View key={lang.id} style={styles.listItem}>
                   {renderInfoRow('Dil', lang.language || '-')}
-                  {renderInfoRow('Seviye', lang.level !== undefined ? lang.level.toString() : '-')}
+                  {renderInfoRow('Seviye', lang.level.toString())}
                   {index < employee.userLanguages.length - 1 && <View style={styles.divider} />}
                 </View>
               ))
