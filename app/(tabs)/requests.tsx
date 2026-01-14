@@ -3,11 +3,12 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
 import { leaveService } from '@/services/leave.service';
-import { Plus, Menu } from 'lucide-react-native';
+import { Plus, Menu, FileText } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { LeaveRequestModal, LeaveRequestData } from '@/components/LeaveRequestModal';
 import { SuccessModal } from '@/components/SuccessModal';
 import { parseDateToISO } from '@/utils/formatters';
+import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
 import type { UserRequest } from '@/types/backend';
 
 const STATUS_LABELS: Record<number, string> = {
@@ -26,6 +27,7 @@ const STATUS_COLORS: Record<number, string> = {
 
 export default function RequestsScreen() {
   const { user } = useAuth();
+  const permissions = usePermissions(user?.modulePermissions);
   const [requests, setRequests] = useState<UserRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -87,6 +89,17 @@ export default function RequestsScreen() {
     );
   }
 
+  if (!permissions.canRead(MODULE_IDS.LEAVE_REQUESTS) && !permissions.isAdmin()) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.noAccessContainer}>
+          <FileText size={64} color="#999" />
+          <Text style={styles.noAccessText}>Bu sayfaya erişim yetkiniz bulunmamaktadır</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <>
       <View style={styles.container}>
@@ -98,9 +111,14 @@ export default function RequestsScreen() {
             <Menu size={24} color="#1a1a1a" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Taleplerim</Text>
-          <TouchableOpacity style={styles.addButton} onPress={() => setLeaveModalVisible(true)}>
-            <Plus size={24} color="#7C3AED" />
-          </TouchableOpacity>
+          {(permissions.canWrite(MODULE_IDS.LEAVE_REQUESTS) || permissions.isAdmin()) && (
+            <TouchableOpacity style={styles.addButton} onPress={() => setLeaveModalVisible(true)}>
+              <Plus size={24} color="#7C3AED" />
+            </TouchableOpacity>
+          )}
+          {!(permissions.canWrite(MODULE_IDS.LEAVE_REQUESTS) || permissions.isAdmin()) && (
+            <View style={{ width: 40 }} />
+          )}
         </View>
 
         <ScrollView style={styles.content}>
@@ -158,6 +176,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
+  },
+  noAccessContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+    paddingHorizontal: 32,
+  },
+  noAccessText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    fontWeight: '500',
   },
   header: {
     flexDirection: 'row',

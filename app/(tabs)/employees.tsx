@@ -27,6 +27,7 @@ import { AddEmployeeModal, EmployeeFormData } from '@/components/AddEmployeeModa
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
 import { employmentService } from '@/services/employment.service';
+import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
 import type {
   GroupedEmployees,
   TreeEmployee,
@@ -53,6 +54,7 @@ export default function EmployeesScreen() {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showTitleDropdown, setShowTitleDropdown] = useState(false);
   const { user } = useAuth();
+  const permissions = usePermissions(user?.modulePermissions);
 
   useEffect(() => {
     if (user?.organization_id) {
@@ -139,7 +141,12 @@ export default function EmployeesScreen() {
         <TouchableOpacity
           style={styles.treeEmployeeCard}
           activeOpacity={0.7}
-          onPress={() => router.push(`/employee/${employee.id}`)}
+          onPress={() => {
+            if (permissions.canRead(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) {
+              router.push(`/employee/${employee.id}`);
+            }
+          }}
+          disabled={!permissions.canRead(MODULE_IDS.EMPLOYEES) && !permissions.isAdmin()}
         >
           <View style={styles.treeCardContent}>
             <View style={styles.treeAvatar}>
@@ -201,6 +208,17 @@ export default function EmployeesScreen() {
     );
   }
 
+  if (!permissions.canRead(MODULE_IDS.EMPLOYEES) && !permissions.isAdmin()) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <UsersIcon size={64} color="#999" />
+          <Text style={styles.noAccessText}>Bu sayfaya erişim yetkiniz bulunmamaktadır</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {(showSortDropdown || showTitleDropdown) && (
@@ -220,16 +238,18 @@ export default function EmployeesScreen() {
         </View>
 
         <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={styles.addButton}
-            activeOpacity={0.7}
-            onPress={() => setAddEmployeeModalVisible(true)}
-          >
-            <UserPlus size={20} color="#7C3AED" />
-            <Text style={styles.addButtonText}>Yeni Çalışan Ekle</Text>
-          </TouchableOpacity>
+          {(permissions.canWrite(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) && (
+            <TouchableOpacity
+              style={styles.addButton}
+              activeOpacity={0.7}
+              onPress={() => setAddEmployeeModalVisible(true)}
+            >
+              <UserPlus size={20} color="#7C3AED" />
+              <Text style={styles.addButtonText}>Yeni Çalışan Ekle</Text>
+            </TouchableOpacity>
+          )}
 
-          <View style={styles.actionButtons}>
+          <View style={[styles.actionButtons, !(permissions.canWrite(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) && { marginLeft: 'auto' }]}>
             <TouchableOpacity
               onPress={() => setDrawerVisible(true)}
               style={styles.iconButton}
@@ -380,16 +400,18 @@ export default function EmployeesScreen() {
             </View>
           </View>
         ) : (
-          <View style={styles.treeHeaderRow}>
-            <TouchableOpacity
-              style={styles.addTreeButton}
-              activeOpacity={0.7}
-              onPress={() => setAddEmployeeModalVisible(true)}
-            >
-              <UserPlus size={18} color="#fff" />
-              <Text style={styles.addTreeButtonText}>Yeni Çalışan Ekle</Text>
-            </TouchableOpacity>
-          </View>
+          (permissions.canWrite(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) && (
+            <View style={styles.treeHeaderRow}>
+              <TouchableOpacity
+                style={styles.addTreeButton}
+                activeOpacity={0.7}
+                onPress={() => setAddEmployeeModalVisible(true)}
+              >
+                <UserPlus size={18} color="#fff" />
+                <Text style={styles.addTreeButtonText}>Yeni Çalışan Ekle</Text>
+              </TouchableOpacity>
+            </View>
+          )
         )}
       </View>
 
@@ -405,7 +427,12 @@ export default function EmployeesScreen() {
                   key={worker.id}
                   style={styles.employeeCard}
                   activeOpacity={0.7}
-                  onPress={() => router.push(`/employee/${worker.id}`)}
+                  onPress={() => {
+                    if (permissions.canRead(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) {
+                      router.push(`/employee/${worker.id}`);
+                    }
+                  }}
+                  disabled={!permissions.canRead(MODULE_IDS.EMPLOYEES) && !permissions.isAdmin()}
                 >
                   <View style={styles.avatar}>
                     {worker.profilePhoto && worker.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
@@ -454,12 +481,14 @@ export default function EmployeesScreen() {
       )}
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
-      <AddEmployeeModal
-        visible={addEmployeeModalVisible}
-        onClose={() => setAddEmployeeModalVisible(false)}
-        onSave={handleSaveEmployee}
-        organizationId={user?.organization_id || 2}
-      />
+      {(permissions.canWrite(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) && (
+        <AddEmployeeModal
+          visible={addEmployeeModalVisible}
+          onClose={() => setAddEmployeeModalVisible(false)}
+          onSave={handleSaveEmployee}
+          organizationId={user?.organization_id || 2}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -481,6 +510,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 16,
+    paddingHorizontal: 32,
+  },
+  noAccessText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    fontWeight: '500',
   },
   topSection: {
     backgroundColor: '#fff',

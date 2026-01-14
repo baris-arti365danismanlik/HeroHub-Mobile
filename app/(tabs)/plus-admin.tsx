@@ -20,10 +20,12 @@ import {
 } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
 
 export default function PlusAdminScreen() {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { user } = useAuth();
+  const permissions = usePermissions(user?.modulePermissions);
 
   const superAdminSections = [
     {
@@ -69,6 +71,18 @@ export default function PlusAdminScreen() {
       icon: <Network size={24} color="#7C3AED" />,
     },
   ];
+
+  if (!permissions.isAdmin()) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.noAccessContainer}>
+          <Crown size={64} color="#999" />
+          <Text style={styles.noAccessText}>Bu sayfaya erişim yetkiniz bulunmamaktadır</Text>
+          <Text style={styles.noAccessSubtext}>Sadece süper adminler bu sayfayı görüntüleyebilir</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -129,6 +143,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
+  },
+  noAccessContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 32,
+  },
+  noAccessText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  noAccessSubtext: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
   },
   header: {
     flexDirection: 'row',
