@@ -53,6 +53,7 @@ export const tokenStorage = {
       const data = await AsyncStorage.getItem(USER_DATA_KEY);
       return data ? JSON.parse(data) : null;
     } catch (error) {
+      console.log('Error reading user data:', error);
       return null;
     }
   },

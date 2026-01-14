@@ -10,16 +10,24 @@ export default function Index() {
   useEffect(() => {
     if (!isLoading) {
       const timer = setTimeout(() => {
-        if (isAuthenticated) {
-          router.replace('/(tabs)');
-        } else {
-          router.replace('/(auth)/login');
+        try {
+          if (isAuthenticated) {
+            router.replace('/(tabs)');
+          } else {
+            router.replace('/(auth)/login');
+          }
+        } catch (error) {
+          console.log('Navigation error:', error);
         }
       }, 100);
 
       return () => clearTimeout(timer);
     }
   }, [isLoading, isAuthenticated]);
+
+  if (!isLoading && !isAuthenticated) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>

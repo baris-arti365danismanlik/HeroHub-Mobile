@@ -1,3 +1,4 @@
+import 'react-native-url-polyfill/auto';
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -12,16 +13,20 @@ function RootNavigator() {
   useEffect(() => {
     if (isLoading) return;
 
-    const firstSegment = segments[0];
-    const inAuthGroup = firstSegment === '(auth)';
-    const isIndexRoute = !firstSegment || firstSegment === 'index';
+    const inAuthGroup = segments[0] === '(auth)';
+    const inTabsGroup = segments[0] === '(tabs)';
+    const inIndexRoute = segments.length === 0 || segments[0] === 'index';
 
-    if (!isAuthenticated && !inAuthGroup && !isIndexRoute) {
-      router.replace('/(auth)/login');
-    } else if (isAuthenticated && inAuthGroup) {
-      router.replace('/(tabs)');
+    if (!isAuthenticated && !inAuthGroup && !inIndexRoute) {
+      setTimeout(() => router.replace('/(auth)/login'), 50);
+    } else if (isAuthenticated && (inAuthGroup || inIndexRoute)) {
+      setTimeout(() => router.replace('/(tabs)'), 50);
     }
   }, [isAuthenticated, isLoading, segments]);
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -37,6 +42,26 @@ function RootNavigator() {
 
 export default function RootLayout() {
   useFrameworkReady();
+
+  useEffect(() => {
+    const errorHandler = (error: ErrorEvent) => {
+      console.log('Global error:', error);
+    };
+
+    const unhandledRejectionHandler = (event: PromiseRejectionEvent) => {
+      console.log('Unhandled rejection:', event.reason);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('error', errorHandler);
+      window.addEventListener('unhandledrejection', unhandledRejectionHandler);
+
+      return () => {
+        window.removeEventListener('error', errorHandler);
+        window.removeEventListener('unhandledrejection', unhandledRejectionHandler);
+      };
+    }
+  }, []);
 
   return (
     <AuthProvider>

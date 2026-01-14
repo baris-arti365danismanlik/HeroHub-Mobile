@@ -106,6 +106,14 @@ class HttpClient {
     try {
       const response = await makeRequest();
       return await this.handleResponse<T>(response);
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        throw new Error('İstek zaman aşımına uğradı');
+      }
+      if (error.message === 'Failed to fetch' || error.message === 'Network request failed') {
+        throw new Error('Bağlantı hatası. İnternet bağlantınızı kontrol edin.');
+      }
+      throw error;
     } finally {
       clearTimeout(timeoutId);
     }
