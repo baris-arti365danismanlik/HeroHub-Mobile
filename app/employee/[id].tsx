@@ -47,8 +47,8 @@ export default function EmployeeDetailScreen() {
   const [countries, setCountries] = useState<Country[]>([]);
 
   const permissions = usePermissions(user?.modulePermissions);
-  const canViewProfile = permissions.canRead(MODULE_IDS.PROFILE);
-  const canEditProfile = permissions.canWrite(MODULE_IDS.PROFILE);
+  const canViewProfile = permissions.isAdmin() || permissions.canRead(MODULE_IDS.PROFILE);
+  const canEditProfile = permissions.isAdmin() || permissions.canWrite(MODULE_IDS.PROFILE);
 
   useEffect(() => {
     loadEmployeeData();
@@ -147,7 +147,7 @@ export default function EmployeeDetailScreen() {
     );
   }
 
-  if (!canViewProfile) {
+  if (!canViewProfile && !loading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>

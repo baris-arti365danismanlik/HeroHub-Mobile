@@ -21,6 +21,7 @@ class AuthService {
           firstName: response.data.firstName,
           lastName: response.data.lastName,
           email: response.data.email,
+          role: response.data.role,
           isActive: true,
           createdAt: new Date().toISOString(),
           backend_user_id: response.data.id,
