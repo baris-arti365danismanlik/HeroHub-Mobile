@@ -10,18 +10,35 @@ import {
 import { ChevronDown, Check } from 'lucide-react-native';
 
 interface ProfileDropdownProps {
-  options: string[];
-  selectedOption: string;
+  title?: string;
+  options?: string[];
+  selectedOption?: string;
   onSelect: (option: string) => void;
 }
 
-export function ProfileDropdown({ options, selectedOption, onSelect }: ProfileDropdownProps) {
+export function ProfileDropdown({
+  title,
+  options = [],
+  selectedOption,
+  onSelect
+}: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelect = (option: string) => {
     onSelect(option);
     setIsOpen(false);
   };
+
+  const displayText = title || selectedOption || '';
+
+  if (!options || options.length === 0) {
+    return (
+      <View style={styles.dropdownButton}>
+        <Text style={styles.dropdownButtonText}>{displayText}</Text>
+        <ChevronDown size={20} color="#666" />
+      </View>
+    );
+  }
 
   return (
     <>
@@ -30,7 +47,7 @@ export function ProfileDropdown({ options, selectedOption, onSelect }: ProfileDr
         onPress={() => setIsOpen(true)}
         activeOpacity={0.7}
       >
-        <Text style={styles.dropdownButtonText}>{selectedOption}</Text>
+        <Text style={styles.dropdownButtonText}>{displayText}</Text>
         <ChevronDown size={20} color="#666" />
       </TouchableOpacity>
 
