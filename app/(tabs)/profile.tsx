@@ -229,6 +229,14 @@ export default function ProfileScreen() {
   const [maritalStatusDropdownOpen, setMaritalStatusDropdownOpen] = useState(false);
   const [bloodTypeDropdownOpen, setBloodTypeDropdownOpen] = useState(false);
   const [militaryStatusDropdownOpen, setMilitaryStatusDropdownOpen] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (sectionKey: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey]
+    }));
+  };
 
   const leaveTypes = ['Yıllık İzin', 'Doğum Günü İzni', 'Karne Günü İzni', 'Evlilik İzni', 'Ölüm İzni', 'Hastalık İzni'];
   const durations = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
@@ -1772,93 +1780,250 @@ export default function ProfileScreen() {
 
     return (
       <>
-        <Accordion
-          title="PROFİL BİLGİLERİ"
-          icon={<UserIcon size={18} color="#7C3AED" />}
-          isExpandedDefault={false}
-          onEdit={canEditProfile ? () => handleEdit('profile') : undefined}
-        >
-          <InfoRow label="Personel No" value={personalInformation?.personnelNumber || '-'} />
-          <InfoRow label="TCKN" value={personalInformation?.tckn || '-'} />
-          <InfoRow label="Adı Soyadı" value={personalInformation ? `${personalInformation.firstName} ${personalInformation.lastName}` : '-'} />
-          <InfoRow label="Doğum Yeri" value={personalInformation?.birthPlace || '-'} />
-          <InfoRow label="Doğum Tarihi" value={personalInformation?.birthdate ? formatDate(personalInformation.birthdate) : '-'} />
-          <InfoRow label="Cinsiyet" value={personalInformation?.gender !== undefined ? formatGender(personalInformation.gender) : '-'} />
-          <InfoRow label="Medeni Hal" value={personalInformation?.maritalStatus !== undefined ? formatMaritalStatus(personalInformation.maritalStatus) : '-'} isLast />
-        </Accordion>
-
-        <Accordion
-          title="İLETİŞİM BİLGİLERİ"
-          icon={<Phone size={18} color="#7C3AED" />}
-          isExpandedDefault={false}
-          onEdit={canEditProfile ? () => handleEdit('contact') : undefined}
-        >
-          <InfoRow label="Cep Telefonu" value={userContact?.phoneNumber ? formatPhone(userContact.phoneNumber) : '-'} />
-          <InfoRow label="Ev Telefonu" value={userContact?.homePhone ? formatPhone(userContact.homePhone) : '-'} />
-          <InfoRow label="İş Telefonu" value={userContact?.businessPhone ? formatPhone(userContact.businessPhone) : '-'} />
-          <InfoRow label="E-Posta" value={userContact?.email || '-'} />
-          <InfoRow label="İş E-Posta" value={userContact?.businessEmail || '-'} />
-          <InfoRow label="Diğer E-Posta" value={userContact?.otherEmail || '-'} isLast />
-        </Accordion>
-
-        <Accordion
-          title="ADRES BİLGİLERİ"
-          icon={<MapPin size={18} color="#7C3AED" />}
-          isExpandedDefault={false}
-          onEdit={canEditProfile ? () => handleEdit('address') : undefined}
-        >
-          <InfoRow label="Adres" value={userAddress?.address || '-'} />
-          <InfoRow label="İlçe" value={userAddress?.districtName || '-'} />
-          <InfoRow label="İl" value={userAddress?.cityName || '-'} />
-          <InfoRow label="Ülke" value={userAddress?.countryName || '-'} isLast />
-        </Accordion>
-
-        <Accordion
-          title="SAĞLIK BİLGİLERİ"
-          icon={<Heart size={18} color="#7C3AED" />}
-          isExpandedDefault={false}
-          onEdit={canEditProfile ? () => handleEdit('health') : undefined}
-        >
-          <InfoRow label="Kan Grubu" value={userHealth?.bloodType ? formatBloodType(userHealth.bloodType) : '-'} />
-          <InfoRow label="Boy (cm)" value={userHealth?.height && userHealth.height > 0 ? userHealth.height.toString() : '-'} />
-          <InfoRow label="Kilo (kg)" value={userHealth?.weight && userHealth.weight > 0 ? userHealth.weight.toString() : '-'} />
-          <InfoRow label="Alerjiler" value={userHealth?.allergies || '-'} />
-          <InfoRow label="Kullanılan İlaçlar" value={userHealth?.drugs || '-'} isLast />
-        </Accordion>
-
-        <Accordion
-          title="EHLİYET BİLGİLERİ"
-          icon={<CreditCard size={18} color="#7C3AED" />}
-          isExpandedDefault={false}
-          onEdit={canEditProfile ? () => handleEdit('driverLicense') : undefined}
-        >
-          {driverLicenses.length > 0 ? (
-            driverLicenses.map((license, index) => (
-              <View key={license.id}>
-                <InfoRow label="Ehliyet Tipi" value={license.licenseType || '-'} />
-                <InfoRow label="Ehliyet No" value={license.licenseNumber || '-'} />
-                <InfoRow label="Veriliş Tarihi" value={formatDate(license.issueDate)} />
-                <InfoRow label="Son Geçerlilik Tarihi" value={formatDate(license.expiryDate)} isLast={index === driverLicenses.length - 1} />
+        <View style={styles.profileInfoCard}>
+          <View style={styles.profileInfoImageContainer}>
+            {user.profilePictureUrl ? (
+              <Image
+                source={{ uri: user.profilePictureUrl }}
+                style={styles.profileInfoImage}
+              />
+            ) : (
+              <View style={styles.profileInfoImagePlaceholder}>
+                <UserIcon size={40} color="#7C3AED" />
               </View>
-            ))
-          ) : (
-            <InfoRow label="Ehliyet" value="Bilgi yok" isLast />
-          )}
-        </Accordion>
+            )}
+          </View>
+          <View style={styles.profileInfoDetails}>
+            <Text style={styles.profileInfoName}>
+              {user.firstName} {user.lastName}
+            </Text>
+            {profileDetails?.currentTitle && (
+              <View style={styles.profileInfoRow}>
+                <Briefcase size={14} color="#666" />
+                <Text style={styles.profileInfoText}>{profileDetails.currentTitle}</Text>
+              </View>
+            )}
+            <View style={styles.profileInfoRow}>
+              <Building2 size={14} color="#666" />
+              <Text style={styles.profileInfoText}>{profileDetails.organizationName}</Text>
+            </View>
+          </View>
+        </View>
 
-        <Accordion
-          title="ASKERLİK BİLGİLERİ"
-          icon={<Award size={18} color="#7C3AED" />}
-          isExpandedDefault={false}
-          onEdit={canEditProfile ? () => handleEdit('military') : undefined}
-        >
-          <InfoRow
-            label="Durum"
-            value={userMilitary?.militaryStatus === 0 ? 'Yapıldı' : userMilitary?.militaryStatus === 1 ? 'Ertelendi' : userMilitary?.militaryStatus === 2 ? 'Muaf' : 'Uygulanmaz'}
-          />
-          <InfoRow label="Erteleme Nedeni" value={userMilitary?.militaryPostpone || '-'} />
-          <InfoRow label="Not" value={userMilitary?.militaryNote || '-'} isLast />
-        </Accordion>
+        <View style={styles.profileSectionCard}>
+          <TouchableOpacity
+            style={styles.profileSectionHeader}
+            onPress={() => toggleSection('personal')}
+          >
+            <View style={styles.profileSectionLeft}>
+              <UserIcon size={18} color="#1a1a1a" />
+              <Text style={styles.profileSectionTitle}>KİŞİSEL BİLGİLER</Text>
+            </View>
+            <View style={styles.profileSectionRight}>
+              {canEditProfile && (
+                <TouchableOpacity onPress={() => handleEdit('profile')} style={styles.profileEditIcon}>
+                  <Pencil size={18} color="#666" />
+                </TouchableOpacity>
+              )}
+              <ChevronDown
+                size={20}
+                color="#666"
+                style={{
+                  transform: [{ rotate: expandedSections['personal'] ? '180deg' : '0deg' }]
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+          {expandedSections['personal'] && (
+            <View style={styles.profileSectionContent}>
+              <InfoRow label="Personel No" value={personalInformation?.personnelNumber || '-'} />
+              <InfoRow label="TCKN" value={personalInformation?.tckn || '-'} />
+              <InfoRow label="Adı Soyadı" value={personalInformation ? `${personalInformation.firstName} ${personalInformation.lastName}` : '-'} />
+              <InfoRow label="Doğum Yeri" value={personalInformation?.birthPlace || '-'} />
+              <InfoRow label="Doğum Tarihi" value={personalInformation?.birthdate ? formatDate(personalInformation.birthdate) : '-'} />
+              <InfoRow label="Cinsiyet" value={personalInformation?.gender !== undefined ? formatGender(personalInformation.gender) : '-'} />
+              <InfoRow label="Medeni Hal" value={personalInformation?.maritalStatus !== undefined ? formatMaritalStatus(personalInformation.maritalStatus) : '-'} isLast />
+            </View>
+          )}
+        </View>
+
+        <View style={styles.profileSectionCard}>
+          <TouchableOpacity
+            style={styles.profileSectionHeader}
+            onPress={() => toggleSection('contact')}
+          >
+            <View style={styles.profileSectionLeft}>
+              <Phone size={18} color="#1a1a1a" />
+              <Text style={styles.profileSectionTitle}>İLETİŞİM BİLGİLERİ</Text>
+            </View>
+            <View style={styles.profileSectionRight}>
+              {canEditProfile && (
+                <TouchableOpacity onPress={() => handleEdit('contact')} style={styles.profileEditIcon}>
+                  <Pencil size={18} color="#666" />
+                </TouchableOpacity>
+              )}
+              <ChevronDown
+                size={20}
+                color="#666"
+                style={{
+                  transform: [{ rotate: expandedSections['contact'] ? '180deg' : '0deg' }]
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+          {expandedSections['contact'] && (
+            <View style={styles.profileSectionContent}>
+              <InfoRow label="Cep Telefonu" value={userContact?.phoneNumber ? formatPhone(userContact.phoneNumber) : '-'} />
+              <InfoRow label="Ev Telefonu" value={userContact?.homePhone ? formatPhone(userContact.homePhone) : '-'} />
+              <InfoRow label="İş Telefonu" value={userContact?.businessPhone ? formatPhone(userContact.businessPhone) : '-'} />
+              <InfoRow label="E-Posta" value={userContact?.email || '-'} />
+              <InfoRow label="İş E-Posta" value={userContact?.businessEmail || '-'} />
+              <InfoRow label="Diğer E-Posta" value={userContact?.otherEmail || '-'} isLast />
+            </View>
+          )}
+        </View>
+
+        <View style={styles.profileSectionCard}>
+          <TouchableOpacity
+            style={styles.profileSectionHeader}
+            onPress={() => toggleSection('address')}
+          >
+            <View style={styles.profileSectionLeft}>
+              <MapPin size={18} color="#1a1a1a" />
+              <Text style={styles.profileSectionTitle}>ADRES BİLGİLERİ</Text>
+            </View>
+            <View style={styles.profileSectionRight}>
+              {canEditProfile && (
+                <TouchableOpacity onPress={() => handleEdit('address')} style={styles.profileEditIcon}>
+                  <Pencil size={18} color="#666" />
+                </TouchableOpacity>
+              )}
+              <ChevronDown
+                size={20}
+                color="#666"
+                style={{
+                  transform: [{ rotate: expandedSections['address'] ? '180deg' : '0deg' }]
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+          {expandedSections['address'] && (
+            <View style={styles.profileSectionContent}>
+              <InfoRow label="Adres" value={userAddress?.address || '-'} />
+              <InfoRow label="İlçe" value={userAddress?.districtName || '-'} />
+              <InfoRow label="İl" value={userAddress?.cityName || '-'} />
+              <InfoRow label="Ülke" value={userAddress?.countryName || '-'} isLast />
+            </View>
+          )}
+        </View>
+
+        <View style={styles.profileSectionCard}>
+          <TouchableOpacity
+            style={styles.profileSectionHeader}
+            onPress={() => toggleSection('health')}
+          >
+            <View style={styles.profileSectionLeft}>
+              <Heart size={18} color="#1a1a1a" />
+              <Text style={styles.profileSectionTitle}>SAĞLIK BİLGİLERİ</Text>
+            </View>
+            <View style={styles.profileSectionRight}>
+              {canEditProfile && (
+                <TouchableOpacity onPress={() => handleEdit('health')} style={styles.profileEditIcon}>
+                  <Pencil size={18} color="#666" />
+                </TouchableOpacity>
+              )}
+              <ChevronDown
+                size={20}
+                color="#666"
+                style={{
+                  transform: [{ rotate: expandedSections['health'] ? '180deg' : '0deg' }]
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+          {expandedSections['health'] && (
+            <View style={styles.profileSectionContent}>
+              <InfoRow label="Kan Grubu" value={userHealth?.bloodType ? formatBloodType(userHealth.bloodType) : '-'} />
+              <InfoRow label="Boy (cm)" value={userHealth?.height && userHealth.height > 0 ? userHealth.height.toString() : '-'} />
+              <InfoRow label="Kilo (kg)" value={userHealth?.weight && userHealth.weight > 0 ? userHealth.weight.toString() : '-'} />
+              <InfoRow label="Alerjiler" value={userHealth?.allergies || '-'} />
+              <InfoRow label="Kullanılan İlaçlar" value={userHealth?.drugs || '-'} isLast />
+            </View>
+          )}
+        </View>
+
+        <View style={styles.profileSectionCard}>
+          <TouchableOpacity
+            style={styles.profileSectionHeader}
+            onPress={() => toggleSection('driverLicense')}
+          >
+            <View style={styles.profileSectionLeft}>
+              <CreditCard size={18} color="#1a1a1a" />
+              <Text style={styles.profileSectionTitle}>EHLİYET BİLGİLERİ</Text>
+            </View>
+            <View style={styles.profileSectionRight}>
+              <ChevronDown
+                size={20}
+                color="#666"
+                style={{
+                  transform: [{ rotate: expandedSections['driverLicense'] ? '180deg' : '0deg' }]
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+          {expandedSections['driverLicense'] && (
+            <View style={styles.profileSectionContent}>
+              {driverLicenses.length > 0 ? (
+                driverLicenses.map((license, index) => (
+                  <View key={license.id}>
+                    <InfoRow label="Ehliyet Tipi" value={license.licenseType || '-'} />
+                    <InfoRow label="Ehliyet No" value={license.licenseNumber || '-'} />
+                    <InfoRow label="Veriliş Tarihi" value={formatDate(license.issueDate)} />
+                    <InfoRow label="Son Geçerlilik Tarihi" value={formatDate(license.expiryDate)} isLast={index === driverLicenses.length - 1} />
+                  </View>
+                ))
+              ) : (
+                <InfoRow label="Ehliyet" value="Bilgi yok" isLast />
+              )}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.profileSectionCard}>
+          <TouchableOpacity
+            style={styles.profileSectionHeader}
+            onPress={() => toggleSection('military')}
+          >
+            <View style={styles.profileSectionLeft}>
+              <Award size={18} color="#1a1a1a" />
+              <Text style={styles.profileSectionTitle}>ASKERLİK BİLGİLERİ</Text>
+            </View>
+            <View style={styles.profileSectionRight}>
+              {canEditProfile && (
+                <TouchableOpacity onPress={() => handleEdit('military')} style={styles.profileEditIcon}>
+                  <Pencil size={18} color="#666" />
+                </TouchableOpacity>
+              )}
+              <ChevronDown
+                size={20}
+                color="#666"
+                style={{
+                  transform: [{ rotate: expandedSections['military'] ? '180deg' : '0deg' }]
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+          {expandedSections['military'] && (
+            <View style={styles.profileSectionContent}>
+              <InfoRow
+                label="Durum"
+                value={userMilitary?.militaryStatus === 0 ? 'Yapıldı' : userMilitary?.militaryStatus === 1 ? 'Ertelendi' : userMilitary?.militaryStatus === 2 ? 'Muaf' : 'Uygulanmaz'}
+              />
+              <InfoRow label="Erteleme Nedeni" value={userMilitary?.militaryPostpone || '-'} />
+              <InfoRow label="Not" value={userMilitary?.militaryNote || '-'} isLast />
+            </View>
+          )}
+        </View>
 
         <Accordion
           title="AİLE BİLGİLERİ"
@@ -1921,6 +2086,28 @@ export default function ProfileScreen() {
         </Accordion>
 
         <Accordion
+          title="SERTİFİKALAR"
+          icon={<Award size={18} color="#7C3AED" />}
+          isExpandedDefault={false}
+        >
+          {profileDetails.certificates.length > 0 ? (
+            profileDetails.certificates.map((cert, index) => (
+              <View key={cert.id}>
+                <InfoRow label="Sertifika Adı" value={cert.name} />
+                <InfoRow label="Veren Kuruluş" value={cert.issuer} />
+                <InfoRow label="Veriliş Tarihi" value={formatDate(cert.issueDate)} />
+                {cert.expiryDate && (
+                  <InfoRow label="Geçerlilik Tarihi" value={formatDate(cert.expiryDate)} />
+                )}
+                <InfoRow label="" value="" isLast={index === profileDetails.certificates.length - 1} />
+              </View>
+            ))
+          ) : (
+            <InfoRow label="Sertifika" value="Bilgi yok" isLast />
+          )}
+        </Accordion>
+
+        <Accordion
           title="DİL BİLGİLERİ"
           icon={<Languages size={18} color="#7C3AED" />}
           isExpandedDefault={false}
@@ -1929,450 +2116,51 @@ export default function ProfileScreen() {
             profileDetails.userLanguages.map((lang, index) => (
               <View key={lang.id}>
                 <InfoRow label="Dil" value={lang.language} />
-                <InfoRow label="Seviye" value={lang.level?.toString() || '-'} isLast={index === profileDetails.userLanguages.length - 1} />
+                <InfoRow label="Seviye" value={lang.level === 0 ? 'Başlangıç' : lang.level === 1 ? 'Orta' : lang.level === 2 ? 'İleri' : 'Anadil'} isLast={index === profileDetails.userLanguages.length - 1} />
               </View>
             ))
           ) : (
-            <InfoRow label="Dil" value="Bilgi yok" isLast />
-          )}
-        </Accordion>
-
-        <Accordion
-          title="SERTİFİKALAR"
-          icon={<Award size={18} color="#7C3AED" />}
-          isExpandedDefault={false}
-        >
-          {profileDetails.certificates.length > 0 ? (
-            profileDetails.certificates.map((cert, index) => (
-              <WorkInfoCard
-                key={cert.id}
-                title={cert.name}
-                details={[
-                  { label: 'Veren Kurum', value: cert.issuer },
-                  { label: 'Veriliş Tarihi', value: formatDate(cert.issueDate) },
-                  { label: 'Geçerlilik Tarihi', value: cert.expiryDate ? formatDate(cert.expiryDate) : 'Süresiz' },
-                ]}
-              />
-            ))
-          ) : (
-            <InfoRow label="Sertifika" value="Bilgi yok" isLast />
+            <InfoRow label="Yabancı Dil" value="Bilgi yok" isLast />
           )}
         </Accordion>
 
         <Accordion
           title="PASAPORT BİLGİLERİ"
-          icon={<CreditCard size={18} color="#7C3AED" />}
+          icon={<FileText size={18} color="#7C3AED" />}
           isExpandedDefault={false}
         >
-          <InfoRow label="Pasaport Tipi" value={profileDetails.userPassport?.passportType?.toString() || '-'} />
-          <InfoRow label="Pasaport No" value={profileDetails.userPassport?.passportNumber || '-'} />
-          <InfoRow label="Geçerlilik Tarihi" value={profileDetails.userPassport?.passportValidityDate ? formatDate(profileDetails.userPassport.passportValidityDate) : '-'} isLast />
+          {profileDetails.userPassport && profileDetails.userPassport.passportNumber ? (
+            <>
+              <InfoRow label="Pasaport No" value={profileDetails.userPassport.passportNumber} />
+              <InfoRow label="Pasaport Tipi" value={profileDetails.userPassport.passportType === 0 ? 'Genel' : profileDetails.userPassport.passportType === 1 ? 'Hususi' : 'Hizmet'} />
+              <InfoRow label="Geçerlilik Tarihi" value={formatDate(profileDetails.userPassport.passportValidityDate)} isLast />
+            </>
+          ) : (
+            <InfoRow label="Pasaport" value="Bilgi yok" isLast />
+          )}
         </Accordion>
 
         <Accordion
           title="VİZE BİLGİLERİ"
-          icon={<FileText size={18} color="#7C3AED" />}
+          icon={<Globe size={18} color="#7C3AED" />}
           isExpandedDefault={false}
         >
           {profileDetails.userVisas.length > 0 ? (
             profileDetails.userVisas.map((visa, index) => (
-              <WorkInfoCard
-                key={visa.id}
-                title={`${visa.country} Vizesi`}
-                details={[
-                  { label: 'Vize Tipi', value: visa.visaType },
-                  { label: 'Veriliş Tarihi', value: formatDate(visa.issueDate) },
-                  { label: 'Geçerlilik Tarihi', value: formatDate(visa.expiryDate) },
-                ]}
-              />
+              <View key={visa.id}>
+                <InfoRow label="Ülke" value={visa.country} />
+                <InfoRow label="Vize Tipi" value={visa.visaType} />
+                <InfoRow label="Veriliş Tarihi" value={formatDate(visa.issueDate)} />
+                <InfoRow label="Bitiş Tarihi" value={formatDate(visa.expiryDate)} isLast={index === profileDetails.userVisas.length - 1} />
+              </View>
             ))
           ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>Henüz vize bilgisi eklenmemiş</Text>
-            </View>
-          )}
-          {canEditProfile && (
-            <TouchableOpacity
-              style={styles.visaRequestButton}
-              onPress={() => setVisaModalVisible(true)}
-            >
-              <Text style={styles.visaRequestButtonText}>Vize Başvuru Evrak Talebi</Text>
-            </TouchableOpacity>
+            <InfoRow label="Vize" value="Bilgi yok" isLast />
           )}
         </Accordion>
       </>
     );
   };
-
-  const formatTime = (dateString?: string) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}s ${mins}dk`;
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'normal':
-        return 'Normal';
-      case 'late':
-        return 'Geç Giriş';
-      case 'early_leave':
-        return 'Erken Çıkış';
-      case 'absent':
-        return 'İzinli';
-      default:
-        return status;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'normal':
-        return '#10B981';
-      case 'late':
-        return '#F59E0B';
-      case 'early_leave':
-        return '#EF4444';
-      case 'absent':
-        return '#9CA3AF';
-      default:
-        return '#6B7280';
-    }
-  };
-
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = (firstDay.getDay() + 6) % 7;
-
-    return { daysInMonth, startingDayOfWeek };
-  };
-
-  const handleDateToggle = (dateStr: string) => {
-    const newSelected = new Set(selectedDates);
-    if (newSelected.has(dateStr)) {
-      newSelected.delete(dateStr);
-    } else {
-      newSelected.add(dateStr);
-    }
-    setSelectedDates(newSelected);
-  };
-
-  const changeMonth = (direction: 'prev' | 'next') => {
-    const newMonth = new Date(calendarMonth);
-    if (direction === 'prev') {
-      newMonth.setMonth(newMonth.getMonth() - 1);
-    } else {
-      newMonth.setMonth(newMonth.getMonth() + 1);
-    }
-    setCalendarMonth(newMonth);
-  };
-
-  const renderCalendar = () => {
-    const { daysInMonth, startingDayOfWeek } = getDaysInMonth(calendarMonth);
-    const monthName = calendarMonth.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-    const formattedMonthName = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-    const days = [];
-    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(<View key={`empty-${i}`} style={styles.calendarDay} />);
-    }
-
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${calendarMonth.getFullYear()}-${String(calendarMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const isSelected = selectedDates.has(dateStr);
-      const dayOfWeek = (startingDayOfWeek + day - 1) % 7;
-      const isWeekend = dayOfWeek === 5 || dayOfWeek === 6;
-
-      days.push(
-        <TouchableOpacity
-          key={day}
-          style={[
-            styles.calendarDay,
-            isSelected && styles.calendarDaySelected,
-          ]}
-          onPress={() => handleDateToggle(dateStr)}
-        >
-          <Text
-            style={[
-              styles.calendarDayText,
-              isWeekend && styles.calendarDayWeekend,
-              isSelected && styles.calendarDayTextSelected,
-            ]}
-          >
-            {day}
-          </Text>
-        </TouchableOpacity>
-      );
-    }
-
-    return (
-      <View style={styles.calendarContainer}>
-        <View style={styles.calendarHeader}>
-          <TouchableOpacity onPress={() => changeMonth('prev')}>
-            <Text style={styles.calendarNavButton}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.calendarMonthTitle}>{formattedMonthName}</Text>
-          <TouchableOpacity onPress={() => changeMonth('next')}>
-            <Text style={styles.calendarNavButton}>→</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.calendarDayNames}>
-          {dayNames.map((name, index) => (
-            <Text
-              key={name}
-              style={[
-                styles.calendarDayName,
-                (index === 5 || index === 6) && styles.calendarDayNameWeekend,
-              ]}
-            >
-              {name}
-            </Text>
-          ))}
-        </View>
-
-        <View style={styles.calendarGrid}>{days}</View>
-      </View>
-    );
-  };
-
-  const renderPDKSSection = () => {
-    if (pdksLoading) {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#7C3AED" />
-        </View>
-      );
-    }
-
-    return (
-      <>
-        <View style={styles.pdksSection}>
-          <View style={styles.pdksSectionHeader}>
-            <AlignJustify size={20} color="#1a1a1a" />
-            <Text style={styles.pdksSectionTitle}>VARDİYA BİLGİSİ</Text>
-          </View>
-
-          <View style={styles.pdksInfoGrid}>
-            <View style={styles.pdksInfoRow}>
-              <Text style={styles.pdksInfoLabel}>Mevcut Vardiya</Text>
-              <Text style={styles.pdksInfoValue}>
-                {userShiftPlan?.shiftPlanName || 'Vardiya bilgisi yok'}
-              </Text>
-            </View>
-            <View style={styles.pdksInfoRow}>
-              <Text style={styles.pdksInfoLabel}>Mevcut Tip</Text>
-              <Text style={styles.pdksInfoValue}>
-                {userShiftPlan?.shiftType || '-'}
-              </Text>
-            </View>
-            <View style={styles.pdksInfoRow}>
-              <Text style={styles.pdksInfoLabel}>Çalışma Saatleri</Text>
-              <Text style={styles.pdksInfoValue}>
-                {userShiftPlan ? `${userShiftPlan.startTime} - ${userShiftPlan.endTime}` : '-'}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.pdksSection}>
-          <View style={styles.pdksSectionHeader}>
-            <Text style={styles.pdksSectionTitle}>VARDİYA GEÇMİŞİ</Text>
-          </View>
-
-          {userWorkLogs.length === 0 ? (
-            <Text style={styles.pdksEmptyText}>Vardiya geçmişi bulunamadı</Text>
-          ) : (
-            userWorkLogs.map((log, index) => (
-              <View key={log.id || index} style={styles.pdksHistoryCard}>
-                <View style={styles.pdksHistoryHeader}>
-                  <Text style={styles.pdksHistoryDate}>{formatDate(log.date)}</Text>
-                  <Text style={styles.pdksHistoryTime}>
-                    {log.totalWorkHours ? `${log.totalWorkHours} saat` : '-'}
-                  </Text>
-                </View>
-
-                <View style={styles.pdksHistoryDetails}>
-                  <View style={styles.pdksHistoryRow}>
-                    <Text style={styles.pdksHistoryLabel}>Giriş</Text>
-                    <Text style={styles.pdksHistoryValue}>
-                      {log.checkInTime || '-'}
-                    </Text>
-                  </View>
-                  <View style={styles.pdksHistoryRow}>
-                    <Text style={styles.pdksHistoryLabel}>Çıkış</Text>
-                    <Text style={styles.pdksHistoryValue}>
-                      {log.checkOutTime || '-'}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            ))
-          )}
-
-          <TouchableOpacity
-            style={styles.pdksViewAllButton}
-            onPress={() => setPdksTaskModalVisible(true)}
-          >
-            <Text style={styles.pdksViewAllButtonText}>Görev Tanımla</Text>
-          </TouchableOpacity>
-        </View>
-      </>
-    );
-  };
-
-  const renderOnboardingSection = () => {
-    if (!user?.backend_user_id) {
-      return (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>Kullanıcı bilgisi bulunamadı</Text>
-        </View>
-      );
-    }
-
-    return (
-      <View style={styles.sectionsContainer}>
-        <OnboardingDropdown
-          userId={user.backend_user_id}
-          organizationId={user.organization_id || 2}
-        />
-
-        <View style={styles.onboardingStepsContainer}>
-          {onboardingData.steps.map((step, index) => {
-            const userStep = onboardingData.userSteps.find((us) => us.step_id === step.id);
-            const isCompleted = userStep?.is_completed || false;
-
-            return (
-              <View key={step.id} style={styles.stepItem}>
-                <View style={styles.stepIndicator}>
-                  <View style={[styles.stepNumber, isCompleted && styles.stepNumberCompleted]}>
-                    <Text style={[styles.stepNumberText, isCompleted && styles.stepNumberTextCompleted]}>
-                      {index + 1}
-                    </Text>
-                  </View>
-                  {index < onboardingData.steps.length - 1 && <View style={styles.stepLine} />}
-                </View>
-                <Text style={[styles.stepTitle, isCompleted && styles.stepTitleCompleted]}>
-                  {step.title}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-
-        <Accordion
-          title="İŞE BAŞLAMA GÖREVLERİ"
-          icon={<AlignJustify size={18} color="#7C3AED" />}
-          isExpandedDefault={false}
-        >
-          {onboardingData.tasks.map((task) => {
-            const userTask = onboardingData.userTasks.find((ut) => ut.task_id === task.id);
-            const isCompleted = userTask?.is_completed || false;
-
-            return (
-              <View key={task.id} style={styles.taskCard}>
-                <View style={styles.taskHeader}>
-                  <Text style={styles.taskCategory}>{task.title}</Text>
-                  {isCompleted && (
-                    <View style={styles.taskCompletedBadge}>
-                      <Text style={styles.taskCompletedBadgeText}>Tamamlandı</Text>
-                    </View>
-                  )}
-                </View>
-                {task.description && <Text style={styles.taskDescription}>{task.description}</Text>}
-                <View style={styles.taskInfo}>
-                  <View style={styles.taskInfoRow}>
-                    <Text style={styles.taskInfoLabel}>İlgili</Text>
-                    <Text style={styles.taskInfoValue}>{task.assigned_to || '-'}</Text>
-                  </View>
-                  <View style={styles.taskInfoRow}>
-                    <Text style={styles.taskInfoLabel}>Son Tarih</Text>
-                    <Text style={styles.taskInfoValueDate}>
-                      {task.due_date ? formatDate(task.due_date) : '-'}
-                    </Text>
-                  </View>
-                </View>
-                {!isCompleted && userTask && (
-                  <TouchableOpacity
-                    style={styles.completeTaskButton}
-                    onPress={() => handleCompleteTask(userTask.id)}
-                  >
-                    <Text style={styles.completeTaskButtonText}>Görevi Tamamla</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            );
-          })}
-        </Accordion>
-
-        <Accordion
-          title="SENİ TANIYALIM"
-          icon={<UserIcon size={18} color="#7C3AED" />}
-          isExpandedDefault={false}
-        >
-          <View style={styles.questionsContainer}>
-            <Text style={styles.questionsSubtitle}>Seni Tanıyalım Soruları</Text>
-            {onboardingData.questions.map((question) => {
-              const answer = answerInputs[question.id] || '';
-              const userAnswer = onboardingData.userAnswers.find((ua) => ua.question_id === question.id);
-              const isSaved = !!userAnswer?.answer;
-
-              return (
-                <View key={question.id} style={styles.questionCard}>
-                  <View style={styles.questionHeader}>
-                    {isSaved && (
-                      <View style={styles.questionCheckbox}>
-                        <Check size={16} color="#7C3AED" />
-                      </View>
-                    )}
-                    <Text style={styles.questionLabel}>
-                      {question.is_required && <Text style={styles.requiredStar}>* </Text>}
-                      Zorunlu Soru
-                    </Text>
-                  </View>
-                  <Text style={styles.questionText}>{question.question}</Text>
-                  <TextInput
-                    style={styles.questionInput}
-                    placeholder="Cevabınızı yazın..."
-                    placeholderTextColor="#999"
-                    value={answer}
-                    onChangeText={(text) => setAnswerInputs((prev) => ({ ...prev, [question.id]: text }))}
-                    multiline
-                  />
-                  <View style={styles.questionActions}>
-                    <TouchableOpacity
-                      style={styles.saveAnswerButton}
-                      onPress={() => handleSaveAnswer(question.id, answer)}
-                    >
-                      <Text style={styles.saveAnswerButtonText}>Sil</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              );
-            })}
-            <TouchableOpacity style={styles.addQuestionButton}>
-              <Text style={styles.addQuestionButtonText}>Soru Ekle</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.submitAnswersButton}>
-              <Text style={styles.submitAnswersButtonText}>Seni Tanıyalım E-postası Gönder</Text>
-            </TouchableOpacity>
-          </View>
-        </Accordion>
-      </View>
-    );
-  };
-
   const renderFilesSection = () => {
     const files = [
       { id: '1', name: 'Özlük Dosyaları', type: 'folder', count: 'Boş Klasör', icon: 'folder-blue' },
@@ -5836,5 +5624,89 @@ const styles = StyleSheet.create({
   fileListItemMeta: {
     fontSize: 12,
     color: '#6B7280',
+  },
+  profileInfoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  profileInfoImageContainer: {
+    marginRight: 12,
+  },
+  profileInfoImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+  },
+  profileInfoImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileInfoDetails: {
+    flex: 1,
+  },
+  profileInfoName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 8,
+  },
+  profileInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  profileInfoText: {
+    fontSize: 13,
+    color: '#666',
+  },
+  profileSectionCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  profileSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  profileSectionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  profileSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  profileSectionRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  profileEditIcon: {
+    padding: 4,
+  },
+  profileSectionContent: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
   },
 });
