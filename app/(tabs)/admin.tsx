@@ -65,7 +65,7 @@ export default function AdminScreen() {
     },
   ];
 
-  if (!permissions.canRead(MODULE_IDS.ADMIN) && !permissions.isAdmin()) {
+  if (!permissions.canRead(MODULE_IDS.ADMIN)) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.noAccessContainer}>

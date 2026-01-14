@@ -142,11 +142,11 @@ export default function EmployeesScreen() {
           style={styles.treeEmployeeCard}
           activeOpacity={0.7}
           onPress={() => {
-            if (permissions.canRead(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) {
+            if (permissions.canRead(MODULE_IDS.EMPLOYEES)) {
               router.push(`/employee/${employee.id}`);
             }
           }}
-          disabled={!permissions.canRead(MODULE_IDS.EMPLOYEES) && !permissions.isAdmin()}
+          disabled={!permissions.canRead(MODULE_IDS.EMPLOYEES)}
         >
           <View style={styles.treeCardContent}>
             <View style={styles.treeAvatar}>
@@ -208,7 +208,7 @@ export default function EmployeesScreen() {
     );
   }
 
-  if (!permissions.canRead(MODULE_IDS.EMPLOYEES) && !permissions.isAdmin()) {
+  if (!permissions.canRead(MODULE_IDS.EMPLOYEES)) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
@@ -238,7 +238,7 @@ export default function EmployeesScreen() {
         </View>
 
         <View style={styles.actionRow}>
-          {(permissions.canWrite(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) && (
+          {permissions.canWrite(MODULE_IDS.EMPLOYEES) && (
             <TouchableOpacity
               style={styles.addButton}
               activeOpacity={0.7}
@@ -249,7 +249,8 @@ export default function EmployeesScreen() {
             </TouchableOpacity>
           )}
 
-          <View style={[styles.actionButtons, !(permissions.canWrite(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) && { marginLeft: 'auto' }]}>
+          <View style={[styles.actionButtons, !permissions.canWrite(MODULE_IDS.EMPLOYEES) && { marginLeft: 'auto' }]}>
+
             <TouchableOpacity
               onPress={() => setDrawerVisible(true)}
               style={styles.iconButton}
@@ -400,7 +401,7 @@ export default function EmployeesScreen() {
             </View>
           </View>
         ) : (
-          (permissions.canWrite(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) && (
+          permissions.canWrite(MODULE_IDS.EMPLOYEES) && (
             <View style={styles.treeHeaderRow}>
               <TouchableOpacity
                 style={styles.addTreeButton}
@@ -428,11 +429,11 @@ export default function EmployeesScreen() {
                   style={styles.employeeCard}
                   activeOpacity={0.7}
                   onPress={() => {
-                    if (permissions.canRead(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) {
+                    if (permissions.canRead(MODULE_IDS.EMPLOYEES)) {
                       router.push(`/employee/${worker.id}`);
                     }
                   }}
-                  disabled={!permissions.canRead(MODULE_IDS.EMPLOYEES) && !permissions.isAdmin()}
+                  disabled={!permissions.canRead(MODULE_IDS.EMPLOYEES)}
                 >
                   <View style={styles.avatar}>
                     {worker.profilePhoto && worker.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
@@ -481,7 +482,7 @@ export default function EmployeesScreen() {
       )}
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
-      {(permissions.canWrite(MODULE_IDS.EMPLOYEES) || permissions.isAdmin()) && (
+      {permissions.canWrite(MODULE_IDS.EMPLOYEES) && (
         <AddEmployeeModal
           visible={addEmployeeModalVisible}
           onClose={() => setAddEmployeeModalVisible(false)}

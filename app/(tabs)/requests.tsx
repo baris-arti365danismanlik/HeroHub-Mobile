@@ -89,7 +89,7 @@ export default function RequestsScreen() {
     );
   }
 
-  if (!permissions.canRead(MODULE_IDS.LEAVE_REQUESTS) && !permissions.isAdmin()) {
+  if (!permissions.canRead(MODULE_IDS.LEAVE_REQUESTS)) {
     return (
       <View style={styles.container}>
         <View style={styles.noAccessContainer}>
@@ -111,12 +111,11 @@ export default function RequestsScreen() {
             <Menu size={24} color="#1a1a1a" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Taleplerim</Text>
-          {(permissions.canWrite(MODULE_IDS.LEAVE_REQUESTS) || permissions.isAdmin()) && (
+          {permissions.canWrite(MODULE_IDS.LEAVE_REQUESTS) ? (
             <TouchableOpacity style={styles.addButton} onPress={() => setLeaveModalVisible(true)}>
               <Plus size={24} color="#7C3AED" />
             </TouchableOpacity>
-          )}
-          {!(permissions.canWrite(MODULE_IDS.LEAVE_REQUESTS) || permissions.isAdmin()) && (
+          ) : (
             <View style={{ width: 40 }} />
           )}
         </View>
