@@ -45,7 +45,7 @@ export default function EmployeeDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [employee, setEmployee] = useState<UserProfileDetails | null>(null);
 
-  const permissions = usePermissions(user?.modulePermissions);
+  const permissions = usePermissions(employee?.modulePermissions);
   const canViewProfile = permissions.canRead(MODULE_IDS.PROFILE);
   const canEditProfile = permissions.canWrite(MODULE_IDS.PROFILE);
 
