@@ -15,36 +15,32 @@ export const MODULE_IDS = {
 export function usePermissions(modulePermissions?: ModulePermission[]) {
   const { user } = useAuth();
 
-  const isAdmin = (): boolean => {
-    return user?.role === '365 Admin' || user?.role === 'SuperAdmin';
-  };
-
   const getPermission = (moduleId: number): ModulePermission | undefined => {
     return modulePermissions?.find(mp => mp.moduleId === moduleId);
   };
 
   const canRead = (moduleId: number): boolean => {
-    if (isAdmin()) return true;
     const permission = getPermission(moduleId);
     return permission?.canRead ?? false;
   };
 
   const canWrite = (moduleId: number): boolean => {
-    if (isAdmin()) return true;
     const permission = getPermission(moduleId);
     return permission?.canWrite ?? false;
   };
 
   const canDelete = (moduleId: number): boolean => {
-    if (isAdmin()) return true;
     const permission = getPermission(moduleId);
     return permission?.canDelete ?? false;
   };
 
   const hasAnyPermission = (moduleId: number): boolean => {
-    if (isAdmin()) return true;
     const permission = getPermission(moduleId);
     return (permission?.canRead || permission?.canWrite || permission?.canDelete) ?? false;
+  };
+
+  const isAdmin = (): boolean => {
+    return user?.role === '365 Admin' || user?.role === 'SuperAdmin';
   };
 
   return {
