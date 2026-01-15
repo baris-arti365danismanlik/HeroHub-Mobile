@@ -2339,7 +2339,9 @@ export default function ProfileScreen() {
                     </View>
                     {question.isRequired && (
                       <View style={styles.questionRequiredRow}>
-                        <Check size={16} color="#7C3AED" />
+                        <View style={styles.questionCheckbox}>
+                          <Check size={12} color="#fff" strokeWidth={3} />
+                        </View>
                         <Text style={styles.questionRequiredText}>Zorunlu Soru</Text>
                       </View>
                     )}
@@ -6252,10 +6254,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginTop: 4,
+  },
+  questionCheckbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    backgroundColor: '#7C3AED',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   questionRequiredText: {
     fontSize: 12,
-    color: '#7C3AED',
+    color: '#1a1a1a',
+    fontWeight: '400',
   },
   sendIntroEmailButton: {
     backgroundColor: '#7C3AED',
