@@ -2161,6 +2161,23 @@ export default function ProfileScreen() {
       </>
     );
   };
+
+  const renderOnboardingSection = () => {
+    return (
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyText}>İşe başlama bilgileri yükleniyor...</Text>
+      </View>
+    );
+  };
+
+  const renderPDKSSection = () => {
+    return (
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyText}>PDKS bilgileri yükleniyor...</Text>
+      </View>
+    );
+  };
+
   const renderFilesSection = () => {
     const files = [
       { id: '1', name: 'Özlük Dosyaları', type: 'folder', count: 'Boş Klasör', icon: 'folder-blue' },
