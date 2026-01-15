@@ -1441,9 +1441,9 @@ export default function ProfileScreen() {
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color="#7C3AED" />
             </View>
-          ) : userSalary ? (
+          ) : userSalary && userSalary.salary ? (
             <WorkInfoCard
-              title={`${userSalary.salary.toLocaleString('tr-TR')} ${userSalary.currency}`}
+              title={`${userSalary.salary.toLocaleString('tr-TR')} ${userSalary.currency || 'TL'}`}
               details={[
                 { label: 'Geçerlilik Tarihi', value: formatDate(userSalary.effectiveDate) },
               ]}
