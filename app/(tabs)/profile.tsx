@@ -141,6 +141,11 @@ export default function ProfileScreen() {
   });
   const [onboardingLoading, setOnboardingLoading] = useState(false);
   const [answerInputs, setAnswerInputs] = useState<Record<string, string>>({});
+  const [onboardingProcess, setOnboardingProcess] = useState<any>(null);
+  const [onboardingTasks, setOnboardingTasks] = useState<any[]>([]);
+  const [onboardingQuestions, setOnboardingQuestions] = useState<any[]>([]);
+  const [onboardingTasksExpanded, setOnboardingTasksExpanded] = useState(true);
+  const [onboardingQuestionsExpanded, setOnboardingQuestionsExpanded] = useState(true);
   const [welcomePackageModalVisible, setWelcomePackageModalVisible] = useState(false);
   const [userWorkLogs, setUserWorkLogs] = useState<any[]>([]);
   const [userShiftPlan, setUserShiftPlan] = useState<any>(null);
@@ -632,8 +637,6 @@ export default function ProfileScreen() {
       loadAssets();
       loadLeaveRequests();
       loadUnreadCount();
-      loadOnboardingData();
-      loadPDKSData();
       loadAssetCategories();
     }
   }, [user?.id, selectedMonth, selectedYear]);
@@ -656,6 +659,12 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (selectedSection === 'PDKS' && user?.backend_user_id) {
       loadPDKSData();
+    }
+  }, [selectedSection, user?.backend_user_id]);
+
+  useEffect(() => {
+    if (selectedSection === 'İşe Başlama' && user?.backend_user_id) {
+      loadOnboardingData();
     }
   }, [selectedSection, user?.backend_user_id]);
 
@@ -791,62 +800,20 @@ export default function ProfileScreen() {
   };
 
   const loadOnboardingData = async () => {
-    if (!user?.id) return;
+    if (!user?.backend_user_id) return;
 
     try {
       setOnboardingLoading(true);
 
-      const [steps, tasks, questions] = await Promise.all([
-        onboardingService.getSteps(),
-        onboardingService.getTasks(),
-        onboardingService.getQuestions(),
+      const [process, tasks, questions] = await Promise.all([
+        onboardingService.getUserOnboardingProcess(Number(user.backend_user_id)),
+        onboardingService.listUserOnboardingTasks(Number(user.backend_user_id)),
+        onboardingService.getUserOnboardingQuestions(Number(user.backend_user_id)),
       ]);
 
-      let userOnboarding = await onboardingService.getUserOnboarding(user.id);
-
-      if (!userOnboarding) {
-        userOnboarding = await onboardingService.createUserOnboarding(user.id);
-      }
-
-      const [userSteps, userTasks, userAnswers] = await Promise.all([
-        onboardingService.getUserSteps(userOnboarding.id),
-        onboardingService.getUserTasks(userOnboarding.id),
-        onboardingService.getUserAnswers(userOnboarding.id),
-      ]);
-
-      if (userSteps.length === 0) {
-        await onboardingService.initializeUserSteps(userOnboarding.id, steps);
-      }
-
-      if (userTasks.length === 0) {
-        await onboardingService.initializeUserTasks(userOnboarding.id, tasks);
-      }
-
-      const refreshedUserSteps = userSteps.length === 0
-        ? await onboardingService.getUserSteps(userOnboarding.id)
-        : userSteps;
-
-      const refreshedUserTasks = userTasks.length === 0
-        ? await onboardingService.getUserTasks(userOnboarding.id)
-        : userTasks;
-
-      const answersMap: Record<string, string> = {};
-      userAnswers.forEach((answer) => {
-        if (answer.answer) {
-          answersMap[answer.question_id] = answer.answer;
-        }
-      });
-      setAnswerInputs(answersMap);
-
-      setOnboardingData({
-        userOnboarding,
-        steps,
-        tasks,
-        questions,
-        userSteps: refreshedUserSteps,
-        userTasks: refreshedUserTasks,
-        userAnswers,
-      });
+      setOnboardingProcess(process);
+      setOnboardingTasks(tasks);
+      setOnboardingQuestions(questions);
     } catch (error) {
     } finally {
       setOnboardingLoading(false);
@@ -2163,10 +2130,214 @@ export default function ProfileScreen() {
   };
 
   const renderOnboardingSection = () => {
+    if (onboardingLoading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#7C3AED" />
+          <Text style={styles.emptyText}>İşe başlama bilgileri yükleniyor...</Text>
+        </View>
+      );
+    }
+
+    const hasProcess = onboardingProcess !== null;
+    const hasTasks = onboardingTasks && onboardingTasks.length > 0;
+    const hasQuestions = onboardingQuestions && onboardingQuestions.length > 0;
+
+    if (!hasProcess && !hasTasks && !hasQuestions) {
+      return (
+        <View style={styles.emptyState}>
+          <Briefcase size={48} color="#9CA3AF" />
+          <Text style={styles.emptyText}>İşe başlama bilgileri yükleniyor...</Text>
+          <TouchableOpacity
+            style={styles.logoutButton}
+            onPress={async () => {
+              await logout();
+              router.replace('/login');
+            }}
+          >
+            <LogOut size={18} color="#DC2626" />
+            <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    const onboardingSteps = [
+      { id: 1, label: 'Hoşgeldin Paketi Gönderildi', completed: onboardingProcess?.welcomePackageSent },
+      { id: 2, label: 'Hoşgeldin Paketi Görüntülendi', completed: onboardingProcess?.welcomePackageViewed },
+      { id: 3, label: 'Yeni Çalışan Bilgileri Dolduruldu', completed: onboardingProcess?.employeeInfoFilled },
+      { id: 4, label: 'Tanışma Soruları Cevaplandı', completed: onboardingProcess?.introQuestionsAnswered },
+      { id: 5, label: 'İşe Başlama Görevleri Tamamlandı', completed: onboardingProcess?.tasksCompleted },
+      { id: 6, label: 'Hoşgeldin Görevleri Tamamlandı', completed: false },
+    ];
+
+    const groupTasksByCategory = () => {
+      const grouped: Record<string, any[]> = {};
+      onboardingTasks.forEach((task) => {
+        const category = task.category || 'Genel';
+        if (!grouped[category]) {
+          grouped[category] = [];
+        }
+        grouped[category].push(task);
+      });
+      return grouped;
+    };
+
+    const groupedTasks = hasTasks ? groupTasksByCategory() : {};
+
+    const isOverdue = (dueDate: string) => {
+      const today = new Date();
+      const due = new Date(dueDate);
+      return due < today;
+    };
+
     return (
-      <View style={styles.emptyState}>
-        <Text style={styles.emptyText}>İşe başlama bilgileri yükleniyor...</Text>
-      </View>
+      <ScrollView style={styles.onboardingContainer}>
+        <View style={styles.onboardingHeader}>
+          <Text style={styles.onboardingSectionTitle}>İŞE BAŞLAMA (ONBOARDING)</Text>
+          <TouchableOpacity
+            style={styles.welcomePackageButton}
+            onPress={() => setWelcomePackageModalVisible(true)}
+          >
+            <Text style={styles.welcomePackageButtonText}>Hoşgeldin Paketi Gönder</Text>
+          </TouchableOpacity>
+        </View>
+
+        {hasProcess && (
+          <View style={styles.onboardingStepsContainer}>
+            {onboardingSteps.map((step, index) => (
+              <View key={step.id} style={styles.onboardingStepRow}>
+                <View style={[
+                  styles.onboardingStepNumber,
+                  step.completed && styles.onboardingStepNumberCompleted
+                ]}>
+                  <Text style={[
+                    styles.onboardingStepNumberText,
+                    step.completed && styles.onboardingStepNumberTextCompleted
+                  ]}>
+                    {step.id}
+                  </Text>
+                </View>
+                <Text style={[
+                  styles.onboardingStepLabel,
+                  step.completed && styles.onboardingStepLabelCompleted
+                ]}>
+                  {step.label}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {hasTasks && (
+          <View style={styles.onboardingSection}>
+            <TouchableOpacity
+              style={styles.onboardingSectionHeader}
+              onPress={() => setOnboardingTasksExpanded(!onboardingTasksExpanded)}
+            >
+              <View style={styles.onboardingSectionHeaderLeft}>
+                <AlignJustify size={18} color="#1a1a1a" />
+                <Text style={styles.onboardingSectionHeaderText}>İŞE BAŞLAMA GÖREVLERİ</Text>
+              </View>
+              <ChevronDown
+                size={20}
+                color="#1a1a1a"
+                style={{
+                  transform: [{ rotate: onboardingTasksExpanded ? '180deg' : '0deg' }]
+                }}
+              />
+            </TouchableOpacity>
+
+            {onboardingTasksExpanded && (
+              <View style={styles.onboardingTasksList}>
+                {Object.entries(groupedTasks).map(([category, tasks]) => (
+                  <View key={category} style={styles.taskCategory}>
+                    <Text style={styles.taskCategoryTitle}>{category}</Text>
+                    {tasks.map((task: any) => (
+                      <View key={task.id} style={styles.taskItem}>
+                        <Text style={styles.taskTitle}>{task.title}</Text>
+                        {task.assignedToName && (
+                          <View style={styles.taskInfoRow}>
+                            <Text style={styles.taskInfoLabel}>İlgili</Text>
+                            <Text style={styles.taskInfoValue}>{task.assignedToName}</Text>
+                          </View>
+                        )}
+                        <View style={styles.taskInfoRow}>
+                          <Text style={styles.taskInfoLabel}>Son Tarih</Text>
+                          <Text style={[
+                            styles.taskInfoValue,
+                            !task.isCompleted && isOverdue(task.dueDate) && styles.taskInfoValueOverdue
+                          ]}>
+                            {formatDate(task.dueDate)}
+                          </Text>
+                        </View>
+                        {task.isCompleted ? (
+                          <View style={styles.taskCompletedBadge}>
+                            <Text style={styles.taskCompletedText}>Tamamlandı</Text>
+                          </View>
+                        ) : (
+                          <TouchableOpacity style={styles.taskCompleteButton}>
+                            <Text style={styles.taskCompleteButtonText}>Görevi Tamamla</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    ))}
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {hasQuestions && (
+          <View style={styles.onboardingSection}>
+            <TouchableOpacity
+              style={styles.onboardingSectionHeader}
+              onPress={() => setOnboardingQuestionsExpanded(!onboardingQuestionsExpanded)}
+            >
+              <View style={styles.onboardingSectionHeaderLeft}>
+                <Users size={18} color="#1a1a1a" />
+                <Text style={styles.onboardingSectionHeaderText}>SENİ TANIYALIM</Text>
+              </View>
+              <ChevronDown
+                size={20}
+                color="#1a1a1a"
+                style={{
+                  transform: [{ rotate: onboardingQuestionsExpanded ? '180deg' : '0deg' }]
+                }}
+              />
+            </TouchableOpacity>
+
+            {onboardingQuestionsExpanded && (
+              <View style={styles.onboardingQuestionsList}>
+                <Text style={styles.questionsSubtitle}>Seni Tanıyalım Soruları</Text>
+                {onboardingQuestions.map((question: any) => (
+                  <View key={question.id} style={styles.questionItem}>
+                    <View style={styles.questionHeader}>
+                      <Text style={styles.questionText}>{question.question}</Text>
+                      <TouchableOpacity style={styles.questionDeleteButton}>
+                        <Text style={styles.questionDeleteText}>Sil</Text>
+                      </TouchableOpacity>
+                    </View>
+                    {question.isRequired && (
+                      <View style={styles.questionRequiredRow}>
+                        <Check size={16} color="#7C3AED" />
+                        <Text style={styles.questionRequiredText}>Zorunlu Soru</Text>
+                      </View>
+                    )}
+                  </View>
+                ))}
+                <TouchableOpacity style={styles.addQuestionButton}>
+                  <Text style={styles.addQuestionButtonText}>Soru Ekle</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.sendIntroEmailButton}>
+                  <Text style={styles.sendIntroEmailButtonText}>Seni Tanıyalım E-postası Gönder</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
+      </ScrollView>
     );
   };
 
@@ -5805,5 +5976,234 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
+  },
+  onboardingContainer: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  onboardingHeader: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  welcomePackageButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  welcomePackageButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  onboardingStepsContainer: {
+    backgroundColor: '#fff',
+    padding: 16,
+    marginTop: 12,
+  },
+  onboardingStepRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  onboardingStepNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  onboardingStepNumberCompleted: {
+    backgroundColor: '#7C3AED',
+  },
+  onboardingStepNumberText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  onboardingStepNumberTextCompleted: {
+    color: '#fff',
+  },
+  onboardingStepLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    flex: 1,
+  },
+  onboardingStepLabelCompleted: {
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  onboardingSection: {
+    backgroundColor: '#fff',
+    marginTop: 12,
+    paddingVertical: 8,
+  },
+  onboardingSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  onboardingSectionHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  onboardingSectionHeaderText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  onboardingTasksList: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  taskCategory: {
+    marginBottom: 16,
+  },
+  taskCategoryTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#9CA3AF',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  taskItem: {
+    backgroundColor: '#F9FAFB',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  taskTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#7C3AED',
+    marginBottom: 8,
+  },
+  taskInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  taskInfoLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  taskInfoValue: {
+    fontSize: 13,
+    color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  taskInfoValueOverdue: {
+    color: '#DC2626',
+  },
+  taskCompletedBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#D1FAE5',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  taskCompletedText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#065F46',
+  },
+  taskCompleteButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  taskCompleteButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#7C3AED',
+  },
+  onboardingQuestionsList: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  questionsSubtitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#9CA3AF',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+  },
+  questionItem: {
+    backgroundColor: '#F9FAFB',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  questionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  questionText: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    flex: 1,
+    marginRight: 12,
+  },
+  questionDeleteButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  questionDeleteText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#DC2626',
+  },
+  questionRequiredRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  questionRequiredText: {
+    fontSize: 12,
+    color: '#7C3AED',
+  },
+  sendIntroEmailButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  sendIntroEmailButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+  },
+  logoutButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#DC2626',
   },
 });

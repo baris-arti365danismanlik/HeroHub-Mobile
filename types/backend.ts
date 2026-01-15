@@ -434,6 +434,9 @@ export interface UserOnboardingTaskItem {
   dueDate: string;
   isCompleted: boolean;
   completedAt?: string;
+  category?: string;
+  assignedTo?: number;
+  assignedToName?: string;
 }
 
 export interface OnboardingProcess {
