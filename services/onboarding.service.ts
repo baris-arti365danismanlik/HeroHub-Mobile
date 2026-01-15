@@ -1,4 +1,5 @@
 import { apiClient } from './api.client';
+import { supabase } from './supabase.client';
 import {
   WelcomingPackageDefaultValues,
   OnboardingQuestionItem,
@@ -26,113 +27,217 @@ export const onboardingService = {
     }
   },
 
-  async getUserOnboardingQuestions(userId: number): Promise<OnboardingQuestionItem[]> {
+  async getUserOnboardingQuestions(backendUserId: number): Promise<OnboardingQuestionItem[]> {
     try {
-      const response = await apiClient.get<OnboardingQuestionItem[]>(
-        `/OnboardingQuestion/get-user-onboarding-questions?UserId=${userId}`
-      );
+      const { data: userOnboarding } = await supabase
+        .from('user_onboarding')
+        .select('id')
+        .eq('backend_user_id', backendUserId)
+        .maybeSingle();
 
-      if (response.succeeded && response.data) {
-        return response.data;
+      if (!userOnboarding) {
+        return [];
       }
 
-      return [];
+      const { data: answers } = await supabase
+        .from('user_onboarding_answers')
+        .select(`
+          *,
+          question:onboarding_questions(*)
+        `)
+        .eq('user_onboarding_id', userOnboarding.id);
+
+      if (!answers) {
+        return [];
+      }
+
+      return answers.map((answer: any) => ({
+        id: answer.question.id,
+        question: answer.question.question,
+        answer: answer.answer || '',
+        isRequired: answer.question.is_required,
+        order: answer.question.order,
+      }));
     } catch (error: any) {
-      if (error.isAuthError) {
-        throw error;
-      }
       return [];
     }
   },
 
-  async listUserOnboardingTasks(userId: number): Promise<UserOnboardingTaskItem[]> {
+  async listUserOnboardingTasks(backendUserId: number): Promise<UserOnboardingTaskItem[]> {
     try {
-      const response = await apiClient.get<UserOnboardingTaskItem[]>(
-        `/userOnboardingTask/list-userOnboardingTasks?userId=${userId}`
-      );
+      const { data: userOnboarding } = await supabase
+        .from('user_onboarding')
+        .select('id')
+        .eq('backend_user_id', backendUserId)
+        .maybeSingle();
 
-      if (response.succeeded && response.data) {
-        return response.data;
+      if (!userOnboarding) {
+        return [];
       }
 
-      return [];
+      const { data: userTasks } = await supabase
+        .from('user_onboarding_tasks')
+        .select(`
+          *,
+          task:onboarding_tasks(*)
+        `)
+        .eq('user_onboarding_id', userOnboarding.id)
+        .order('task(order)');
+
+      if (!userTasks) {
+        return [];
+      }
+
+      return userTasks.map((userTask: any) => ({
+        id: userTask.id,
+        title: userTask.task.title,
+        description: userTask.task.description || '',
+        dueDate: userTask.task.due_date,
+        isCompleted: userTask.is_completed,
+        completedAt: userTask.completed_at,
+        category: userTask.task.category || '',
+        assignedTo: null,
+        assignedToName: userTask.task.assigned_to || '',
+      }));
     } catch (error: any) {
-      if (error.isAuthError) {
-        throw error;
-      }
       return [];
     }
   },
 
-  async getUserOnboardingProcess(userId: number): Promise<OnboardingProcess | null> {
+  async getUserOnboardingProcess(backendUserId: number): Promise<OnboardingProcess | null> {
     try {
-      const response = await apiClient.get<OnboardingProcess>(
-        `/userOnboardingTask/get-userOnboardingProcess?userId=${userId}`
-      );
+      const { data: userOnboarding } = await supabase
+        .from('user_onboarding')
+        .select(`
+          *,
+          steps:user_onboarding_steps(
+            *,
+            step:onboarding_steps(*)
+          )
+        `)
+        .eq('backend_user_id', backendUserId)
+        .maybeSingle();
 
-      if (response.succeeded && response.data) {
-        return response.data;
+      if (!userOnboarding) {
+        return null;
       }
 
-      return null;
+      const steps = userOnboarding.steps || [];
+      const getStepCompleted = (title: string) => {
+        const step = steps.find((s: any) => s.step?.title === title);
+        return step?.is_completed || false;
+      };
+
+      return {
+        id: 0,
+        userId: 0,
+        welcomePackageSent: userOnboarding.welcome_package_sent,
+        welcomePackageSentAt: userOnboarding.welcome_package_sent_at,
+        welcomePackageViewed: getStepCompleted('Hoşgeldin Paketi Görüntülendi'),
+        welcomePackageViewedAt: undefined,
+        employeeInfoFilled: getStepCompleted('Yeni Çalışan Bilgileri Dolduruldu'),
+        employeeInfoFilledAt: undefined,
+        introQuestionsAnswered: getStepCompleted('Tanışma Soruları Cevaplandı'),
+        introQuestionsAnsweredAt: undefined,
+        tasksCompleted: getStepCompleted('İşe Başlama Görevleri Tamamlandı'),
+        tasksCompletedAt: undefined,
+      };
     } catch (error: any) {
-      if (error.isAuthError) {
-        throw error;
-      }
       return null;
     }
   },
 
   async sendWelcomePackage(
-    userId: number,
+    backendUserId: number,
     formData?: WelcomePackageForm
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      let requestBody: any = { userId };
+      const { data: existingOnboarding } = await supabase
+        .from('user_onboarding')
+        .select('id')
+        .eq('backend_user_id', backendUserId)
+        .maybeSingle();
 
-      if (formData) {
-        let jobFirstDayDate = '';
-        let jobFirstDayHour = '';
+      let userOnboardingId = existingOnboarding?.id;
 
-        if (formData.startDate) {
-          const [day, month, year] = formData.startDate.split('/');
-          jobFirstDayDate = `${year}-${month}-${day}`;
+      if (!userOnboardingId) {
+        const { data: newOnboarding, error: onboardingError } = await supabase
+          .from('user_onboarding')
+          .insert({
+            backend_user_id: backendUserId,
+            welcome_package_sent: true,
+            welcome_package_sent_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+
+        if (onboardingError || !newOnboarding) {
+          return {
+            success: false,
+            error: 'Onboarding kaydı oluşturulamadı',
+          };
         }
 
-        if (formData.arrivalTime) {
-          const today = new Date();
-          const dateStr = jobFirstDayDate || today.toISOString().split('T')[0];
-          jobFirstDayHour = `${dateStr}T${formData.arrivalTime}:00.000Z`;
+        userOnboardingId = newOnboarding.id;
+
+        const { data: allSteps } = await supabase
+          .from('onboarding_steps')
+          .select('id')
+          .eq('is_active', true)
+          .order('order');
+
+        if (allSteps && allSteps.length > 0) {
+          const stepsToInsert = allSteps.map((step) => ({
+            user_onboarding_id: userOnboardingId,
+            step_id: step.id,
+            is_completed: false,
+          }));
+
+          await supabase.from('user_onboarding_steps').insert(stepsToInsert);
         }
 
-        requestBody = {
-          userId: String(userId),
-          email: formData.email || '',
-          jobFirstDayDate: jobFirstDayDate,
-          jobFirstDayHour: jobFirstDayHour,
-          address: formData.arrivalAddress || '',
-          instructions: formData.otherInstructions || '',
-          personToMeetId: formData.greeterUserId,
-          reportsTo: formData.managerId,
-        };
-      }
+        const { data: allTasks } = await supabase
+          .from('onboarding_tasks')
+          .select('id')
+          .eq('is_active', true)
+          .order('order');
 
-      const response = await apiClient.post(
-        `/OnboardingQuestion/send-welcoming-package`,
-        requestBody
-      );
+        if (allTasks && allTasks.length > 0) {
+          const tasksToInsert = allTasks.map((task) => ({
+            user_onboarding_id: userOnboardingId,
+            task_id: task.id,
+            is_completed: false,
+          }));
 
-      if (response.succeeded) {
-        return { success: true };
+          await supabase.from('user_onboarding_tasks').insert(tasksToInsert);
+        }
+
+        const { data: allQuestions } = await supabase
+          .from('onboarding_questions')
+          .select('id')
+          .eq('is_active', true)
+          .order('order');
+
+        if (allQuestions && allQuestions.length > 0) {
+          const answersToInsert = allQuestions.map((question) => ({
+            user_onboarding_id: userOnboardingId,
+            question_id: question.id,
+            answer: '',
+          }));
+
+          await supabase.from('user_onboarding_answers').insert(answersToInsert);
+        }
       } else {
-        const errorMessage =
-          response.friendlyMessage ||
-          (response.errors && response.errors.length > 0 ? response.errors[0] : 'Bir hata oluştu');
-        return {
-          success: false,
-          error: errorMessage,
-        };
+        await supabase
+          .from('user_onboarding')
+          .update({
+            welcome_package_sent: true,
+            welcome_package_sent_at: new Date().toISOString(),
+          })
+          .eq('id', userOnboardingId);
       }
+
+      return { success: true };
     } catch (error: any) {
       return {
         success: false,
@@ -152,49 +257,64 @@ export const onboardingService = {
     }
   },
 
-  async getSteps(): Promise<any[]> {
-    return [];
-  },
+  async completeTask(userTaskId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { error } = await supabase
+        .from('user_onboarding_tasks')
+        .update({
+          is_completed: true,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', userTaskId);
 
-  async getTasks(): Promise<any[]> {
-    return [];
-  },
+      if (error) {
+        return { success: false, error: error.message };
+      }
 
-  async getQuestions(): Promise<any[]> {
-    return [];
-  },
-
-  async getUserOnboarding(userId: string): Promise<any> {
-    return null;
-  },
-
-  async createUserOnboarding(userId: string): Promise<any> {
-    return { id: userId };
-  },
-
-  async updateWelcomePackage(userOnboardingId: string, sent: boolean): Promise<void> {},
-
-  async getUserSteps(userOnboardingId: string): Promise<any[]> {
-    return [];
-  },
-
-  async initializeUserSteps(userOnboardingId: string, steps: any[]): Promise<void> {},
-
-  async getUserTasks(userOnboardingId: string): Promise<any[]> {
-    return [];
-  },
-
-  async initializeUserTasks(userOnboardingId: string, tasks: any[]): Promise<void> {},
-
-  async completeTask(userTaskId: string): Promise<void> {},
-
-  async getUserAnswers(userOnboardingId: string): Promise<any[]> {
-    return [];
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Görev tamamlanamadı',
+      };
+    }
   },
 
   async saveAnswer(
-    userOnboardingId: string,
+    backendUserId: number,
     questionId: string,
     answer: string
-  ): Promise<void> {},
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { data: userOnboarding } = await supabase
+        .from('user_onboarding')
+        .select('id')
+        .eq('backend_user_id', backendUserId)
+        .maybeSingle();
+
+      if (!userOnboarding) {
+        return { success: false, error: 'Onboarding kaydı bulunamadı' };
+      }
+
+      const { error } = await supabase
+        .from('user_onboarding_answers')
+        .update({
+          answer: answer,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_onboarding_id', userOnboarding.id)
+        .eq('question_id', questionId);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || 'Cevap kaydedilemedi',
+      };
+    }
+  },
 };

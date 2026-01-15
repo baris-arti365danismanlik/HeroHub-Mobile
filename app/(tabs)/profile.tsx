@@ -806,9 +806,9 @@ export default function ProfileScreen() {
       setOnboardingLoading(true);
 
       const [process, tasks, questions] = await Promise.all([
-        onboardingService.getUserOnboardingProcess(Number(user.backend_user_id)),
-        onboardingService.listUserOnboardingTasks(Number(user.backend_user_id)),
-        onboardingService.getUserOnboardingQuestions(Number(user.backend_user_id)),
+        onboardingService.getUserOnboardingProcess(user.backend_user_id),
+        onboardingService.listUserOnboardingTasks(user.backend_user_id),
+        onboardingService.getUserOnboardingQuestions(user.backend_user_id),
       ]);
 
       setOnboardingProcess(process);
@@ -1003,12 +1003,14 @@ export default function ProfileScreen() {
   };
 
   const handleSendWelcomePackage = async () => {
-    if (!onboardingData.userOnboarding) return;
+    if (!user?.backend_user_id) return;
 
     try {
-      await onboardingService.updateWelcomePackage(onboardingData.userOnboarding.id, true);
-      setWelcomePackageModalVisible(false);
-      await loadOnboardingData();
+      const result = await onboardingService.sendWelcomePackage(user.backend_user_id);
+      if (result.success) {
+        setWelcomePackageModalVisible(false);
+        await loadOnboardingData();
+      }
     } catch (error) {
     }
   };
@@ -1036,11 +1038,13 @@ export default function ProfileScreen() {
   };
 
   const handleSaveAnswer = async (questionId: string, answer: string) => {
-    if (!onboardingData.userOnboarding) return;
+    if (!user?.backend_user_id) return;
 
     try {
-      await onboardingService.saveAnswer(onboardingData.userOnboarding.id, questionId, answer);
-      setAnswerInputs((prev) => ({ ...prev, [questionId]: answer }));
+      const result = await onboardingService.saveAnswer(user.backend_user_id, questionId, answer);
+      if (result.success) {
+        setAnswerInputs((prev) => ({ ...prev, [questionId]: answer }));
+      }
     } catch (error) {
     }
   };
