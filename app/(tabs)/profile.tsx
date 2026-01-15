@@ -1029,10 +1029,12 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleCompleteTask = async (userTaskId: string) => {
+  const handleCompleteTask = async (taskId: number) => {
     try {
-      await onboardingService.completeTask(userTaskId);
-      await loadOnboardingData();
+      const result = await onboardingService.completeTask(taskId);
+      if (result.success) {
+        await loadOnboardingData();
+      }
     } catch (error) {
     }
   };
@@ -2323,7 +2325,7 @@ export default function ProfileScreen() {
                           <View style={styles.taskButtonsRow}>
                             <TouchableOpacity
                               style={styles.taskCompleteButton}
-                              onPress={() => handleCompleteTask(task.id)}
+                              onPress={() => handleCompleteTask(Number(task.id))}
                             >
                               <Text style={styles.taskCompleteButtonText}>Görevi Tamamla</Text>
                             </TouchableOpacity>

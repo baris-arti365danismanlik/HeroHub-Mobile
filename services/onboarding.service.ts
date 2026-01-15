@@ -65,40 +65,51 @@ export const onboardingService = {
 
   async listUserOnboardingTasks(backendUserId: number): Promise<UserOnboardingTaskItem[]> {
     try {
-      const { data: userOnboarding } = await supabase
-        .from('user_onboarding')
-        .select('id')
-        .eq('backend_user_id', backendUserId)
-        .maybeSingle();
+      const response = await apiClient.get<any>(
+        '/homePage/list-myOnboardingTasks'
+      );
 
-      if (!userOnboarding) {
+      if (!response.succeeded || !response.data) {
         return [];
       }
 
-      const { data: userTasks } = await supabase
-        .from('user_onboarding_tasks')
-        .select(`
-          *,
-          task:onboarding_tasks(*)
-        `)
-        .eq('user_onboarding_id', userOnboarding.id)
-        .order('task(order)');
+      const tasks: UserOnboardingTaskItem[] = [];
 
-      if (!userTasks) {
+      response.data.forEach((categoryGroup: any) => {
+        categoryGroup.tasks.forEach((task: any) => {
+          task.targetUsers.forEach((targetUser: any) => {
+            tasks.push({
+              id: targetUser.id.toString(),
+              title: task.taskName,
+              description: '',
+              dueDate: targetUser.dueDate,
+              isCompleted: targetUser.isCompleted,
+              completedAt: targetUser.completedAt,
+              category: task.taskCategory,
+              assignedTo: null,
+              assignedToName: task.assignedUser,
+            });
+          });
+        });
+      });
+
+      return tasks;
+    } catch (error: any) {
+      return [];
+    }
+  },
+
+  async listAllOnboardingTasks(): Promise<any[]> {
+    try {
+      const response = await apiClient.get<any>(
+        '/onboardingTask/list-onboardingTaskbyCategory'
+      );
+
+      if (!response.succeeded || !response.data) {
         return [];
       }
 
-      return userTasks.map((userTask: any) => ({
-        id: userTask.id,
-        title: userTask.task.title,
-        description: userTask.task.description || '',
-        dueDate: userTask.task.due_date,
-        isCompleted: userTask.is_completed,
-        completedAt: userTask.completed_at,
-        category: userTask.task.category || '',
-        assignedTo: null,
-        assignedToName: userTask.task.assigned_to || '',
-      }));
+      return response.data;
     } catch (error: any) {
       return [];
     }
@@ -257,21 +268,18 @@ export const onboardingService = {
     }
   },
 
-  async completeTask(userTaskId: string): Promise<{ success: boolean; error?: string }> {
+  async completeTask(taskId: number): Promise<{ success: boolean; error?: string }> {
     try {
-      const { error } = await supabase
-        .from('user_onboarding_tasks')
-        .update({
-          is_completed: true,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', userTaskId);
+      const response = await apiClient.post<any>(
+        `/userOnboardingTask/complete-task/${taskId}`,
+        {}
+      );
 
-      if (error) {
-        return { success: false, error: error.message };
+      if (response.succeeded) {
+        return { success: true };
       }
 
-      return { success: true };
+      return { success: false, error: 'Görev tamamlanamadı' };
     } catch (error: any) {
       return {
         success: false,
