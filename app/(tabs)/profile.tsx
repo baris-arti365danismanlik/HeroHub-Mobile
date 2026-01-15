@@ -2171,9 +2171,89 @@ export default function ProfileScreen() {
   };
 
   const renderPDKSSection = () => {
+    if (pdksLoading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#7C3AED" />
+          <Text style={styles.emptyText}>PDKS bilgileri yükleniyor...</Text>
+        </View>
+      );
+    }
+
+    const hasShiftPlan = userShiftPlan !== null;
+    const hasWorkLogs = userWorkLogs && userWorkLogs.length > 0;
+
+    if (!hasShiftPlan && !hasWorkLogs) {
+      return (
+        <View style={styles.emptyState}>
+          <Clock size={48} color="#9CA3AF" />
+          <Text style={styles.emptyText}>PDKS bilgileri bulunmuyor.</Text>
+        </View>
+      );
+    }
+
     return (
-      <View style={styles.emptyState}>
-        <Text style={styles.emptyText}>PDKS bilgileri yükleniyor...</Text>
+      <View style={styles.pdksSection}>
+        {hasShiftPlan && (
+          <View style={styles.pdksInfoGrid}>
+            <Text style={styles.pdksSectionTitle}>Vardiya Planı</Text>
+            <View style={styles.pdksInfoRow}>
+              <Text style={styles.pdksInfoLabel}>Vardiya Adı:</Text>
+              <Text style={styles.pdksInfoValue}>{userShiftPlan.shiftPlanName || 'Belirtilmemiş'}</Text>
+            </View>
+            <View style={styles.pdksInfoRow}>
+              <Text style={styles.pdksInfoLabel}>Vardiya Tipi:</Text>
+              <Text style={styles.pdksInfoValue}>{userShiftPlan.shiftType || 'Belirtilmemiş'}</Text>
+            </View>
+            <View style={styles.pdksInfoRow}>
+              <Text style={styles.pdksInfoLabel}>Başlangıç:</Text>
+              <Text style={styles.pdksInfoValue}>{userShiftPlan.startTime || '-'}</Text>
+            </View>
+            <View style={styles.pdksInfoRow}>
+              <Text style={styles.pdksInfoLabel}>Bitiş:</Text>
+              <Text style={styles.pdksInfoValue}>{userShiftPlan.endTime || '-'}</Text>
+            </View>
+            {userShiftPlan.workDays && (
+              <View style={styles.pdksInfoRow}>
+                <Text style={styles.pdksInfoLabel}>Çalışma Günleri:</Text>
+                <Text style={styles.pdksInfoValue}>{userShiftPlan.workDays}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {hasWorkLogs && (
+          <View style={{ marginTop: hasShiftPlan ? 24 : 0 }}>
+            <Text style={styles.pdksSectionTitle}>Çalışma Kayıtları</Text>
+            {userWorkLogs.slice(0, 5).map((log: any, index: number) => (
+              <View key={index} style={styles.pdksHistoryCard}>
+                <View style={styles.pdksHistoryHeader}>
+                  <Text style={styles.pdksHistoryDate}>{formatDate(log.date)}</Text>
+                </View>
+                <View style={styles.pdksHistoryDetails}>
+                  <View style={styles.pdksHistoryRow}>
+                    <Text style={styles.pdksHistoryLabel}>Giriş:</Text>
+                    <Text style={styles.pdksHistoryValue}>{log.checkInTime || '-'}</Text>
+                  </View>
+                  <View style={styles.pdksHistoryRow}>
+                    <Text style={styles.pdksHistoryLabel}>Çıkış:</Text>
+                    <Text style={styles.pdksHistoryValue}>{log.checkOutTime || '-'}</Text>
+                  </View>
+                  <View style={styles.pdksHistoryRow}>
+                    <Text style={styles.pdksHistoryLabel}>Toplam Saat:</Text>
+                    <Text style={styles.pdksHistoryValue}>{log.totalWorkHours || 0} saat</Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {!hasWorkLogs && hasShiftPlan && (
+          <View style={styles.emptyState}>
+            <Text style={styles.pdksEmptyText}>Henüz çalışma kaydı bulunmuyor.</Text>
+          </View>
+        )}
       </View>
     );
   };
