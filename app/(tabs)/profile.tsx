@@ -805,15 +805,39 @@ export default function ProfileScreen() {
     try {
       setOnboardingLoading(true);
 
-      const [process, tasks, questions] = await Promise.all([
+      const [process, userTasks, questions] = await Promise.all([
         onboardingService.getUserOnboardingProcess(user.backend_user_id),
         onboardingService.listUserOnboardingTasks(user.backend_user_id),
         onboardingService.getUserOnboardingQuestions(user.backend_user_id),
       ]);
 
       setOnboardingProcess(process);
-      setOnboardingTasks(tasks);
       setOnboardingQuestions(questions);
+
+      if (userTasks.length === 0 && isAdmin) {
+        const allTasksData = await onboardingService.listAllOnboardingTasks();
+
+        const allTasks: any[] = [];
+        allTasksData.forEach((categoryGroup: any) => {
+          categoryGroup.onboardingTaskList.forEach((task: any) => {
+            allTasks.push({
+              id: task.id.toString(),
+              title: task.name,
+              description: task.description || '',
+              dueDate: '',
+              isCompleted: false,
+              completedAt: null,
+              category: task.categoryName,
+              assignedTo: null,
+              assignedToName: task.assignedUserName,
+            });
+          });
+        });
+
+        setOnboardingTasks(allTasks);
+      } else {
+        setOnboardingTasks(userTasks);
+      }
     } catch (error) {
     } finally {
       setOnboardingLoading(false);
@@ -2321,7 +2345,7 @@ export default function ProfileScreen() {
                           <View style={styles.taskCompletedBadge}>
                             <Text style={styles.taskCompletedText}>Tamamlandı</Text>
                           </View>
-                        ) : (
+                        ) : task.dueDate ? (
                           <View style={styles.taskButtonsRow}>
                             <TouchableOpacity
                               style={styles.taskCompleteButton}
@@ -2332,6 +2356,10 @@ export default function ProfileScreen() {
                             <TouchableOpacity style={styles.taskArrowButton}>
                               <ChevronRight size={20} color="#fff" strokeWidth={3} />
                             </TouchableOpacity>
+                          </View>
+                        ) : (
+                          <View style={styles.taskInfoBadge}>
+                            <Text style={styles.taskInfoBadgeText}>Görev Tanımı</Text>
                           </View>
                         )}
                       </View>
@@ -6340,6 +6368,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#065F46',
+  },
+  taskInfoBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#E0E7FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  taskInfoBadgeText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#3730A3',
   },
   taskButtonsRow: {
     flexDirection: 'row',
