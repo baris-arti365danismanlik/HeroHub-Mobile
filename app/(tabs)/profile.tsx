@@ -2180,6 +2180,16 @@ export default function ProfileScreen() {
           <View style={styles.onboardingEmptyContainer}>
             <Briefcase size={80} color="#E5E7EB" strokeWidth={1} />
             <Text style={styles.onboardingEmptyText}>İşe başlama bilgileri yükleniyor...</Text>
+            <TouchableOpacity
+              style={styles.onboardingEmptyLogoutButton}
+              onPress={async () => {
+                await logout();
+                router.replace('/login');
+              }}
+            >
+              <LogOut size={18} color="#DC2626" />
+              <Text style={styles.onboardingEmptyLogoutText}>Çıkış Yap</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       );
@@ -5992,7 +6002,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#9CA3AF',
     marginTop: 16,
+    marginBottom: 24,
     textAlign: 'center',
+  },
+  onboardingEmptyLogoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FEE2E2',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginHorizontal: 16,
+  },
+  onboardingEmptyLogoutText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#DC2626',
   },
   onboardingHeader: {
     backgroundColor: '#fff',
