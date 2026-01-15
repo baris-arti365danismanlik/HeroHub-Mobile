@@ -2214,17 +2214,22 @@ export default function ProfileScreen() {
 
         <View style={styles.onboardingStepsContainer}>
           {onboardingSteps.map((step, index) => (
-            <View key={step.id} style={styles.onboardingStepRow}>
-              <View style={[
-                styles.onboardingStepNumber,
-                step.completed && styles.onboardingStepNumberCompleted
-              ]}>
-                <Text style={[
-                  styles.onboardingStepNumberText,
-                  step.completed && styles.onboardingStepNumberTextCompleted
+            <View key={step.id} style={styles.onboardingStepWrapper}>
+              <View style={styles.onboardingStepLeftColumn}>
+                <View style={[
+                  styles.onboardingStepNumber,
+                  step.completed && styles.onboardingStepNumberCompleted
                 ]}>
-                  {step.id}
-                </Text>
+                  <Text style={[
+                    styles.onboardingStepNumberText,
+                    step.completed && styles.onboardingStepNumberTextCompleted
+                  ]}>
+                    {step.id}
+                  </Text>
+                </View>
+                {index < onboardingSteps.length - 1 && (
+                  <View style={styles.onboardingStepConnector} />
+                )}
               </View>
               <Text style={[
                 styles.onboardingStepLabel,
@@ -2259,7 +2264,9 @@ export default function ProfileScreen() {
               <View style={styles.onboardingTasksList}>
                 {Object.entries(groupedTasks).map(([category, tasks]) => (
                   <View key={category} style={styles.taskCategory}>
-                    <Text style={styles.taskCategoryTitle}>{category}</Text>
+                    <View style={styles.taskCategoryTitleContainer}>
+                      <Text style={styles.taskCategoryTitle}>{category}</Text>
+                    </View>
                     {tasks.map((task: any) => (
                       <View key={task.id} style={styles.taskItem}>
                         <Text style={styles.taskTitle}>{task.title}</Text>
@@ -2284,7 +2291,10 @@ export default function ProfileScreen() {
                           </View>
                         ) : (
                           <View style={styles.taskButtonsRow}>
-                            <TouchableOpacity style={styles.taskCompleteButton}>
+                            <TouchableOpacity
+                              style={styles.taskCompleteButton}
+                              onPress={() => handleCompleteTask(task.id)}
+                            >
                               <Text style={styles.taskCompleteButtonText}>Görevi Tamamla</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.taskArrowButton}>
@@ -6059,10 +6069,20 @@ const styles = StyleSheet.create({
     padding: 16,
     marginTop: 12,
   },
-  onboardingStepRow: {
+  onboardingStepWrapper: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  onboardingStepLeftColumn: {
     alignItems: 'center',
-    marginBottom: 14,
+    marginRight: 12,
+  },
+  onboardingStepConnector: {
+    width: 2,
+    flex: 1,
+    backgroundColor: '#E5E7EB',
+    marginVertical: 4,
+    minHeight: 20,
   },
   onboardingStepIndicator: {
     width: 20,
@@ -6089,7 +6109,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
   },
   onboardingStepNumberCompleted: {
     backgroundColor: '#7C3AED',
@@ -6106,9 +6125,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     flex: 1,
+    paddingTop: 4,
+    paddingBottom: 12,
   },
   onboardingStepLabelCompleted: {
-    color: '#1a1a1a',
+    color: '#6B7280',
     fontWeight: '400',
   },
   onboardingSection: {
@@ -6140,11 +6161,17 @@ const styles = StyleSheet.create({
   taskCategory: {
     marginBottom: 16,
   },
+  taskCategoryTitleContainer: {
+    backgroundColor: '#F3F4F6',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    marginBottom: 12,
+  },
   taskCategoryTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#9CA3AF',
-    marginBottom: 8,
+    color: '#6B7280',
     textTransform: 'uppercase',
   },
   taskItem: {
