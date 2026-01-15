@@ -50,6 +50,7 @@ import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
 import { DatePicker } from '@/components/DatePicker';
 import { WelcomePackageModal } from '@/components/WelcomePackageModal';
+import { SuccessModal } from '@/components/SuccessModal';
 import {
   formatGender,
   formatBloodType,
@@ -148,6 +149,7 @@ export default function ProfileScreen() {
   const [onboardingTasksExpanded, setOnboardingTasksExpanded] = useState(true);
   const [onboardingQuestionsExpanded, setOnboardingQuestionsExpanded] = useState(true);
   const [welcomePackageModalVisible, setWelcomePackageModalVisible] = useState(false);
+  const [welcomePackageSuccessModalVisible, setWelcomePackageSuccessModalVisible] = useState(false);
   const [userWorkLogs, setUserWorkLogs] = useState<any[]>([]);
   const [userShiftPlan, setUserShiftPlan] = useState<any>(null);
   const [pdksLoading, setPdksLoading] = useState(false);
@@ -3283,8 +3285,19 @@ export default function ProfileScreen() {
           userId={user.backend_user_id}
           organizationId={user.organization_id}
           onSubmit={handleSendWelcomePackage}
+          onSuccess={() => setWelcomePackageSuccessModalVisible(true)}
         />
       )}
+
+      <SuccessModal
+        visible={welcomePackageSuccessModalVisible}
+        onClose={() => {
+          setWelcomePackageSuccessModalVisible(false);
+          loadOnboardingData();
+        }}
+        title="Hoşgeldin Paketi Gönderildi"
+        message="Hoşgeldin paketi başarıyla gönderildi."
+      />
 
       <PDKSTaskModal
         visible={pdksTaskModalVisible}

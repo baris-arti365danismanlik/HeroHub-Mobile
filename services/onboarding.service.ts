@@ -163,6 +163,44 @@ export const onboardingService = {
     formData?: WelcomePackageForm
   ): Promise<{ success: boolean; error?: string }> {
     try {
+      if (!formData) {
+        return {
+          success: false,
+          error: 'Form verileri eksik',
+        };
+      }
+
+      const jobFirstDayDate = formData.startDate
+        ? formData.startDate.split('/').reverse().join('-')
+        : new Date().toISOString().split('T')[0];
+
+      const jobFirstDayHour = formData.arrivalTime
+        ? `${jobFirstDayDate}T${formData.arrivalTime}:00.000Z`
+        : new Date().toISOString();
+
+      const requestBody = {
+        userId: backendUserId.toString(),
+        email: formData.email || '',
+        jobFirstDayDate: jobFirstDayDate,
+        jobFirstDayHour: jobFirstDayHour,
+        address: formData.arrivalAddress || '',
+        instructions: formData.otherInstructions || '',
+        personToMeetId: formData.greeterUserId || null,
+        reportsTo: formData.managerId || null,
+      };
+
+      const response = await apiClient.post<boolean>(
+        '/OnboardingQuestion/send-welcoming-package',
+        requestBody
+      );
+
+      if (!response.succeeded) {
+        return {
+          success: false,
+          error: response.errors?.join(', ') || 'Hoşgeldin paketi gönderilemedi',
+        };
+      }
+
       const { data: existingOnboarding } = await supabase
         .from('user_onboarding')
         .select('id')

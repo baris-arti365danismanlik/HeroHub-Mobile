@@ -26,6 +26,7 @@ interface WelcomePackageModalProps {
   userId: number;
   organizationId: number;
   onSubmit: (form: WelcomePackageForm) => Promise<{ success: boolean; error?: string }>;
+  onSuccess?: () => void;
 }
 
 export function WelcomePackageModal({
@@ -34,6 +35,7 @@ export function WelcomePackageModal({
   userId,
   organizationId,
   onSubmit,
+  onSuccess,
 }: WelcomePackageModalProps) {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -132,6 +134,9 @@ export function WelcomePackageModal({
       const result = await onSubmit(form);
       if (result.success) {
         onClose();
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
         alert(`Hata: ${result.error || 'Hoşgeldin paketi gönderilemedi'}`);
       }
