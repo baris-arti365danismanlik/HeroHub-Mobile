@@ -2134,18 +2134,16 @@ export default function ProfileScreen() {
   };
 
   const renderOnboardingSection = () => {
-    if (onboardingLoading) {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#7C3AED" />
-          <Text style={styles.emptyText}>İşe başlama bilgileri yükleniyor...</Text>
-        </View>
-      );
-    }
-
     const hasProcess = onboardingProcess !== null;
     const hasTasks = onboardingTasks && onboardingTasks.length > 0;
     const hasQuestions = onboardingQuestions && onboardingQuestions.length > 0;
+
+    const userName = profileDetails?.personalInformation
+      ? `${profileDetails.personalInformation.firstName} ${profileDetails.personalInformation.lastName}`
+      : user?.full_name || 'Kullanıcı';
+
+    const userPosition = profileDetails?.workingInformation?.position?.name || 'Pozisyon';
+    const userOrganization = profileDetails?.workingInformation?.workplace?.name || 'Organizasyon';
 
     const onboardingSteps = [
       { id: 1, label: 'Hoşgeldin Paketi Gönderildi', completed: onboardingProcess?.welcomePackageSent },
@@ -2178,39 +2176,71 @@ export default function ProfileScreen() {
 
     const hasAnyData = hasProcess || hasTasks || hasQuestions;
 
-    if (!hasAnyData) {
-      return (
-        <ScrollView style={styles.onboardingContainer}>
+    return (
+      <ScrollView style={styles.onboardingContainer}>
+        <View style={styles.onboardingUserCard}>
+          <View style={styles.onboardingAvatar}>
+            <UserIcon size={40} color="#7C3AED" strokeWidth={2} />
+          </View>
+          <Text style={styles.onboardingUserName}>{userName}</Text>
+          <View style={styles.onboardingUserInfo}>
+            <Building2 size={14} color="#6B7280" />
+            <Text style={styles.onboardingUserInfoText}>{userPosition}</Text>
+          </View>
+          <View style={styles.onboardingUserInfo}>
+            <Briefcase size={14} color="#6B7280" />
+            <Text style={styles.onboardingUserInfoText}>{userOrganization}</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.onboardingDropdownButton}>
+          <Text style={styles.onboardingDropdownText}>İşe Başlama</Text>
+          <ChevronDown size={20} color="#7C3AED" strokeWidth={2} />
+        </TouchableOpacity>
+
+        {onboardingLoading ? (
           <View style={styles.onboardingEmptyContainer}>
             <Briefcase size={80} color="#E5E7EB" strokeWidth={1} />
             <Text style={styles.onboardingEmptyText}>İşe başlama bilgileri yükleniyor...</Text>
             <TouchableOpacity
-              style={styles.onboardingEmptyLogoutButton}
+              style={styles.onboardingLogoutButton}
               onPress={async () => {
                 await logout();
                 router.replace('/login');
               }}
             >
               <LogOut size={18} color="#DC2626" />
-              <Text style={styles.onboardingEmptyLogoutText}>Çıkış Yap</Text>
+              <Text style={styles.onboardingLogoutText}>Çıkış Yap</Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      );
-    }
+        ) : !hasAnyData ? (
+          <View style={styles.onboardingEmptyContainer}>
+            <Briefcase size={80} color="#E5E7EB" strokeWidth={1} />
+            <Text style={styles.onboardingEmptyText}>İşe başlama bilgileri yükleniyor...</Text>
+            <TouchableOpacity
+              style={styles.onboardingLogoutButton}
+              onPress={async () => {
+                await logout();
+                router.replace('/login');
+              }}
+            >
+              <LogOut size={18} color="#DC2626" />
+              <Text style={styles.onboardingLogoutText}>Çıkış Yap</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <View style={styles.onboardingHeader}>
+              <Briefcase size={18} color="#1a1a1a" />
+              <Text style={styles.onboardingSectionTitle}>İŞE BAŞLAMA (ONBOARDING)</Text>
+            </View>
 
-    return (
-      <ScrollView style={styles.onboardingContainer}>
-        <View style={styles.onboardingHeader}>
-          <Text style={styles.onboardingSectionTitle}>İŞE BAŞLAMA (ONBOARDING)</Text>
-        </View>
-
-        <TouchableOpacity
-          style={styles.welcomePackageButtonMain}
-          onPress={() => setWelcomePackageModalVisible(true)}
-        >
-          <Text style={styles.welcomePackageButtonMainText}>Hoşgeldin Paketi Gönder</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.welcomePackageButtonMain}
+              onPress={() => setWelcomePackageModalVisible(true)}
+            >
+              <Text style={styles.welcomePackageButtonMainText}>Hoşgeldin Paketi Gönder</Text>
+            </TouchableOpacity>
 
         <View style={styles.onboardingStepsContainer}>
           {onboardingSteps.map((step, index) => (
@@ -2360,6 +2390,19 @@ export default function ProfileScreen() {
               </View>
             )}
           </View>
+        )}
+
+            <TouchableOpacity
+              style={styles.onboardingLogoutButtonBottom}
+              onPress={async () => {
+                await logout();
+                router.replace('/login');
+              }}
+            >
+              <LogOut size={18} color="#DC2626" />
+              <Text style={styles.onboardingLogoutText}>Çıkış Yap</Text>
+            </TouchableOpacity>
+          </>
         )}
       </ScrollView>
     );
@@ -6005,12 +6048,64 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
+  onboardingUserCard: {
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  onboardingAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#EDE9FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  onboardingUserName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginBottom: 8,
+  },
+  onboardingUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  onboardingUserInfoText: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  onboardingDropdownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
+    marginBottom: 16,
+  },
+  onboardingDropdownText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1F2937',
+  },
   onboardingEmptyContainer: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 80,
     paddingHorizontal: 20,
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    borderRadius: 12,
   },
   onboardingEmptyText: {
     fontSize: 14,
@@ -6019,7 +6114,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     textAlign: 'center',
   },
-  onboardingEmptyLogoutButton: {
+  onboardingLogoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -6027,9 +6122,20 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
-    marginHorizontal: 16,
   },
-  onboardingEmptyLogoutText: {
+  onboardingLogoutButtonBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#FEE2E2',
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginTop: 20,
+    marginBottom: 20,
+    borderRadius: 8,
+  },
+  onboardingLogoutText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#DC2626',
@@ -6037,7 +6143,18 @@ const styles = StyleSheet.create({
   onboardingHeader: {
     backgroundColor: '#fff',
     padding: 16,
-    paddingBottom: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  onboardingSectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1F2937',
+    letterSpacing: 0.5,
   },
   welcomePackageButton: {
     backgroundColor: '#7C3AED',
@@ -6055,7 +6172,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#7C3AED',
     paddingVertical: 14,
     marginHorizontal: 16,
-    marginTop: 12,
+    marginBottom: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
@@ -6067,7 +6184,9 @@ const styles = StyleSheet.create({
   onboardingStepsContainer: {
     backgroundColor: '#fff',
     padding: 16,
-    marginTop: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 8,
   },
   onboardingStepWrapper: {
     flexDirection: 'row',
@@ -6134,7 +6253,9 @@ const styles = StyleSheet.create({
   },
   onboardingSection: {
     backgroundColor: '#fff',
-    marginTop: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 8,
     paddingVertical: 8,
   },
   onboardingSectionHeader: {
@@ -6292,12 +6413,16 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   questionDeleteButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    borderRadius: 6,
   },
   questionDeleteText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#DC2626',
   },
   questionRequiredRow: {
