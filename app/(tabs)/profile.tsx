@@ -2145,18 +2145,30 @@ export default function ProfileScreen() {
 
     if (!hasProcess && !hasTasks && !hasQuestions) {
       return (
-        <View style={styles.emptyState}>
-          <Briefcase size={48} color="#9CA3AF" />
-          <Text style={styles.emptyText}>İşe başlama bilgileri yükleniyor...</Text>
+        <View style={styles.emptyStateContainer}>
+          <View style={styles.emptyStateContent}>
+            <Briefcase size={56} color="#D1D5DB" />
+            <Text style={styles.emptyStateText}>İşe başlama bilgileri yükleniyor...</Text>
+          </View>
           <TouchableOpacity
-            style={styles.logoutButton}
+            style={styles.emptyStateLogoutButton}
             onPress={async () => {
               await logout();
               router.replace('/login');
             }}
           >
             <LogOut size={18} color="#DC2626" />
-            <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
+            <Text style={styles.emptyStateLogoutButtonText}>Çıkış Yap</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.emptyStateLogoutButton}
+            onPress={async () => {
+              await logout();
+              router.replace('/login');
+            }}
+          >
+            <LogOut size={18} color="#DC2626" />
+            <Text style={styles.emptyStateLogoutButtonText}>Çıkış Yap</Text>
           </TouchableOpacity>
         </View>
       );
@@ -2208,15 +2220,14 @@ export default function ProfileScreen() {
             {onboardingSteps.map((step, index) => (
               <View key={step.id} style={styles.onboardingStepRow}>
                 <View style={[
-                  styles.onboardingStepNumber,
-                  step.completed && styles.onboardingStepNumberCompleted
+                  styles.onboardingStepIndicator,
+                  step.completed && styles.onboardingStepIndicatorCompleted
                 ]}>
-                  <Text style={[
-                    styles.onboardingStepNumberText,
-                    step.completed && styles.onboardingStepNumberTextCompleted
-                  ]}>
-                    {step.id}
-                  </Text>
+                  {step.completed ? (
+                    <Check size={14} color="#fff" strokeWidth={3} />
+                  ) : (
+                    <View style={styles.onboardingStepDot} />
+                  )}
                 </View>
                 <Text style={[
                   styles.onboardingStepLabel,
@@ -2276,8 +2287,8 @@ export default function ProfileScreen() {
                             <Text style={styles.taskCompletedText}>Tamamlandı</Text>
                           </View>
                         ) : (
-                          <TouchableOpacity style={styles.taskCompleteButton}>
-                            <Text style={styles.taskCompleteButtonText}>Görevi Tamamla</Text>
+                          <TouchableOpacity style={styles.taskGoButton}>
+                            <Text style={styles.taskGoButtonText}>Git</Text>
                           </TouchableOpacity>
                         )}
                       </View>
@@ -6007,30 +6018,28 @@ const styles = StyleSheet.create({
   onboardingStepRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
-  onboardingStepNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  onboardingStepIndicator: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  onboardingStepNumberCompleted: {
+  onboardingStepIndicatorCompleted: {
     backgroundColor: '#7C3AED',
   },
-  onboardingStepNumberText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  onboardingStepNumberTextCompleted: {
-    color: '#fff',
+  onboardingStepDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#9CA3AF',
   },
   onboardingStepLabel: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6B7280',
     flex: 1,
   },
@@ -6075,16 +6084,18 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   taskItem: {
-    backgroundColor: '#F9FAFB',
-    padding: 12,
+    backgroundColor: '#fff',
+    padding: 14,
     borderRadius: 8,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   taskTitle: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#7C3AED',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   taskInfoRow: {
     flexDirection: 'row',
@@ -6131,6 +6142,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#7C3AED',
   },
+  taskGoButton: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#7C3AED',
+    paddingVertical: 6,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    marginTop: 8,
+  },
+  taskGoButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
+  },
   onboardingQuestionsList: {
     paddingHorizontal: 16,
     paddingTop: 8,
@@ -6143,10 +6167,12 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   questionItem: {
-    backgroundColor: '#F9FAFB',
-    padding: 12,
+    backgroundColor: '#fff',
+    padding: 14,
     borderRadius: 8,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   questionHeader: {
     flexDirection: 'row',
@@ -6203,6 +6229,37 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     fontSize: 14,
+    fontWeight: '600',
+    color: '#DC2626',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+  emptyStateContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
+  },
+  emptyStateLogoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  emptyStateLogoutButtonText: {
+    fontSize: 15,
     fontWeight: '600',
     color: '#DC2626',
   },
