@@ -2207,27 +2207,29 @@ export default function ProfileScreen() {
       <ScrollView style={styles.onboardingContainer}>
         <View style={styles.onboardingHeader}>
           <Text style={styles.onboardingSectionTitle}>İŞE BAŞLAMA (ONBOARDING)</Text>
-          <TouchableOpacity
-            style={styles.welcomePackageButton}
-            onPress={() => setWelcomePackageModalVisible(true)}
-          >
-            <Text style={styles.welcomePackageButtonText}>Hoşgeldin Paketi Gönder</Text>
-          </TouchableOpacity>
         </View>
+
+        <TouchableOpacity
+          style={styles.welcomePackageButtonMain}
+          onPress={() => setWelcomePackageModalVisible(true)}
+        >
+          <Text style={styles.welcomePackageButtonMainText}>Hoşgeldin Paketi Gönder</Text>
+        </TouchableOpacity>
 
         {hasProcess && (
           <View style={styles.onboardingStepsContainer}>
             {onboardingSteps.map((step, index) => (
               <View key={step.id} style={styles.onboardingStepRow}>
                 <View style={[
-                  styles.onboardingStepIndicator,
-                  step.completed && styles.onboardingStepIndicatorCompleted
+                  styles.onboardingStepNumber,
+                  step.completed && styles.onboardingStepNumberCompleted
                 ]}>
-                  {step.completed ? (
-                    <Check size={14} color="#fff" strokeWidth={3} />
-                  ) : (
-                    <View style={styles.onboardingStepDot} />
-                  )}
+                  <Text style={[
+                    styles.onboardingStepNumberText,
+                    step.completed && styles.onboardingStepNumberTextCompleted
+                  ]}>
+                    {step.id}
+                  </Text>
                 </View>
                 <Text style={[
                   styles.onboardingStepLabel,
@@ -2287,9 +2289,14 @@ export default function ProfileScreen() {
                             <Text style={styles.taskCompletedText}>Tamamlandı</Text>
                           </View>
                         ) : (
-                          <TouchableOpacity style={styles.taskGoButton}>
-                            <Text style={styles.taskGoButtonText}>Git</Text>
-                          </TouchableOpacity>
+                          <View style={styles.taskButtonsRow}>
+                            <TouchableOpacity style={styles.taskCompleteButton}>
+                              <Text style={styles.taskCompleteButtonText}>Görevi Tamamla</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.taskArrowButton}>
+                              <ChevronRight size={20} color="#fff" strokeWidth={3} />
+                            </TouchableOpacity>
+                          </View>
                         )}
                       </View>
                     ))}
@@ -5995,8 +6002,7 @@ const styles = StyleSheet.create({
   onboardingHeader: {
     backgroundColor: '#fff',
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    paddingBottom: 12,
   },
   welcomePackageButton: {
     backgroundColor: '#7C3AED',
@@ -6007,6 +6013,19 @@ const styles = StyleSheet.create({
   },
   welcomePackageButtonText: {
     fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  welcomePackageButtonMain: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 14,
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  welcomePackageButtonMainText: {
+    fontSize: 15,
     fontWeight: '600',
     color: '#fff',
   },
@@ -6038,14 +6057,34 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#9CA3AF',
   },
+  onboardingStepNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  onboardingStepNumberCompleted: {
+    backgroundColor: '#7C3AED',
+  },
+  onboardingStepNumberText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#9CA3AF',
+  },
+  onboardingStepNumberTextCompleted: {
+    color: '#fff',
+  },
   onboardingStepLabel: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#6B7280',
     flex: 1,
   },
   onboardingStepLabelCompleted: {
     color: '#1a1a1a',
-    fontWeight: '500',
+    fontWeight: '400',
   },
   onboardingSection: {
     backgroundColor: '#fff',
@@ -6127,20 +6166,34 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#065F46',
   },
+  taskButtonsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+  },
   taskCompleteButton: {
+    flex: 1,
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#7C3AED',
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 6,
     alignItems: 'center',
-    marginTop: 8,
+    justifyContent: 'center',
   },
   taskCompleteButtonText: {
     fontSize: 13,
     fontWeight: '600',
     color: '#7C3AED',
+  },
+  taskArrowButton: {
+    backgroundColor: '#7C3AED',
+    width: 42,
+    height: 42,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   taskGoButton: {
     alignSelf: 'flex-end',
