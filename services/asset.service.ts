@@ -9,7 +9,10 @@ export const assetService = {
         return response.data;
       }
       return [];
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return [];
     }
   },
@@ -21,7 +24,10 @@ export const assetService = {
         return response.data;
       }
       return [];
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return [];
     }
   },
@@ -33,7 +39,10 @@ export const assetService = {
         return response.data;
       }
       return null;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return null;
     }
   },
@@ -52,7 +61,10 @@ export const assetService = {
         return response.data;
       }
       return null;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       throw error;
     }
   },
@@ -61,7 +73,10 @@ export const assetService = {
     try {
       const response = await apiClient.delete(`/userAsset/delete-userAsset?id=${assetId}`);
       return response.succeeded || false;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return false;
     }
   },
@@ -73,7 +88,10 @@ export const assetService = {
         returnDate,
       });
       return response.succeeded || false;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return false;
     }
   },

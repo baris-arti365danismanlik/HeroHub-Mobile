@@ -13,10 +13,17 @@ import type {
 
 export const employmentService = {
   async getWorkingInformation(userId: number): Promise<WorkingInformation[]> {
-    const response = await apiClient.get<WorkingInformation[]>(
-      `/userEmployment/get-workinginformation?userId=${userId}`
-    );
-    return response.data || [];
+    try {
+      const response = await apiClient.get<WorkingInformation[]>(
+        `/userEmployment/get-workinginformation?userId=${userId}`
+      );
+      return response.data || [];
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
+      return [];
+    }
   },
 
   async getPositions(userId: number): Promise<Position[]> {
@@ -25,7 +32,10 @@ export const employmentService = {
         `/userEmployment/get-positions?userId=${userId}`
       );
       return response.data || [];
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return [];
     }
   },
@@ -36,7 +46,10 @@ export const employmentService = {
         `/userEmployment/get-userSalary?userId=${userId}`
       );
       return response.data || null;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return null;
     }
   },

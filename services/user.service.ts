@@ -121,7 +121,10 @@ class UserService {
         `/user/badgecard-info?userId=${userId}`
       );
       return response.data || null;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return null;
     }
   }
@@ -136,7 +139,10 @@ class UserService {
         `/User/grouped-by-departments?organizationId=${organizationId}&includeHRManagers=${includeHRManagers}&stateKey=${stateKey}`
       );
       return response.data || null;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return null;
     }
   }
@@ -161,7 +167,10 @@ class UserService {
         '/User/does-organization-have-hr-manager'
       );
       return response.data || false;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return false;
     }
   }

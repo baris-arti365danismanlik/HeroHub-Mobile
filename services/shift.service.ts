@@ -21,7 +21,10 @@ export const shiftService = {
         `/shift/list-usershiftplan?userId=${userId}`
       );
       return (response as any)?.data || null;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return null;
     }
   },

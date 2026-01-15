@@ -37,7 +37,10 @@ export const onboardingService = {
       }
 
       return [];
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return [];
     }
   },
@@ -53,7 +56,10 @@ export const onboardingService = {
       }
 
       return [];
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return [];
     }
   },
@@ -69,7 +75,10 @@ export const onboardingService = {
       }
 
       return null;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return null;
     }
   },

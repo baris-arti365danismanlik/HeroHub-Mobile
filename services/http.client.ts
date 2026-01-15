@@ -41,6 +41,11 @@ class HttpClient {
     if (response.status === 401) {
       await tokenStorage.clearTokens();
 
+      if (typeof window !== 'undefined') {
+        const event = new CustomEvent('auth:unauthorized');
+        window.dispatchEvent(event);
+      }
+
       const error: any = new Error('Oturum süreniz doldu. Lütfen tekrar giriş yapın.');
       error.isAuthError = true;
       throw error;

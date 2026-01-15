@@ -25,7 +25,10 @@ export const pdksService = {
         `/employeeLog/get-userworklog?userId=${userId}`
       );
       return (response as any)?.data || [];
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       return [];
     }
   },
@@ -34,7 +37,10 @@ export const pdksService = {
     try {
       const response = await apiClient.post('/pdks/create-task', taskData);
       return (response as any)?.data || null;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
       throw error;
     }
   },
