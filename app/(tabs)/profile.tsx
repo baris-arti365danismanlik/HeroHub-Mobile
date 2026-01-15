@@ -49,6 +49,7 @@ import {
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
 import { DatePicker } from '@/components/DatePicker';
+import { WelcomePackageModal } from '@/components/WelcomePackageModal';
 import {
   formatGender,
   formatBloodType,
@@ -1026,16 +1027,18 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSendWelcomePackage = async () => {
-    if (!user?.backend_user_id) return;
+  const handleSendWelcomePackage = async (formData: any) => {
+    if (!user?.backend_user_id) return { success: false, error: 'Kullanıcı bilgisi bulunamadı' };
 
     try {
-      const result = await onboardingService.sendWelcomePackage(user.backend_user_id);
+      const result = await onboardingService.sendWelcomePackage(user.backend_user_id, formData);
       if (result.success) {
-        setWelcomePackageModalVisible(false);
         await loadOnboardingData();
+        return { success: true };
       }
-    } catch (error) {
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Hoşgeldin paketi gönderilemedi' };
     }
   };
 
@@ -3273,70 +3276,15 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      <Modal
-        visible={welcomePackageModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setWelcomePackageModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.welcomePackageModalContainer}>
-            <View style={styles.welcomePackageModalHeader}>
-              <Package size={18} color="#7C3AED" />
-              <Text style={styles.welcomePackageModalTitle}>İŞE BAŞLAMA (ONBOARDING)</Text>
-            </View>
-
-            <View style={styles.welcomePackageModalActions}>
-              <TouchableOpacity
-                style={styles.resendButton}
-                onPress={handleSendWelcomePackage}
-              >
-                <Text style={styles.resendButtonText}>Tekrar Gönder</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setWelcomePackageModalVisible(false)}
-              >
-                <Text style={styles.cancelButtonText}>İptal Et</Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.welcomePackageModalContent}>
-              {onboardingData.steps.map((step, index) => {
-                const userStep = onboardingData.userSteps.find((us) => us.step_id === step.id);
-                const isCompleted = userStep?.is_completed || (index === 0 && onboardingData.userOnboarding?.welcome_package_sent);
-
-                return (
-                  <View key={step.id} style={styles.welcomePackageStepItem}>
-                    <View style={styles.welcomePackageStepIndicator}>
-                      <View style={[styles.welcomePackageStepNumber, isCompleted && styles.welcomePackageStepNumberCompleted]}>
-                        {isCompleted ? (
-                          <Check size={16} color="#fff" />
-                        ) : (
-                          <Text style={styles.welcomePackageStepNumberText}>{index + 1}</Text>
-                        )}
-                      </View>
-                      {index < onboardingData.steps.length - 1 && (
-                        <View style={styles.welcomePackageStepLine} />
-                      )}
-                    </View>
-                    <View style={styles.welcomePackageStepContent}>
-                      <Text style={[styles.welcomePackageStepTitle, isCompleted && styles.welcomePackageStepTitleCompleted]}>
-                        {step.title}
-                      </Text>
-                      {index === 0 && isCompleted && onboardingData.userOnboarding?.welcome_package_sent_at && (
-                        <Text style={styles.welcomePackageStepDate}>
-                          {formatDate(onboardingData.userOnboarding.welcome_package_sent_at)}
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
+      {user && user.backend_user_id && user.organization_id && (
+        <WelcomePackageModal
+          visible={welcomePackageModalVisible}
+          onClose={() => setWelcomePackageModalVisible(false)}
+          userId={user.backend_user_id}
+          organizationId={user.organization_id}
+          onSubmit={handleSendWelcomePackage}
+        />
+      )}
 
       <PDKSTaskModal
         visible={pdksTaskModalVisible}
