@@ -2143,37 +2143,6 @@ export default function ProfileScreen() {
     const hasTasks = onboardingTasks && onboardingTasks.length > 0;
     const hasQuestions = onboardingQuestions && onboardingQuestions.length > 0;
 
-    if (!hasProcess && !hasTasks && !hasQuestions) {
-      return (
-        <View style={styles.emptyStateContainer}>
-          <View style={styles.emptyStateContent}>
-            <Briefcase size={56} color="#D1D5DB" />
-            <Text style={styles.emptyStateText}>İşe başlama bilgileri yükleniyor...</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.emptyStateLogoutButton}
-            onPress={async () => {
-              await logout();
-              router.replace('/login');
-            }}
-          >
-            <LogOut size={18} color="#DC2626" />
-            <Text style={styles.emptyStateLogoutButtonText}>Çıkış Yap</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.emptyStateLogoutButton}
-            onPress={async () => {
-              await logout();
-              router.replace('/login');
-            }}
-          >
-            <LogOut size={18} color="#DC2626" />
-            <Text style={styles.emptyStateLogoutButtonText}>Çıkış Yap</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-
     const onboardingSteps = [
       { id: 1, label: 'Hoşgeldin Paketi Gönderildi', completed: onboardingProcess?.welcomePackageSent },
       { id: 2, label: 'Hoşgeldin Paketi Görüntülendi', completed: onboardingProcess?.welcomePackageViewed },
@@ -2203,6 +2172,19 @@ export default function ProfileScreen() {
       return due < today;
     };
 
+    const hasAnyData = hasProcess || hasTasks || hasQuestions;
+
+    if (!hasAnyData) {
+      return (
+        <ScrollView style={styles.onboardingContainer}>
+          <View style={styles.onboardingEmptyContainer}>
+            <Briefcase size={80} color="#E5E7EB" strokeWidth={1} />
+            <Text style={styles.onboardingEmptyText}>İşe başlama bilgileri yükleniyor...</Text>
+          </View>
+        </ScrollView>
+      );
+    }
+
     return (
       <ScrollView style={styles.onboardingContainer}>
         <View style={styles.onboardingHeader}>
@@ -2216,31 +2198,29 @@ export default function ProfileScreen() {
           <Text style={styles.welcomePackageButtonMainText}>Hoşgeldin Paketi Gönder</Text>
         </TouchableOpacity>
 
-        {hasProcess && (
-          <View style={styles.onboardingStepsContainer}>
-            {onboardingSteps.map((step, index) => (
-              <View key={step.id} style={styles.onboardingStepRow}>
-                <View style={[
-                  styles.onboardingStepNumber,
-                  step.completed && styles.onboardingStepNumberCompleted
-                ]}>
-                  <Text style={[
-                    styles.onboardingStepNumberText,
-                    step.completed && styles.onboardingStepNumberTextCompleted
-                  ]}>
-                    {step.id}
-                  </Text>
-                </View>
+        <View style={styles.onboardingStepsContainer}>
+          {onboardingSteps.map((step, index) => (
+            <View key={step.id} style={styles.onboardingStepRow}>
+              <View style={[
+                styles.onboardingStepNumber,
+                step.completed && styles.onboardingStepNumberCompleted
+              ]}>
                 <Text style={[
-                  styles.onboardingStepLabel,
-                  step.completed && styles.onboardingStepLabelCompleted
+                  styles.onboardingStepNumberText,
+                  step.completed && styles.onboardingStepNumberTextCompleted
                 ]}>
-                  {step.label}
+                  {step.id}
                 </Text>
               </View>
-            ))}
-          </View>
-        )}
+              <Text style={[
+                styles.onboardingStepLabel,
+                step.completed && styles.onboardingStepLabelCompleted
+              ]}>
+                {step.label}
+              </Text>
+            </View>
+          ))}
+        </View>
 
         {hasTasks && (
           <View style={styles.onboardingSection}>
@@ -6000,6 +5980,19 @@ const styles = StyleSheet.create({
   onboardingContainer: {
     flex: 1,
     backgroundColor: '#F9FAFB',
+  },
+  onboardingEmptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
+    paddingHorizontal: 20,
+  },
+  onboardingEmptyText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginTop: 16,
+    textAlign: 'center',
   },
   onboardingHeader: {
     backgroundColor: '#fff',
