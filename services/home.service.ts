@@ -1,4 +1,5 @@
 import { apiClient } from './api.client';
+import { normalizePhotoUrl } from '@/utils/formatters';
 import type { ApiResponse } from '@/types/backend';
 
 export interface OnboardingTaskCategory {
@@ -66,7 +67,11 @@ export const homeService = {
 
   async listNewEmployees(): Promise<NewEmployee[]> {
     const response = await apiClient.get<NewEmployee[]>('/homePage/list-newEmployees');
-    return response.data || [];
+    const employees = response.data || [];
+    return employees.map(emp => ({
+      ...emp,
+      profilePhoto: normalizePhotoUrl(emp.profilePhoto) || ''
+    }));
   },
 
   async listUpcomingDayOffs(): Promise<any[]> {

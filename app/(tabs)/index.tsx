@@ -157,7 +157,7 @@ export default function HomeScreen() {
                 {(() => {
                   const photoUrl = profileDetails?.profilePhoto || user?.profilePictureUrl;
 
-                  if (photoUrl && photoUrl !== 'https://faz2-cdn.herotr.com') {
+                  if (photoUrl) {
                     return (
                       <Image
                         source={{ uri: photoUrl }}
@@ -244,7 +244,7 @@ export default function HomeScreen() {
               {newEmployees.map((employee) => (
                 <View key={employee.id} style={styles.employeeItem}>
                   <View style={styles.employeeLeft}>
-                    {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com/' ? (
+                    {employee.profilePhoto ? (
                       <Image source={{ uri: employee.profilePhoto }} style={styles.employeeImage} />
                     ) : (
                       <View style={styles.employeePlaceholder}>

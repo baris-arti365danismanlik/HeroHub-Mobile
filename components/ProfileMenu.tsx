@@ -38,7 +38,7 @@ export function ProfileMenu({
       >
         <View style={styles.modalContent}>
           <View style={styles.profileSection}>
-            {profilePhoto && profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
+            {profilePhoto ? (
               <Image
                 source={{ uri: profilePhoto }}
                 style={styles.profileImage}

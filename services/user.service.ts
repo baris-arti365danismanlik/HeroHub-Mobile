@@ -1,5 +1,6 @@
 import { apiHttpClient as apiClient } from './http.client';
 import { apiClient as newApiClient } from './api.client';
+import { normalizePhotoUrl } from '@/utils/formatters';
 import type {
   User,
   UserDayOff,
@@ -92,6 +93,19 @@ class UserService {
     }
 
     const profileData = response.data;
+
+    profileData.profilePhoto = normalizePhotoUrl(profileData.profilePhoto);
+
+    if (profileData.reportsTo && profileData.reportsTo.profilePhoto) {
+      profileData.reportsTo.profilePhoto = normalizePhotoUrl(profileData.reportsTo.profilePhoto);
+    }
+
+    if (profileData.colleagues && Array.isArray(profileData.colleagues)) {
+      profileData.colleagues = profileData.colleagues.map((colleague: any) => ({
+        ...colleague,
+        profilePhoto: normalizePhotoUrl(colleague.profilePhoto)
+      }));
+    }
 
     if (profileData.socialMedia && typeof profileData.socialMedia === 'object' && profileData.socialMedia.socialMediaLinks) {
       try {
