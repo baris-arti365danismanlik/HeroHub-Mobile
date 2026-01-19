@@ -175,7 +175,7 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 onPress={() => setShowEntryDatePicker(true)}
               >
                 <Text style={entryDate ? styles.dateText : styles.datePlaceholder}>
-                  {entryDate || 'GG / AA / YYYY'}
+                  {entryDate || 'DD / MM / YYYY'}
                 </Text>
                 <Calendar size={20} color="#7C3AED" />
               </TouchableOpacity>
@@ -196,7 +196,7 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 onPress={() => setShowExitDatePicker(true)}
               >
                 <Text style={exitDate ? styles.dateText : styles.datePlaceholder}>
-                  {exitDate || 'GG / AA / YYYY'}
+                  {exitDate || 'DD / MM / YYYY'}
                 </Text>
                 <Calendar size={20} color="#7C3AED" />
               </TouchableOpacity>

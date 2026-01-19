@@ -27,7 +27,7 @@ export function DatePicker({ visible, onClose, onSelectDate, initialDate }: Date
     if (initialDate) {
       const parts = initialDate.split('/').map(p => p.trim());
       if (parts.length === 3) {
-        const [month, day, year] = parts;
+        const [day, month, year] = parts;
         return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       }
     }
@@ -62,7 +62,7 @@ export function DatePicker({ visible, onClose, onSelectDate, initialDate }: Date
     const dayStr = day.toString().padStart(2, '0');
     const year = newDate.getFullYear();
 
-    onSelectDate(`${month} / ${dayStr} / ${year}`);
+    onSelectDate(`${dayStr} / ${month} / ${year}`);
     onClose();
   };
 

@@ -125,25 +125,6 @@ class UserService {
     return profileData as UserProfileDetails;
   }
 
-  async getCountries(): Promise<Country[]> {
-    const response = await apiClient.get<Country[]>('/Profile/countries');
-    return response.data || [];
-  }
-
-  async getBadgeCardInfo(userId: number): Promise<BadgeCardInfo | null> {
-    try {
-      const response = await newApiClient.get<BadgeCardInfo>(
-        `/user/badgecard-info?userId=${userId}`
-      );
-      return response.data || null;
-    } catch (error: any) {
-      if (error.isAuthError) {
-        throw error;
-      }
-      return null;
-    }
-  }
-
   async getGroupedByDepartments(
     organizationId: number,
     includeHRManagers: boolean,
