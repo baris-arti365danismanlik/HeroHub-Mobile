@@ -123,6 +123,8 @@ export default function ProfileScreen() {
   const [pastDayOffs, setPastDayOffs] = useState<any[]>([]);
   const [showLeaveTypeDropdown, setShowLeaveTypeDropdown] = useState(false);
   const [showDurationDropdown, setShowDurationDropdown] = useState(false);
+  const [startDatePickerVisible, setStartDatePickerVisible] = useState(false);
+  const [endDatePickerVisible, setEndDatePickerVisible] = useState(false);
   const [inboxVisible, setInboxVisible] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [onboardingData, setOnboardingData] = useState<{
@@ -861,6 +863,36 @@ export default function ProfileScreen() {
     return leaveTypeMap[leaveType] || 1;
   };
 
+  const formatDateForDisplay = (dateStr: string): string => {
+    if (!dateStr) return '';
+    if (dateStr.includes('/')) {
+      const parts = dateStr.split('/').map(p => p.trim());
+      if (parts.length === 3) {
+        const [month, day, year] = parts;
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
+    }
+    return dateStr;
+  };
+
+  const formatDateForApi = (dateStr: string): Date => {
+    if (!dateStr) return new Date();
+
+    if (dateStr.includes('/')) {
+      const parts = dateStr.split('/').map(p => p.trim());
+      if (parts.length === 3) {
+        const [month, day, year] = parts;
+        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      }
+    }
+
+    if (dateStr.includes('-')) {
+      return new Date(dateStr);
+    }
+
+    return new Date();
+  };
+
   const handleSubmitLeaveRequest = async () => {
     if (!user?.backend_user_id || !leaveForm.startDate || !leaveForm.endDate) {
       return;
@@ -869,8 +901,8 @@ export default function ProfileScreen() {
     try {
       setLeaveLoading(true);
 
-      const startDate = new Date(leaveForm.startDate);
-      const endDate = new Date(leaveForm.endDate);
+      const startDate = formatDateForApi(leaveForm.startDate);
+      const endDate = formatDateForApi(leaveForm.endDate);
 
       startDate.setHours(21, 0, 0, 0);
       endDate.setHours(21, 0, 0, 0);
@@ -896,6 +928,7 @@ export default function ProfileScreen() {
       setLeaveSuccessModalVisible(true);
 
       await loadLeaveRequests();
+      await loadBadgeCardInfo();
     } catch (error) {
     } finally {
       setLeaveLoading(false);
@@ -3197,28 +3230,28 @@ export default function ProfileScreen() {
 
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Başlangıç Tarihi</Text>
-                <View style={styles.formDatePicker}>
-                  <TextInput
-                    style={styles.formDateInput}
-                    placeholder="YYYY-MM-DD"
-                    value={leaveForm.startDate}
-                    onChangeText={(text) => setLeaveForm({ ...leaveForm, startDate: text })}
-                  />
+                <TouchableOpacity
+                  style={styles.formDatePicker}
+                  onPress={() => setStartDatePickerVisible(true)}
+                >
+                  <Text style={[styles.formDateInput, { color: leaveForm.startDate ? '#1a1a1a' : '#999' }]}>
+                    {formatDateForDisplay(leaveForm.startDate) || 'YYYY-MM-DD'}
+                  </Text>
                   <Calendar size={20} color="#7C3AED" />
-                </View>
+                </TouchableOpacity>
               </View>
 
               <View style={styles.formGroup}>
                 <Text style={styles.formLabel}>Bitiş Tarihi</Text>
-                <View style={styles.formDatePicker}>
-                  <TextInput
-                    style={styles.formDateInput}
-                    placeholder="YYYY-MM-DD"
-                    value={leaveForm.endDate}
-                    onChangeText={(text) => setLeaveForm({ ...leaveForm, endDate: text })}
-                  />
+                <TouchableOpacity
+                  style={styles.formDatePicker}
+                  onPress={() => setEndDatePickerVisible(true)}
+                >
+                  <Text style={[styles.formDateInput, { color: leaveForm.endDate ? '#1a1a1a' : '#999' }]}>
+                    {formatDateForDisplay(leaveForm.endDate) || 'YYYY-MM-DD'}
+                  </Text>
                   <Calendar size={20} color="#7C3AED" />
-                </View>
+                </TouchableOpacity>
               </View>
 
               <View style={styles.formGroup}>
@@ -3345,6 +3378,26 @@ export default function ProfileScreen() {
           userName={`${user.firstName} ${user.lastName}`}
         />
       )}
+
+      <DatePicker
+        visible={startDatePickerVisible}
+        onClose={() => setStartDatePickerVisible(false)}
+        onSelectDate={(date) => {
+          setLeaveForm({ ...leaveForm, startDate: date });
+          setStartDatePickerVisible(false);
+        }}
+        initialDate={leaveForm.startDate}
+      />
+
+      <DatePicker
+        visible={endDatePickerVisible}
+        onClose={() => setEndDatePickerVisible(false)}
+        onSelectDate={(date) => {
+          setLeaveForm({ ...leaveForm, endDate: date });
+          setEndDatePickerVisible(false);
+        }}
+        initialDate={leaveForm.endDate}
+      />
 
       {selectedFile && (
         <FileActionDropdown
