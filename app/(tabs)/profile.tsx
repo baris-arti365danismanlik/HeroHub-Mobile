@@ -2199,19 +2199,38 @@ export default function ProfileScreen() {
           title="VİZE BİLGİLERİ"
           icon={<Globe size={18} color="#7C3AED" />}
           isExpandedDefault={false}
+          subtitle={profileDetails.userVisas.length > 0 ? undefined : 'Bilgi yok'}
         >
+          <TouchableOpacity
+            style={styles.visaRequestButton}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.visaRequestButtonText}>Vize Evrakı Talep Et</Text>
+          </TouchableOpacity>
+
           {profileDetails.userVisas.length > 0 ? (
-            profileDetails.userVisas.map((visa, index) => (
-              <View key={visa.id}>
-                <InfoRow label="Ülke" value={visa.country} />
-                <InfoRow label="Vize Tipi" value={visa.visaType} />
-                <InfoRow label="Veriliş Tarihi" value={formatDate(visa.issueDate)} />
-                <InfoRow label="Bitiş Tarihi" value={formatDate(visa.expiryDate)} isLast={index === profileDetails.userVisas.length - 1} />
-              </View>
-            ))
+            <View style={{ marginTop: 16 }}>
+              {profileDetails.userVisas.map((visa, index) => (
+                <View key={visa.id}>
+                  <InfoRow label="Ülke" value={visa.country} />
+                  <InfoRow label="Vize Tipi" value={visa.visaType} />
+                  <InfoRow label="Veriliş Tarihi" value={formatDate(visa.issueDate)} />
+                  <InfoRow label="Bitiş Tarihi" value={formatDate(visa.expiryDate)} isLast={index === profileDetails.userVisas.length - 1} />
+                </View>
+              ))}
+            </View>
           ) : (
-            <InfoRow label="Vize" value="Bilgi yok" isLast />
+            <View style={styles.visaEmptyStateContainer}>
+              <View style={styles.visaInfoIconContainer}>
+                <Text style={styles.visaInfoIcon}>ⓘ</Text>
+              </View>
+              <Text style={styles.visaEmptyText}>Vize Bilgisi Bulunmamaktadır.</Text>
+            </View>
           )}
+
+          <TouchableOpacity style={styles.visaAddButton} activeOpacity={0.7}>
+            <Text style={styles.visaAddButtonText}>Ekle</Text>
+          </TouchableOpacity>
         </Accordion>
       </>
     );
@@ -6591,5 +6610,62 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#DC2626',
+  },
+  visaRequestButton: {
+    alignSelf: 'center',
+    minWidth: 200,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    backgroundColor: '#7C3AED',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  visaRequestButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  visaAddButton: {
+    alignSelf: 'center',
+    minWidth: 120,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  visaAddButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#7C3AED',
+  },
+  visaEmptyStateContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+  },
+  visaInfoIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  visaInfoIcon: {
+    fontSize: 28,
+    color: '#9CA3AF',
+  },
+  visaEmptyText: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
   },
 });
