@@ -52,6 +52,7 @@ import { InboxModal } from '@/components/InboxModal';
 import { DatePicker } from '@/components/DatePicker';
 import { WelcomePackageModal } from '@/components/WelcomePackageModal';
 import { SuccessModal } from '@/components/SuccessModal';
+import { VisaRequestModal } from '@/components/VisaRequestModal';
 import {
   formatGender,
   formatBloodType,
@@ -2204,6 +2205,7 @@ export default function ProfileScreen() {
           <TouchableOpacity
             style={styles.visaRequestButton}
             activeOpacity={0.7}
+            onPress={() => setVisaModalVisible(true)}
           >
             <Text style={styles.visaRequestButtonText}>Vize Evrakı Talep Et</Text>
           </TouchableOpacity>
@@ -3395,6 +3397,18 @@ export default function ProfileScreen() {
           onClose={() => setInboxVisible(false)}
           backendUserId={user.backend_user_id}
           userName={`${user.firstName} ${user.lastName}`}
+        />
+      )}
+
+      {user && user.backend_user_id && (
+        <VisaRequestModal
+          visible={visaModalVisible}
+          onClose={() => setVisaModalVisible(false)}
+          userId={user.backend_user_id}
+          onSubmit={(data) => {
+            console.log('Visa request submitted:', data);
+            setVisaModalVisible(false);
+          }}
         />
       )}
 

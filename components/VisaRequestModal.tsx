@@ -9,7 +9,7 @@ import {
   TextInput,
   Platform,
 } from 'react-native';
-import { X } from 'lucide-react-native';
+import { X, ChevronDown, Calendar } from 'lucide-react-native';
 import { userService } from '@/services/user.service';
 import { DatePicker } from './DatePicker';
 
@@ -118,6 +118,7 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 <Text style={selectedVisaType ? styles.dropdownText : styles.dropdownPlaceholder}>
                   {selectedVisaType || 'Seçiniz'}
                 </Text>
+                <ChevronDown size={20} color="#999" />
               </TouchableOpacity>
               {showVisaTypeDropdown && (
                 <View style={styles.dropdownList}>
@@ -146,6 +147,7 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 <Text style={selectedCountryName ? styles.dropdownText : styles.dropdownPlaceholder}>
                   {selectedCountryName || 'Seçiniz'}
                 </Text>
+                <ChevronDown size={20} color="#999" />
               </TouchableOpacity>
               {showCountryDropdown && (
                 <ScrollView style={[styles.dropdownList, { maxHeight: 200 }]} nestedScrollEnabled>
@@ -173,8 +175,9 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 onPress={() => setShowEntryDatePicker(true)}
               >
                 <Text style={entryDate ? styles.dateText : styles.datePlaceholder}>
-                  {entryDate || '12 / 23 / 2023'}
+                  {entryDate || 'GG / AA / YYYY'}
                 </Text>
+                <Calendar size={20} color="#7C3AED" />
               </TouchableOpacity>
               <DatePicker
                 visible={showEntryDatePicker}
@@ -193,8 +196,9 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 onPress={() => setShowExitDatePicker(true)}
               >
                 <Text style={exitDate ? styles.dateText : styles.datePlaceholder}>
-                  {exitDate || '12 / 23 / 2023'}
+                  {exitDate || 'GG / AA / YYYY'}
                 </Text>
+                <Calendar size={20} color="#7C3AED" />
               </TouchableOpacity>
               <DatePicker
                 visible={showExitDatePicker}
@@ -277,6 +281,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: '#E5E5E5',
     borderRadius: 8,
@@ -311,6 +318,9 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   dateInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: '#E5E5E5',
     borderRadius: 8,
@@ -340,31 +350,32 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    gap: 12,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 16,
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 20,
     borderTopWidth: 1,
     borderTopColor: '#E5E5E5',
   },
   cancelButton: {
-    flex: 1,
     paddingVertical: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
+    paddingHorizontal: 20,
     alignItems: 'center',
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: '#7C3AED',
   },
   submitButton: {
     flex: 1,
     paddingVertical: 14,
+    paddingHorizontal: 24,
     borderRadius: 8,
     backgroundColor: '#7C3AED',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   submitButtonText: {
     fontSize: 16,
