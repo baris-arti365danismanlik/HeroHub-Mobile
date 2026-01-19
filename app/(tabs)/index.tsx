@@ -129,10 +129,7 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.headerActions}>
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => setInboxVisible(true)}
-              >
+              <TouchableOpacity style={styles.iconButton}>
                 <Bell size={20} color="#1a1a1a" />
                 {notificationCount > 0 && (
                   <View style={styles.badge}>
@@ -318,12 +315,12 @@ export default function HomeScreen() {
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
 
-      {user && user.backend_user_id && (
+      {user && (
         <InboxModal
           visible={inboxVisible}
           onClose={() => setInboxVisible(false)}
-          backendUserId={user.backend_user_id}
-          userName={`${user.firstName} ${user.lastName}`}
+          userId={user.id}
+          onUnreadCountChange={setUnreadCount}
         />
       )}
 
