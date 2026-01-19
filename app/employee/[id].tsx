@@ -391,6 +391,7 @@ export default function EmployeeDetailScreen() {
             title="VİZE BİLGİLERİ"
             icon={<Plane size={20} color="#1a1a1a" />}
             canEdit={false}
+            subtitle={employee.userVisas && employee.userVisas.length > 0 ? undefined : 'Bilgi yok'}
           >
             <TouchableOpacity
               style={styles.visaRequestButton}
@@ -572,12 +573,14 @@ const styles = StyleSheet.create({
   },
   visaRequestButton: {
     alignSelf: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
+    minWidth: 200,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
     backgroundColor: '#7C3AED',
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   visaRequestButtonText: {
     fontSize: 15,
@@ -586,14 +589,16 @@ const styles = StyleSheet.create({
   },
   visaAddButton: {
     alignSelf: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 40,
+    minWidth: 120,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     backgroundColor: '#fff',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#7C3AED',
     alignItems: 'center',
-    marginTop: 16,
+    justifyContent: 'center',
+    marginTop: 8,
   },
   visaAddButtonText: {
     fontSize: 15,
@@ -602,25 +607,25 @@ const styles = StyleSheet.create({
   },
   emptyStateContainer: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
   },
   infoIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   infoIcon: {
-    fontSize: 24,
+    fontSize: 28,
     color: '#9CA3AF',
   },
   emptyText: {
     fontSize: 14,
-    color: '#999',
-    fontStyle: 'italic',
-    paddingVertical: 8,
+    color: '#6B7280',
+    textAlign: 'center',
   },
 });

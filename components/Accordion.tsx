@@ -9,9 +9,10 @@ interface AccordionProps {
   isExpandedDefault?: boolean;
   canEdit?: boolean;
   onEdit?: () => void;
+  subtitle?: string;
 }
 
-export function Accordion({ title, icon, children, isExpandedDefault = false, canEdit = false, onEdit }: AccordionProps) {
+export function Accordion({ title, icon, children, isExpandedDefault = false, canEdit = false, onEdit, subtitle }: AccordionProps) {
   const [isExpanded, setIsExpanded] = useState(isExpandedDefault);
 
   useEffect(() => {
@@ -27,7 +28,15 @@ export function Accordion({ title, icon, children, isExpandedDefault = false, ca
       >
         <View style={styles.headerLeft}>
           {icon}
-          <Text style={styles.title}>{title}</Text>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.title}>{title}</Text>
+            {!isExpanded && subtitle && (
+              <View style={styles.subtitleContainer}>
+                <Text style={styles.subtitleLabel}>Vize</Text>
+                <Text style={styles.subtitleValue}>{subtitle}</Text>
+              </View>
+            )}
+          </View>
         </View>
         <View style={styles.headerRight}>
           {canEdit && onEdit && (
@@ -76,6 +85,9 @@ const styles = StyleSheet.create({
     gap: 8,
     flex: 1,
   },
+  headerTextContainer: {
+    flex: 1,
+  },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -86,6 +98,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1a1a1a',
     letterSpacing: 0.3,
+  },
+  subtitleContainer: {
+    flexDirection: 'row',
+    marginTop: 4,
+    gap: 8,
+  },
+  subtitleLabel: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  subtitleValue: {
+    fontSize: 13,
+    color: '#6B7280',
   },
   editButton: {
     padding: 4,
