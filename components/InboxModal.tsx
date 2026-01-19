@@ -14,6 +14,7 @@ import { X, Mail, ChevronLeft, Download, Send, CircleCheck as CheckCircle, Clock
 import { notificationService } from '@/services/notification.service';
 import { userService } from '@/services/user.service';
 import { UserNotification, UserProfileDetails, NewEmployee, RecentActivity } from '@/types/backend';
+import { normalizePhotoUrl } from '@/utils/formatters';
 
 interface InboxModalProps {
   visible: boolean;
@@ -91,18 +92,24 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
     <>
       <View style={styles.modalHeader}>
         <View style={styles.profileSection}>
-          {profileDetails?.profilePhoto && profileDetails.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
-            <Image
-              source={{ uri: profileDetails.profilePhoto }}
-              style={styles.profileImage}
-            />
-          ) : (
-            <View style={styles.profileImagePlaceholder}>
-              <Text style={styles.profileInitial}>
-                {userName ? userName.charAt(0).toUpperCase() : 'K'}
-              </Text>
-            </View>
-          )}
+          {(() => {
+            const photoUrl = normalizePhotoUrl(profileDetails?.profilePhoto);
+            if (photoUrl) {
+              return (
+                <Image
+                  source={{ uri: photoUrl }}
+                  style={styles.profileImage}
+                />
+              );
+            }
+            return (
+              <View style={styles.profileImagePlaceholder}>
+                <Text style={styles.profileInitial}>
+                  {userName ? userName.charAt(0).toUpperCase() : 'K'}
+                </Text>
+              </View>
+            );
+          })()}
           <View style={styles.greetingContainer}>
             <Text style={styles.greeting}>Merhaba,</Text>
             <Text style={styles.userName}>{userName || 'Kullanıcı'}</Text>
@@ -195,18 +202,24 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
               </View>
               {newEmployees.map((employee) => (
                 <View key={employee.id} style={styles.employeeItem}>
-                  {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
-                    <Image
-                      source={{ uri: employee.profilePhoto }}
-                      style={styles.employeePhoto}
-                    />
-                  ) : (
-                    <View style={styles.employeePhotoPlaceholder}>
-                      <Text style={styles.employeeInitial}>
-                        {employee.fullName ? employee.fullName.charAt(0).toUpperCase() : 'Ç'}
-                      </Text>
-                    </View>
-                  )}
+                  {(() => {
+                    const photoUrl = normalizePhotoUrl(employee.profilePhoto);
+                    if (photoUrl) {
+                      return (
+                        <Image
+                          source={{ uri: photoUrl }}
+                          style={styles.employeePhoto}
+                        />
+                      );
+                    }
+                    return (
+                      <View style={styles.employeePhotoPlaceholder}>
+                        <Text style={styles.employeeInitial}>
+                          {employee.fullName ? employee.fullName.charAt(0).toUpperCase() : 'Ç'}
+                        </Text>
+                      </View>
+                    );
+                  })()}
                   <View style={styles.employeeInfo}>
                     <Text style={styles.employeeName}>{employee.fullName || 'Çalışan'}</Text>
                     <Text style={styles.employeeTitle}>{employee.title || 'Pozisyon'}</Text>
