@@ -274,6 +274,7 @@ export default function ProfileScreen() {
         setModulePermissions(profile.modulePermissions);
 
         loadShiftPlan();
+        loadBadgeCardInfo();
       } catch (error) {
       } finally {
         setLoading(false);
@@ -713,7 +714,7 @@ export default function ProfileScreen() {
     if (!user?.backend_user_id) return;
 
     try {
-      const info = await assetService.getBadgeCardInfo(Number(user.backend_user_id));
+      const info = await userService.getBadgeCardInfo(Number(user.backend_user_id));
       setBadgeCardInfo(info);
     } catch (error) {
     }
@@ -848,21 +849,39 @@ export default function ProfileScreen() {
     }
   };
 
+  const getLeaveTypeNumber = (leaveType: string): number => {
+    const leaveTypeMap: Record<string, number> = {
+      'Yıllık İzin': 1,
+      'Doğum Günü İzni': 2,
+      'Karne Günü İzni': 3,
+      'Evlilik İzni': 4,
+      'Ölüm İzni': 5,
+      'Hastalık İzni': 6,
+    };
+    return leaveTypeMap[leaveType] || 1;
+  };
+
   const handleSubmitLeaveRequest = async () => {
-    if (!user?.id || !leaveForm.startDate || !leaveForm.endDate) {
+    if (!user?.backend_user_id || !leaveForm.startDate || !leaveForm.endDate) {
       return;
     }
 
     try {
       setLeaveLoading(true);
 
-      await leaveService.createLeaveRequest({
-        user_id: user.id,
-        leave_type: leaveForm.leaveType,
-        start_date: leaveForm.startDate,
-        end_date: leaveForm.endDate,
-        duration: leaveForm.duration,
-        notes: leaveForm.notes,
+      const startDate = new Date(leaveForm.startDate);
+      const endDate = new Date(leaveForm.endDate);
+
+      startDate.setHours(21, 0, 0, 0);
+      endDate.setHours(21, 0, 0, 0);
+
+      await leaveService.createDayOffRequest({
+        userId: String(user.backend_user_id),
+        dayOffType: getLeaveTypeNumber(leaveForm.leaveType),
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        reason: leaveForm.notes || '',
+        countOfDays: leaveForm.duration,
       });
 
       setLeaveForm({
@@ -3123,23 +3142,29 @@ export default function ProfileScreen() {
 
             <ScrollView style={styles.modalContent}>
               <View style={styles.leaveUserCard}>
-                {user.profilePictureUrl ? (
-                  <Image
-                    source={{ uri: user.profilePictureUrl }}
-                    style={styles.leaveUserImage}
-                  />
-                ) : (
-                  <View style={styles.leaveUserPlaceholder}>
-                    <UserIcon size={24} color="#7C3AED" />
-                  </View>
-                )}
+                {(() => {
+                  const photoUrl = normalizePhotoUrl(badgeCardInfo?.profilePhoto);
+                  if (photoUrl) {
+                    return (
+                      <Image
+                        source={{ uri: photoUrl }}
+                        style={styles.leaveUserImage}
+                      />
+                    );
+                  }
+                  return (
+                    <View style={styles.leaveUserPlaceholder}>
+                      <UserIcon size={24} color="#7C3AED" />
+                    </View>
+                  );
+                })()}
                 <View style={styles.leaveUserInfo}>
-                  <Text style={styles.leaveUserName}>{user.firstName} {user.lastName}</Text>
-                  <Text style={styles.leaveUserRole}>{profileDetails?.currentTitle || 'Management Trainee'}</Text>
+                  <Text style={styles.leaveUserName}>{badgeCardInfo?.fullName || `${user.firstName} ${user.lastName}`}</Text>
+                  <Text style={styles.leaveUserRole}>{badgeCardInfo?.title || profileDetails?.currentTitle || '—'}</Text>
                 </View>
                 <View style={styles.leaveBalanceBox}>
                   <Text style={styles.leaveBalanceLabel}>İZİN BAKİYESİ</Text>
-                  <Text style={styles.leaveBalanceValue}>125,5 Gün</Text>
+                  <Text style={styles.leaveBalanceValue}>{badgeCardInfo?.dayOffBalance ?? dayOffBalance} Gün</Text>
                 </View>
               </View>
 

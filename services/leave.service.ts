@@ -15,6 +15,30 @@ export interface CreateLeaveRequestData {
   notes?: string;
 }
 
+export interface CreateDayOffRequestPayload {
+  userId: string;
+  dayOffType: number;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  countOfDays: number;
+}
+
+export interface DayOffRequestResponse {
+  userDayOffId: number;
+  userId: number;
+  dayOffType: number;
+  startDate: string;
+  endDate: string;
+  countOfDays: number;
+  requesterUserId: number;
+  approverUserId: number;
+  approverMemo: string | null;
+  requestedDate: string;
+  status: number;
+  reason: string;
+}
+
 export const leaveService = {
   async getUserLeaveRequests(userId: string): Promise<LeaveRequest[]> {
     return [];
@@ -26,6 +50,17 @@ export const leaveService = {
 
   async createLeaveRequest(requestData: CreateLeaveRequestData): Promise<LeaveRequest> {
     throw new Error('Not implemented');
+  },
+
+  async createDayOffRequest(payload: CreateDayOffRequestPayload): Promise<DayOffRequestResponse> {
+    const response = await apiHttpClient.post<DayOffRequestResponse>(
+      '/userDayOff/create-dayOffRequest',
+      payload
+    );
+    if (!response.data) {
+      throw new Error('Failed to create day off request');
+    }
+    return response.data;
   },
 
   async updateLeaveRequest(
