@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { authService } from '@/services/auth.service';
 import type { User, LoginRequest } from '@/types/backend';
 
@@ -36,25 +35,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Auth check timeout')), 5000);
-      });
-
-      const authCheckPromise = (async () => {
-        const isAuth = await authService.isAuthenticated();
-        if (isAuth) {
-          const currentUser = await authService.getCurrentUser();
-          if (currentUser) {
-            setUser(currentUser);
-          } else {
-            await authService.logout();
-          }
+      const isAuth = await authService.isAuthenticated();
+      if (isAuth) {
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
         }
-      })();
-
-      await Promise.race([authCheckPromise, timeoutPromise]);
+      }
     } catch (error) {
-      console.error('Auth check error:', error);
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -91,17 +79,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  if (isLoading) {
-    console.log('AuthProvider - Loading...');
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-      </View>
-    );
-  }
-
-  console.log('AuthProvider - Loaded, isAuthenticated:', !!user);
-
   return (
     <AuthContext.Provider
       value={{
@@ -117,15 +94,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-  },
-});
 
 export function useAuth() {
   const context = useContext(AuthContext);
