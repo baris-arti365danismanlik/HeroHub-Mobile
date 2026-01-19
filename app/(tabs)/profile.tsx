@@ -3305,12 +3305,12 @@ export default function ProfileScreen() {
         onSubmit={handleCreatePDKSTask}
       />
 
-      {user && (
+      {user && user.backend_user_id && (
         <InboxModal
           visible={inboxVisible}
           onClose={() => setInboxVisible(false)}
-          userId={user.id}
-          onUnreadCountChange={setUnreadCount}
+          backendUserId={user.backend_user_id}
+          userName={`${user.firstName} ${user.lastName}`}
         />
       )}
 

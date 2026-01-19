@@ -813,3 +813,34 @@ export interface TreeEmployee {
   profilePhoto: string;
   children: TreeEmployee[];
 }
+
+export interface UserNotification {
+  id: number;
+  userId: number;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: string;
+  link?: string;
+}
+
+export interface TrainingStatus {
+  planned: number;
+  delayed: number;
+}
+
+export interface RecentActivity {
+  id: number;
+  message: string;
+  timestamp: string;
+  icon: string;
+}
+
+export interface NewEmployee {
+  id: number;
+  fullName: string;
+  title: string;
+  profilePhoto: string;
+  daysRemaining?: number;
+}
