@@ -206,7 +206,7 @@ class UserService {
       firstName: data.firstName || '',
       lastName: data.lastName || '',
       birthPlace: data.birthPlace || '',
-      birthdate: data.birthdate || '',
+      birthdate: data.birthdate || null,
       gender: data.gender ?? 0,
       maritalStatus: data.maritalStatus ?? 0,
       personnelNumber: data.personnelNumber || '',
@@ -276,7 +276,7 @@ class UserService {
     const payload = {
       userId,
       militaryStatus: data.militaryStatus ?? 0,
-      militaryPostpone: data.militaryPostpone || '',
+      militaryPostpone: data.militaryPostpone || null,
       militaryNote: data.militaryNote || '',
     };
     await apiClient.put('/profile/update-usermilitary', payload);
