@@ -9,28 +9,7 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import {
-  ArrowLeft,
-  User,
-  Phone,
-  Mail,
-  MapPin,
-  Heart,
-  FileText,
-  Shield,
-  Users,
-  GraduationCap,
-  Award,
-  MessageCircle,
-  Globe,
-  Plane,
-  Edit2,
-  ChevronDown,
-  ChevronUp,
-  Building2,
-  Briefcase,
-  Car,
-} from 'lucide-react-native';
+import { ArrowLeft, User, Phone, Mail, MapPin, Heart, FileText, Shield, Users, GraduationCap, Award, MessageCircle, Globe, Plane, CreditCard as Edit2, ChevronDown, ChevronUp, Building2, Briefcase, Car } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
