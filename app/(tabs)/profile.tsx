@@ -52,7 +52,8 @@ import { InboxModal } from '@/components/InboxModal';
 import { DatePicker } from '@/components/DatePicker';
 import { WelcomePackageModal } from '@/components/WelcomePackageModal';
 import { SuccessModal } from '@/components/SuccessModal';
-import { VisaRequestModal } from '@/components/VisaRequestModal';
+import { VisaRequestModal, type VisaRequestData } from '@/components/VisaRequestModal';
+import { VisaPreviewModal } from '@/components/VisaPreviewModal';
 import {
   formatGender,
   formatBloodType,
@@ -90,13 +91,9 @@ export default function ProfileScreen() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [assetLoading, setAssetLoading] = useState(false);
   const [visaModalVisible, setVisaModalVisible] = useState(false);
-  const [visaForm, setVisaForm] = useState({
-    visaType: 'Turist/Turizm Vizesi',
-    country: 'Hollanda',
-    entryDate: '',
-    exitDate: '',
-    notes: '',
-  });
+  const [visaPreviewVisible, setVisaPreviewVisible] = useState(false);
+  const [visaSuccessVisible, setVisaSuccessVisible] = useState(false);
+  const [visaRequestData, setVisaRequestData] = useState<VisaRequestData | null>(null);
   const [leaveModalVisible, setLeaveModalVisible] = useState(false);
   const [leaveSuccessModalVisible, setLeaveSuccessModalVisible] = useState(false);
   const [leaveForm, setLeaveForm] = useState({
@@ -1100,6 +1097,37 @@ export default function ProfileScreen() {
 
   const handleOpenWelcomePackageModal = () => {
     setWelcomePackageModalVisible(true);
+  };
+
+  const handleVisaRequest = (data: VisaRequestData) => {
+    setVisaRequestData(data);
+    setVisaModalVisible(false);
+    setVisaPreviewVisible(true);
+  };
+
+  const handleSendVisa = async () => {
+    if (!visaRequestData || !profileDetails) return;
+
+    try {
+      await userService.sendVisaRequest({
+        userName: profileDetails.fullName || 'Artı 365',
+        userTitle: profileDetails.title || '-Bilinmiyor-',
+        visaType: visaRequestData.visaType,
+        countryName: visaRequestData.countryName,
+        cityName: visaRequestData.cityName,
+        entryDate: visaRequestData.entryDate,
+        exitDate: visaRequestData.exitDate,
+        notes: visaRequestData.notes,
+      });
+
+      setVisaPreviewVisible(false);
+      setVisaSuccessVisible(true);
+
+      await loadProfileData();
+    } catch (error: any) {
+      console.error('Vize talebi gönderilemedi:', error);
+      alert(error.message || 'Vize talebi gönderilemedi');
+    }
   };
 
   const loadShiftPlan = async () => {
@@ -3405,12 +3433,40 @@ export default function ProfileScreen() {
           visible={visaModalVisible}
           onClose={() => setVisaModalVisible(false)}
           userId={user.backend_user_id}
-          onSubmit={(data) => {
-            console.log('Visa request submitted:', data);
-            setVisaModalVisible(false);
+          onSubmit={handleVisaRequest}
+        />
+      )}
+
+      {visaRequestData && profileDetails && (
+        <VisaPreviewModal
+          visible={visaPreviewVisible}
+          onClose={() => {
+            setVisaPreviewVisible(false);
+            setVisaModalVisible(true);
+          }}
+          onSend={handleSendVisa}
+          data={{
+            userName: profileDetails.fullName || 'Artı 365',
+            userTitle: profileDetails.title || '-Bilinmiyor-',
+            visaType: visaRequestData.visaType,
+            countryName: visaRequestData.countryName,
+            cityName: visaRequestData.cityName,
+            entryDate: visaRequestData.entryDate,
+            exitDate: visaRequestData.exitDate,
+            notes: visaRequestData.notes,
           }}
         />
       )}
+
+      <SuccessModal
+        visible={visaSuccessVisible}
+        onClose={() => {
+          setVisaSuccessVisible(false);
+          setVisaRequestData(null);
+        }}
+        title="Başvuru Başarıyla Gönderildi"
+        message="Talebiniz başarı ile iletildi."
+      />
 
       <DatePicker
         visible={startDatePickerVisible}

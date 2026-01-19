@@ -277,6 +277,43 @@ class UserService {
     const response = await apiClient.get<any>(`/user/badgecard-info?userId=${userId}`);
     return response.data || null;
   }
+
+  async sendVisaRequest(data: {
+    userName: string;
+    userTitle: string;
+    visaType: string;
+    countryName: string;
+    cityName: string;
+    entryDate: string;
+    exitDate: string;
+    notes: string;
+  }): Promise<void> {
+    const formatDate = (dateStr: string) => {
+      const parts = dateStr.split('/').map((p: string) => p.trim());
+      if (parts.length === 3) {
+        const [day, month, year] = parts;
+        return `${day}.${month}.${year}`;
+      }
+      return dateStr;
+    };
+
+    const getTodayDate = () => {
+      const today = new Date();
+      const day = today.getDate().toString().padStart(2, '0');
+      const month = (today.getMonth() + 1).toString().padStart(2, '0');
+      const year = today.getFullYear();
+      return `${day}.${month}.${year}`;
+    };
+
+    const document = `<div class="flex flex-row justify-between MuiBox-root mui-0"><p class="MuiTypography-root MuiTypography-body1 font-semibold text-heroText text-sm mui-h9h0gx">${data.countryName.toUpperCase()} KONSOLOSLUĞU'NA,</p><p class="MuiTypography-root MuiTypography-body1 font-semibold text-heroText text-sm mui-h9h0gx">${getTodayDate()}</p></div><div class="flex flex-row justify-between MuiBox-root mui-0"><p class="MuiTypography-root MuiTypography-body1 text-heroText text-sm mui-h9h0gx">${data.cityName}, Türkiye</p></div><div class="flex flex-row mt-4 MuiBox-root mui-0"><p class="MuiTypography-root MuiTypography-body1 font-semibold text-heroText text-sm mui-h9h0gx">Konu: &nbsp;</p><p class="MuiTypography-root MuiTypography-body1 text-heroText text-sm mui-h9h0gx">Vize İşyeri İzin Yazısı</p></div><div class="flex flex-row mt-4 MuiBox-root mui-0"><p class="MuiTypography-root MuiTypography-body1 text-heroText text-sm mui-h9h0gx">Sayın ilgili,</p></div><div class="flex flex-col gap-4  MuiBox-root mui-0"><p class="MuiTypography-root MuiTypography-body1 text-heroText text-sm mui-h9h0gx">Şirketimizde <span>(01.01.0001)</span> tarihinden itibaren <span class="font-medium">${data.userTitle || '-Bilinmiyor-'}</span> olarak görev yapan <span></span> pasaport numaralı Sayın <span class="font-medium text-sm">${data.userName}</span>, <span class="font-medium text-sm">${formatDate(data.entryDate)} - ${formatDate(data.exitDate)}</span> tarihleri arasında ülkenize seyahat edecektir.</p><p class="MuiTypography-root MuiTypography-body1 text-heroText text-sm mui-h9h0gx">Sayın <span class="font-medium text-sm">${data.userName}</span> ülkeniz de bulunacağı süre zarfında ulaşım, konaklama, sağlık vb. tüm seyahat masrafları kendisi tarafından karşılanacaktır. Sayın <span class="font-medium text-sm">${data.userName}</span> seyahat dönüşü şirketimizdeki görevine devam edecektir.</p><p class="MuiTypography-root MuiTypography-body1 text-heroText text-sm mui-h9h0gx">Vize islem sürecinde çalışanımıza uzun süreli ve çok girişli vize vermeniz konusunda nazik yardımlarınızı rica ederiz.</p></div><div class="flex flex-col mt-4 mb-4 items-end MuiBox-root mui-0"><p class="MuiTypography-root MuiTypography-body1 text-heroText text-sm  mui-h9h0gx">Saygılarımızla,</p><p class="MuiTypography-root MuiTypography-body1 text-heroText text-sm mui-h9h0gx">Yönetim Kurulu Başkanı</p></div>`;
+
+    const payload = {
+      note: data.notes || '',
+      document: document,
+    };
+
+    await apiClient.post('/Profile/send-visarequest', payload);
+  }
 }
 
 export const userService = new UserService();
