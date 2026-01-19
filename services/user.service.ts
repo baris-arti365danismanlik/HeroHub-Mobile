@@ -199,7 +199,18 @@ class UserService {
     maritalStatus?: number;
     personnelNumber?: string;
   }): Promise<void> {
-    await apiClient.put(`/Profile/personal-information/${userId}`, data);
+    const payload = {
+      userId,
+      tckn: data.tckn || '',
+      firstName: data.firstName || '',
+      lastName: data.lastName || '',
+      birthPlace: data.birthPlace || '',
+      birthdate: data.birthdate || '',
+      gender: data.gender ?? 0,
+      maritalStatus: data.maritalStatus ?? 0,
+      personnelNumber: data.personnelNumber || '',
+    };
+    await apiClient.put('/profile/update-userpersonalinformation', payload);
   }
 
   async updateContactInformation(userId: number, data: {
@@ -210,7 +221,16 @@ class UserService {
     businessEmail?: string;
     otherEmail?: string;
   }): Promise<void> {
-    await apiClient.put(`/Profile/contact-information/${userId}`, data);
+    const payload = {
+      userId,
+      phoneNumber: data.phoneNumber || '',
+      homePhone: data.homePhone || '',
+      businessPhone: data.businessPhone || '',
+      email: data.email || '',
+      businessEmail: data.businessEmail || '',
+      otherEmail: data.otherEmail || '',
+    };
+    await apiClient.put('/profile/update-usercontact', payload);
   }
 
   async updateAddressInformation(userId: number, data: {
@@ -219,7 +239,14 @@ class UserService {
     cityId?: number;
     countryId?: number;
   }): Promise<void> {
-    await apiClient.put(`/Profile/address-information/${userId}`, data);
+    const payload = {
+      userId,
+      address: data.address || '',
+      districtId: data.districtId || 0,
+      cityId: data.cityId || 0,
+      countryId: data.countryId || 0,
+    };
+    await apiClient.put('/profile/update-useraddress', payload);
   }
 
   async updateHealthInformation(userId: number, data: {
@@ -229,7 +256,15 @@ class UserService {
     allergies?: string;
     drugs?: string;
   }): Promise<void> {
-    await apiClient.put(`/Profile/health-information/${userId}`, data);
+    const payload = {
+      userId,
+      height: data.height || 0,
+      weight: data.weight || 0,
+      bloodType: data.bloodType ?? 0,
+      allergies: data.allergies || '',
+      drugs: data.drugs || '',
+    };
+    await apiClient.put('/profile/update-userhealth', payload);
   }
 
   async updateMilitaryInformation(userId: number, data: {
@@ -237,7 +272,13 @@ class UserService {
     militaryPostpone?: string;
     militaryNote?: string;
   }): Promise<void> {
-    await apiClient.put(`/Profile/military-information/${userId}`, data);
+    const payload = {
+      userId,
+      militaryStatus: data.militaryStatus ?? 0,
+      militaryPostpone: data.militaryPostpone || '',
+      militaryNote: data.militaryNote || '',
+    };
+    await apiClient.put('/profile/update-usermilitary', payload);
   }
 }
 
