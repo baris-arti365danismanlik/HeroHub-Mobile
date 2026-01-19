@@ -89,8 +89,24 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
   const renderInboxContent = () => (
     <>
       <View style={styles.modalHeader}>
-        <Text style={styles.greeting}>Merhaba,</Text>
-        <Text style={styles.userName}>{userName}</Text>
+        <View style={styles.profileSection}>
+          {profileDetails?.profilePhoto && profileDetails.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
+            <Image
+              source={{ uri: profileDetails.profilePhoto }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <View style={styles.profileImagePlaceholder}>
+              <Text style={styles.profileInitial}>
+                {userName.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
+          <View style={styles.greetingContainer}>
+            <Text style={styles.greeting}>Merhaba,</Text>
+            <Text style={styles.userName}>{userName}</Text>
+          </View>
+        </View>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
           <X size={24} color="#666" />
         </TouchableOpacity>
@@ -218,6 +234,32 @@ const styles = StyleSheet.create({
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
+  },
+  profileSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  profileImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
+  profileImagePlaceholder: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#E0D4F7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileInitial: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#7C3AED',
+  },
+  greetingContainer: {
+    flex: 1,
   },
   greeting: {
     fontSize: 14,
