@@ -130,51 +130,55 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#7C3AED" />
         </View>
+      ) : notifications.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Bell size={48} color="#E5E7EB" />
+          <Text style={styles.emptyTitle}>Henüz Bildirim Yok</Text>
+          <Text style={styles.emptyMessage}>Yeni bildirimleriniz burada görünecektir</Text>
+        </View>
       ) : (
         <ScrollView style={styles.content}>
-          {notifications.length > 0 && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Bell size={20} color="#7C3AED" />
-                <Text style={styles.sectionTitle}>Bildirimler</Text>
-              </View>
-              {notifications.map((notification) => (
-                <TouchableOpacity
-                  key={notification.id}
-                  style={[
-                    styles.notificationItem,
-                    !notification.isRead && styles.notificationItemUnread
-                  ]}
-                  onPress={async () => {
-                    if (!notification.isRead) {
-                      try {
-                        await notificationService.markAsRead(notification.id);
-                        setNotifications(prev =>
-                          prev.map(n =>
-                            n.id === notification.id ? { ...n, isRead: true } : n
-                          )
-                        );
-                        onNotificationRead?.();
-                      } catch (error) {
-                      }
-                    }
-                  }}
-                >
-                  <View style={styles.notificationIconContainer}>
-                    <Bell size={16} color={notification.isRead ? '#666' : '#7C3AED'} />
-                  </View>
-                  <View style={styles.notificationContent}>
-                    <Text style={styles.notificationTitle}>{notification.title}</Text>
-                    <Text style={styles.notificationMessage}>{notification.message}</Text>
-                    <Text style={styles.notificationTime}>
-                      {new Date(notification.createdAt).toLocaleDateString('tr-TR')} {formatTime(notification.createdAt)}
-                    </Text>
-                  </View>
-                  {!notification.isRead && <View style={styles.unreadDot} />}
-                </TouchableOpacity>
-              ))}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Bell size={20} color="#7C3AED" />
+              <Text style={styles.sectionTitle}>Bildirimler</Text>
             </View>
-          )}
+            {notifications.map((notification) => (
+              <TouchableOpacity
+                key={notification.id}
+                style={[
+                  styles.notificationItem,
+                  !notification.isRead && styles.notificationItemUnread
+                ]}
+                onPress={async () => {
+                  if (!notification.isRead) {
+                    try {
+                      await notificationService.markAsRead(notification.id);
+                      setNotifications(prev =>
+                        prev.map(n =>
+                          n.id === notification.id ? { ...n, isRead: true } : n
+                        )
+                      );
+                      onNotificationRead?.();
+                    } catch (error) {
+                    }
+                  }
+                }}
+              >
+                <View style={styles.notificationIconContainer}>
+                  <Bell size={16} color={notification.isRead ? '#666' : '#7C3AED'} />
+                </View>
+                <View style={styles.notificationContent}>
+                  <Text style={styles.notificationTitle}>{notification.title}</Text>
+                  <Text style={styles.notificationMessage}>{notification.message}</Text>
+                  <Text style={styles.notificationTime}>
+                    {new Date(notification.createdAt).toLocaleDateString('tr-TR')} {formatTime(notification.createdAt)}
+                  </Text>
+                </View>
+                {!notification.isRead && <View style={styles.unreadDot} />}
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <View style={styles.trainingStatusCard}>
             <View style={styles.cardHeader}>
@@ -349,6 +353,24 @@ const styles = StyleSheet.create({
     padding: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyMessage: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
   },
   content: {
     flex: 1,
