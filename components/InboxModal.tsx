@@ -13,7 +13,16 @@ import {
 import { X, Mail, ChevronLeft, Download, Send, CircleCheck as CheckCircle, Clock, Users, Briefcase } from 'lucide-react-native';
 import { notificationService } from '@/services/notification.service';
 import { userService } from '@/services/user.service';
-import { UserNotification, UserProfileDetails, NewEmployee, RecentActivity } from '@/types/backend';
+import { homeService, UserTrainingStatus, UserAgendaItem } from '@/services/home.service';
+import { UserNotification, UserProfileDetails } from '@/types/backend';
+
+interface NewEmployee {
+  id: number;
+  fullName: string;
+  title: string;
+  profilePhoto: string;
+  daysRemaining?: number;
+}
 
 interface InboxModalProps {
   visible: boolean;
@@ -27,7 +36,8 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [profileDetails, setProfileDetails] = useState<UserProfileDetails | null>(null);
   const [newEmployees, setNewEmployees] = useState<NewEmployee[]>([]);
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [userAgenda, setUserAgenda] = useState<UserAgendaItem[]>([]);
+  const [trainingStatus, setTrainingStatus] = useState<UserTrainingStatus>({ userId: 0, plannedCount: 0, overdueCount: 0 });
 
   useEffect(() => {
     if (visible && backendUserId) {
@@ -38,13 +48,17 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
   const loadInboxData = async () => {
     try {
       setLoading(true);
-      const [notificationsData, profileData] = await Promise.all([
+      const [notificationsData, profileData, training, agenda] = await Promise.all([
         notificationService.getUserNotifications(),
         userService.getUserProfile(backendUserId),
+        homeService.getUserTrainingStatus(),
+        homeService.listUserAgenda(),
       ]);
 
       setNotifications(notificationsData);
       setProfileDetails(profileData);
+      setTrainingStatus(training);
+      setUserAgenda(agenda.slice(0, 5));
 
       if (profileData.colleagues && profileData.colleagues.length > 0) {
         const employees: NewEmployee[] = profileData.colleagues
@@ -57,40 +71,26 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
           }));
         setNewEmployees(employees);
       }
-
-      const activities: RecentActivity[] = [
-        {
-          id: 1,
-          message: 'Maaş bilgileri güncelleme talebiniz yöneticinize gönderildi.',
-          timestamp: new Date().toISOString(),
-          icon: 'clock',
-        },
-        {
-          id: 2,
-          message: 'Maaş bilgileri güncelleme talebiniz yöneticinize gönderildi.',
-          timestamp: new Date().toISOString(),
-          icon: 'clock',
-        },
-      ];
-      setRecentActivities(activities);
     } catch (error) {
     } finally {
       setLoading(false);
     }
   };
 
-  const formatTime = (dateStr: string) => {
+  const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
+    const day = date.getDate();
+    const month = date.toLocaleDateString('tr-TR', { month: 'short' });
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
+    return `${day} ${month} ${hours}:${minutes}`;
   };
 
   const renderInboxContent = () => (
     <>
       <View style={styles.modalHeader}>
         <View style={styles.profileSection}>
-          {profileDetails?.profilePhoto && profileDetails.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
+          {profileDetails?.profilePhoto ? (
             <Image
               source={{ uri: profileDetails.profilePhoto }}
               style={styles.profileImage}
@@ -128,7 +128,7 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
                 <View style={styles.statusIconContainer}>
                   <CheckCircle size={24} color="#10B981" />
                 </View>
-                <Text style={styles.statusCount}>0</Text>
+                <Text style={styles.statusCount}>{trainingStatus.plannedCount}</Text>
                 <Text style={styles.statusLabel}>Planlanmış</Text>
               </View>
               <View style={styles.trainingStatusDivider} />
@@ -136,7 +136,7 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
                 <View style={styles.statusIconContainer}>
                   <Clock size={24} color="#EF4444" />
                 </View>
-                <Text style={styles.statusCount}>0</Text>
+                <Text style={styles.statusCount}>{trainingStatus.overdueCount}</Text>
                 <Text style={styles.statusLabel}>Gecikmış</Text>
               </View>
             </View>
@@ -150,7 +150,7 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
               </View>
               {newEmployees.map((employee) => (
                 <View key={employee.id} style={styles.employeeItem}>
-                  {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
+                  {employee.profilePhoto ? (
                     <Image
                       source={{ uri: employee.profilePhoto }}
                       style={styles.employeePhoto}
@@ -174,22 +174,22 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
             </View>
           )}
 
-          {recentActivities.length > 0 && (
+          {userAgenda.length > 0 && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Clock size={20} color="#7C3AED" />
                 <Text style={styles.sectionTitle}>Son Aktiviteler</Text>
               </View>
-              {recentActivities.map((activity) => (
-                <View key={activity.id} style={styles.activityItem}>
+              {userAgenda.map((item) => (
+                <View key={`${item.moduleId}-${item.eventDate}`} style={styles.activityItem}>
                   <View style={styles.activityIconContainer}>
                     <Clock size={16} color="#7C3AED" />
                   </View>
                   <View style={styles.activityContent}>
                     <Text style={styles.activityTime}>
-                      {new Date(activity.timestamp).getDate()} Kas {formatTime(activity.timestamp)}
+                      {formatDate(item.eventDate)}
                     </Text>
-                    <Text style={styles.activityMessage}>{activity.message}</Text>
+                    <Text style={styles.activityMessage}>{item.title}</Text>
                   </View>
                 </View>
               ))}
