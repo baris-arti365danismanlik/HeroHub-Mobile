@@ -93,6 +93,7 @@ class UserService {
     }
 
     const profileData = response.data;
+    profileData.backendUserId = backendUserId;
 
     profileData.profilePhoto = normalizePhotoUrl(profileData.profilePhoto);
 

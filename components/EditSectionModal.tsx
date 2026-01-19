@@ -96,10 +96,11 @@ export default function EditSectionModal({
 
     try {
       setLoading(true);
+      const userId = employee.backendUserId || employee.id;
 
       switch (sectionType) {
         case 'personal':
-          await userService.updatePersonalInformation(employee.backendUserId, {
+          await userService.updatePersonalInformation(userId, {
             tckn: formData.tckn,
             firstName: formData.firstName,
             lastName: formData.lastName,
@@ -110,7 +111,7 @@ export default function EditSectionModal({
           });
           break;
         case 'contact':
-          await userService.updateContactInformation(employee.backendUserId, {
+          await userService.updateContactInformation(userId, {
             phoneNumber: formData.phoneNumber,
             homePhone: formData.homePhone,
             businessPhone: formData.businessPhone,
@@ -120,12 +121,12 @@ export default function EditSectionModal({
           });
           break;
         case 'address':
-          await userService.updateAddressInformation(employee.backendUserId, {
+          await userService.updateAddressInformation(userId, {
             address: formData.address,
           });
           break;
         case 'health':
-          await userService.updateHealthInformation(employee.backendUserId, {
+          await userService.updateHealthInformation(userId, {
             height: formData.height ? parseInt(formData.height) : undefined,
             weight: formData.weight ? parseInt(formData.weight) : undefined,
             bloodType: parseInt(formData.bloodType),
@@ -134,7 +135,7 @@ export default function EditSectionModal({
           });
           break;
         case 'military':
-          await userService.updateMilitaryInformation(employee.backendUserId, {
+          await userService.updateMilitaryInformation(userId, {
             militaryStatus: parseInt(formData.militaryStatus),
             militaryPostpone: formData.militaryPostpone,
             militaryNote: formData.militaryNote,

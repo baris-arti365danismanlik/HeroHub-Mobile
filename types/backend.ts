@@ -680,6 +680,7 @@ export interface Colleague {
 
 export interface UserProfileDetails {
   id: number;
+  backendUserId?: number;
   profilePhoto: string;
   organizationId: number;
   organizationName: string;
