@@ -53,6 +53,7 @@ import { DatePicker } from '@/components/DatePicker';
 import { WelcomePackageModal } from '@/components/WelcomePackageModal';
 import { SuccessModal } from '@/components/SuccessModal';
 import { VisaRequestModal, type VisaRequestData } from '@/components/VisaRequestModal';
+import { VisaPreviewModal } from '@/components/VisaPreviewModal';
 import {
   formatGender,
   formatBloodType,
@@ -90,7 +91,9 @@ export default function ProfileScreen() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [assetLoading, setAssetLoading] = useState(false);
   const [visaModalVisible, setVisaModalVisible] = useState(false);
+  const [visaPreviewVisible, setVisaPreviewVisible] = useState(false);
   const [visaSuccessVisible, setVisaSuccessVisible] = useState(false);
+  const [visaRequestData, setVisaRequestData] = useState<VisaRequestData | null>(null);
   const [leaveModalVisible, setLeaveModalVisible] = useState(false);
   const [leaveSuccessModalVisible, setLeaveSuccessModalVisible] = useState(false);
   const [leaveForm, setLeaveForm] = useState({
@@ -1096,36 +1099,32 @@ export default function ProfileScreen() {
     setWelcomePackageModalVisible(true);
   };
 
-  const handleVisaRequest = async (data: VisaRequestData) => {
-    if (!user?.backend_user_id) return;
+  const handleVisaRequest = (data: VisaRequestData) => {
+    setVisaRequestData(data);
+    setVisaModalVisible(false);
+    setVisaPreviewVisible(true);
+  };
+
+  const handleSendVisa = async () => {
+    if (!visaRequestData || !profileDetails) return;
 
     try {
-      const convertDateToISO = (dateStr: string) => {
-        const parts = dateStr.split('/').map((p: string) => p.trim());
-        if (parts.length === 3) {
-          const [day, month, year] = parts;
-          const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-          return date.toISOString();
-        }
-        return new Date().toISOString();
-      };
-
-      await userService.createUserVisa({
-        userId: user.backend_user_id,
-        visaType: data.visaType,
-        countryId: data.countryId,
-        visaStartDate: convertDateToISO(data.entryDate),
-        visaEndDate: convertDateToISO(data.exitDate),
-        note: data.notes,
+      await userService.sendVisaRequest({
+        userName: profileDetails.fullName || 'Artı 365',
+        userTitle: profileDetails.title || '-Bilinmiyor-',
+        visaType: visaRequestData.visaType,
+        countryName: visaRequestData.countryName,
+        cityName: visaRequestData.cityName,
+        entryDate: visaRequestData.entryDate,
+        exitDate: visaRequestData.exitDate,
+        notes: visaRequestData.notes,
       });
 
-      setVisaModalVisible(false);
+      setVisaPreviewVisible(false);
       setVisaSuccessVisible(true);
-
-      await loadEmploymentData();
     } catch (error: any) {
-      console.error('Vize bilgisi eklenemedi:', error);
-      alert(error.message || 'Vize bilgisi eklenemedi');
+      console.error('Vize talebi gönderilemedi:', error);
+      alert(error.message || 'Vize talebi gönderilemedi');
     }
   };
 
@@ -2228,11 +2227,17 @@ export default function ProfileScreen() {
           icon={<Globe size={18} color="#7C3AED" />}
           isExpandedDefault={false}
           subtitle={profileDetails.userVisas.length > 0 ? undefined : 'Bilgi yok'}
-          canAdd={true}
-          onAdd={() => setVisaModalVisible(true)}
         >
+          <TouchableOpacity
+            style={styles.visaRequestButton}
+            activeOpacity={0.7}
+            onPress={() => setVisaModalVisible(true)}
+          >
+            <Text style={styles.visaRequestButtonText}>Vize Evrakı Talep Et</Text>
+          </TouchableOpacity>
+
           {profileDetails.userVisas.length > 0 ? (
-            <View>
+            <View style={{ marginTop: 16 }}>
               {profileDetails.userVisas.map((visa, index) => (
                 <View key={visa.id}>
                   <InfoRow label="Ülke" value={visa.country} />
@@ -2250,6 +2255,10 @@ export default function ProfileScreen() {
               <Text style={styles.visaEmptyText}>Vize Bilgisi Bulunmamaktadır.</Text>
             </View>
           )}
+
+          <TouchableOpacity style={styles.visaAddButton} activeOpacity={0.7}>
+            <Text style={styles.visaAddButtonText}>Ekle</Text>
+          </TouchableOpacity>
         </Accordion>
       </>
     );
@@ -3331,13 +3340,35 @@ export default function ProfileScreen() {
         />
       )}
 
+      {visaRequestData && profileDetails && (
+        <VisaPreviewModal
+          visible={visaPreviewVisible}
+          onClose={() => {
+            setVisaPreviewVisible(false);
+            setVisaModalVisible(true);
+          }}
+          onSend={handleSendVisa}
+          data={{
+            userName: profileDetails.fullName || 'Artı 365',
+            userTitle: profileDetails.title || '-Bilinmiyor-',
+            visaType: visaRequestData.visaType,
+            countryName: visaRequestData.countryName,
+            cityName: visaRequestData.cityName,
+            entryDate: visaRequestData.entryDate,
+            exitDate: visaRequestData.exitDate,
+            notes: visaRequestData.notes,
+          }}
+        />
+      )}
+
       <SuccessModal
         visible={visaSuccessVisible}
         onClose={() => {
           setVisaSuccessVisible(false);
+          setVisaRequestData(null);
         }}
-        title="Vize bilgisi başarıyla eklendi"
-        message="Vize bilginiz başarıyla kaydedildi."
+        title="Başvuru Başarıyla Gönderildi"
+        message="Talebiniz başarı ile iletildi."
       />
 
       <DatePicker

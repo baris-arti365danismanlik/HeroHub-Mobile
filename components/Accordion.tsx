@@ -1,6 +1,6 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ChevronDown, Pencil, Plus } from 'lucide-react-native';
+import { ChevronDown, Pencil } from 'lucide-react-native';
 
 interface AccordionProps {
   title: string;
@@ -9,12 +9,10 @@ interface AccordionProps {
   isExpandedDefault?: boolean;
   canEdit?: boolean;
   onEdit?: () => void;
-  canAdd?: boolean;
-  onAdd?: () => void;
   subtitle?: string;
 }
 
-export function Accordion({ title, icon, children, isExpandedDefault = false, canEdit = false, onEdit, canAdd = false, onAdd, subtitle }: AccordionProps) {
+export function Accordion({ title, icon, children, isExpandedDefault = false, canEdit = false, onEdit, subtitle }: AccordionProps) {
   const [isExpanded, setIsExpanded] = useState(isExpandedDefault);
 
   useEffect(() => {
@@ -41,18 +39,6 @@ export function Accordion({ title, icon, children, isExpandedDefault = false, ca
           </View>
         </View>
         <View style={styles.headerRight}>
-          {canAdd && onAdd && (
-            <TouchableOpacity
-              onPress={(e) => {
-                e.stopPropagation();
-                onAdd();
-              }}
-              style={styles.addButton}
-              activeOpacity={0.7}
-            >
-              <Plus size={20} color="#7C3AED" />
-            </TouchableOpacity>
-          )}
           {canEdit && onEdit && (
             <TouchableOpacity
               onPress={(e) => {
@@ -125,9 +111,6 @@ const styles = StyleSheet.create({
   subtitleValue: {
     fontSize: 13,
     color: '#6B7280',
-  },
-  addButton: {
-    padding: 4,
   },
   editButton: {
     padding: 4,

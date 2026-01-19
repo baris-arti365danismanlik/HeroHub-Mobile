@@ -278,25 +278,6 @@ class UserService {
     return response.data || null;
   }
 
-  async createUserVisa(data: {
-    userId: number;
-    visaType: number;
-    countryId: number;
-    visaStartDate: string;
-    visaEndDate: string;
-    note?: string;
-  }): Promise<any> {
-    const response = await apiClient.post<any>('/Profile/create-uservisa', {
-      userId: data.userId.toString(),
-      visaType: data.visaType.toString(),
-      countryId: data.countryId,
-      visaStartDate: data.visaStartDate,
-      visaEndDate: data.visaEndDate,
-      note: data.note || '',
-    });
-    return response.data;
-  }
-
   async sendVisaRequest(data: {
     userName: string;
     userTitle: string;
