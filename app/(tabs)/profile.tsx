@@ -1122,8 +1122,6 @@ export default function ProfileScreen() {
 
       setVisaPreviewVisible(false);
       setVisaSuccessVisible(true);
-
-      await loadProfileData();
     } catch (error: any) {
       console.error('Vize talebi gönderilemedi:', error);
       alert(error.message || 'Vize talebi gönderilemedi');
