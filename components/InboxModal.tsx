@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Image,
   TextInput,
+  SafeAreaView,
 } from 'react-native';
 import { X, Mail, ChevronLeft, Download, Send, CircleCheck as CheckCircle, Clock, Users, Briefcase, Bell } from 'lucide-react-native';
 import { notificationService } from '@/services/notification.service';
@@ -90,6 +91,14 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
 
   const renderInboxContent = () => (
     <>
+      <View style={styles.headerBar}>
+        <TouchableOpacity onPress={onClose} style={styles.backButton}>
+          <ChevronLeft size={24} color="#1a1a1a" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Gelen Kutusu</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
       <View style={styles.modalHeader}>
         <View style={styles.profileSection}>
           {(() => {
@@ -115,9 +124,6 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
             <Text style={styles.userName}>{userName || 'Kullanıcı'}</Text>
           </View>
         </View>
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <X size={24} color="#666" />
-        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -261,32 +267,42 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
   return (
     <Modal
       visible={visible}
-      transparent={true}
+      transparent={false}
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          {renderInboxContent()}
-        </View>
-      </View>
+      <SafeAreaView style={styles.modalContainer}>
+        {renderInboxContent()}
+      </SafeAreaView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   modalContainer: {
+    flex: 1,
     backgroundColor: '#fff',
-    borderRadius: 16,
-    width: '90%',
-    maxHeight: '85%',
-    overflow: 'hidden',
+  },
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#fff',
+  },
+  backButton: {
+    padding: 4,
+    width: 40,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    flex: 1,
+    textAlign: 'center',
   },
   modalHeader: {
     padding: 20,
@@ -328,12 +344,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: '#1a1a1a',
-  },
-  closeButton: {
-    position: 'absolute',
-    right: 20,
-    top: 20,
-    padding: 4,
   },
   loadingContainer: {
     padding: 40,
