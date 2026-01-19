@@ -10,7 +10,7 @@ import {
   Image,
   TextInput,
 } from 'react-native';
-import { X, Mail, ChevronLeft, Download, Send, CheckCircle, Clock, Users, Briefcase } from 'lucide-react-native';
+import { X, Mail, ChevronLeft, Download, Send, CircleCheck as CheckCircle, Clock, Users, Briefcase } from 'lucide-react-native';
 import { notificationService } from '@/services/notification.service';
 import { userService } from '@/services/user.service';
 import { UserNotification, UserProfileDetails, NewEmployee, RecentActivity } from '@/types/backend';

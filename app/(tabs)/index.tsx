@@ -19,20 +19,7 @@ import type {
   UserAgendaItem,
   UserTrainingStatus,
 } from '@/services/home.service';
-import {
-  Calendar,
-  Clock,
-  FileText,
-  Menu,
-  Bell,
-  MessageSquare,
-  User as UserIcon,
-  Users,
-  BookOpen,
-  TrendingUp,
-  CheckCircle,
-  AlertCircle,
-} from 'lucide-react-native';
+import { Calendar, Clock, FileText, Menu, Bell, MessageSquare, User as UserIcon, Users, BookOpen, TrendingUp, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
 import { ProfileMenu } from '@/components/ProfileMenu';
