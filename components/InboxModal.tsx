@@ -98,13 +98,13 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
           ) : (
             <View style={styles.profileImagePlaceholder}>
               <Text style={styles.profileInitial}>
-                {userName.charAt(0).toUpperCase()}
+                {userName ? userName.charAt(0).toUpperCase() : 'K'}
               </Text>
             </View>
           )}
           <View style={styles.greetingContainer}>
             <Text style={styles.greeting}>Merhaba,</Text>
-            <Text style={styles.userName}>{userName}</Text>
+            <Text style={styles.userName}>{userName || 'Kullanıcı'}</Text>
           </View>
         </View>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -158,13 +158,13 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
                   ) : (
                     <View style={styles.employeePhotoPlaceholder}>
                       <Text style={styles.employeeInitial}>
-                        {employee.fullName.charAt(0).toUpperCase()}
+                        {employee.fullName ? employee.fullName.charAt(0).toUpperCase() : 'Ç'}
                       </Text>
                     </View>
                   )}
                   <View style={styles.employeeInfo}>
-                    <Text style={styles.employeeName}>{employee.fullName}</Text>
-                    <Text style={styles.employeeTitle}>{employee.title}</Text>
+                    <Text style={styles.employeeName}>{employee.fullName || 'Çalışan'}</Text>
+                    <Text style={styles.employeeTitle}>{employee.title || 'Pozisyon'}</Text>
                   </View>
                   {employee.daysRemaining !== undefined && (
                     <Text style={styles.daysRemaining}>{employee.daysRemaining} Kas</Text>
