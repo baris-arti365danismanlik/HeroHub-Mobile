@@ -94,3 +94,21 @@ export const parseDateToISO = (dateString: string): string => {
 
   return dateString;
 };
+
+const CDN_BASE_URL = 'https://faz2-cdn.herotr.com';
+
+export const normalizePhotoUrl = (photoUrl?: string | null): string | null => {
+  if (!photoUrl) return null;
+
+  if (photoUrl === CDN_BASE_URL) return null;
+
+  if (photoUrl.startsWith('http://') || photoUrl.startsWith('https://')) {
+    return photoUrl;
+  }
+
+  if (photoUrl.startsWith('/')) {
+    return `${CDN_BASE_URL}${photoUrl}`;
+  }
+
+  return `${CDN_BASE_URL}/${photoUrl}`;
+};

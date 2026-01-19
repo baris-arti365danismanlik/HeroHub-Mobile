@@ -1,6 +1,7 @@
 import { authHttpClient, apiHttpClient } from './http.client';
 import { tokenStorage } from './api.config';
 import type { LoginRequest, LoginResponse, User } from '@/types/backend';
+import { normalizePhotoUrl } from '@/utils/formatters';
 
 class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -18,7 +19,7 @@ class AuthService {
           firstName: response.data.firstName,
           lastName: response.data.lastName,
           email: response.data.email,
-          profilePictureUrl: response.data.profilePhoto,
+          profilePictureUrl: normalizePhotoUrl(response.data.profilePhoto) || undefined,
           isActive: true,
           createdAt: new Date().toISOString(),
           backend_user_id: response.data.id,
