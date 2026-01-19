@@ -35,21 +35,24 @@ import {
 } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
-import type { UserDayOffBalance } from '@/types/backend';
+import { ProfileMenu } from '@/components/ProfileMenu';
+import type { UserDayOffBalance, UserProfileDetails } from '@/types/backend';
 
 export default function HomeScreen() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [dayOffBalance, setDayOffBalance] = useState<UserDayOffBalance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [inboxVisible, setInboxVisible] = useState(false);
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const [newEmployees, setNewEmployees] = useState<NewEmployee[]>([]);
   const [userAgenda, setUserAgenda] = useState<UserAgendaItem[]>([]);
   const [trainingStatus, setTrainingStatus] = useState<UserTrainingStatus | null>(null);
   const [onboardingTasks, setOnboardingTasks] = useState<OnboardingTaskCategory[]>([]);
+  const [profileDetails, setProfileDetails] = useState<UserProfileDetails | null>(null);
 
   useEffect(() => {
     if (user?.backend_user_id) {
@@ -74,6 +77,7 @@ export default function HomeScreen() {
         agenda,
         training,
         tasks,
+        profile,
       ] = await Promise.all([
         userService.getDayOffBalance(user.backend_user_id.toString()).catch(() => null),
         homeService.getNotificationCount().catch(() => 0),
@@ -82,6 +86,7 @@ export default function HomeScreen() {
         homeService.listUserAgenda().catch(() => []),
         homeService.getUserTrainingStatus().catch(() => null),
         homeService.listOnboardingTasksByCategory().catch(() => []),
+        userService.getUserProfile(user.backend_user_id).catch(() => null),
       ]);
 
       setDayOffBalance(balance);
@@ -91,6 +96,7 @@ export default function HomeScreen() {
       setUserAgenda(agenda.slice(0, 5));
       setTrainingStatus(training);
       setOnboardingTasks(tasks);
+      setProfileDetails(profile);
     } catch (error) {
     } finally {
       setIsLoading(false);
@@ -101,6 +107,11 @@ export default function HomeScreen() {
   const onRefresh = () => {
     setRefreshing(true);
     loadDashboardData();
+  };
+
+  const handleLogout = async () => {
+    setProfileMenuVisible(false);
+    await logout();
   };
 
   if (isLoading) {
@@ -152,10 +163,13 @@ export default function HomeScreen() {
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.profileButton}>
-                {user?.profilePictureUrl ? (
+              <TouchableOpacity
+                style={styles.profileButton}
+                onPress={() => setProfileMenuVisible(true)}
+              >
+                {profileDetails?.profilePhoto && profileDetails.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
                   <Image
-                    source={{ uri: user.profilePictureUrl }}
+                    source={{ uri: profileDetails.profilePhoto }}
                     style={styles.headerProfileImage}
                   />
                 ) : (
@@ -315,6 +329,14 @@ export default function HomeScreen() {
           onUnreadCountChange={setUnreadCount}
         />
       )}
+
+      <ProfileMenu
+        visible={profileMenuVisible}
+        onClose={() => setProfileMenuVisible(false)}
+        profilePhoto={profileDetails?.profilePhoto}
+        email={user?.email || ''}
+        onLogout={handleLogout}
+      />
     </>
   );
 }
