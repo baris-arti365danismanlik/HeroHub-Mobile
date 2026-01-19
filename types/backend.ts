@@ -642,10 +642,11 @@ export interface UserMilitary {
 }
 
 export interface UserLanguage {
-  id: number;
+  userLanguageId: number;
   userId: number;
-  language: string;
-  level: number;
+  languageId: number;
+  languageName: string;
+  languageLevel: number;
 }
 
 export interface UserPassport {

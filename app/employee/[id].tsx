@@ -373,9 +373,9 @@ export default function EmployeeDetailScreen() {
           >
             {employee.userLanguages && employee.userLanguages.length > 0 ? (
               employee.userLanguages.map((lang, index) => (
-                <View key={lang.id} style={styles.listItem}>
-                  {renderInfoRow('Dil', lang.language || '-')}
-                  {renderInfoRow('Seviye', lang.level.toString())}
+                <View key={lang.userLanguageId} style={styles.listItem}>
+                  {renderInfoRow('Dil', lang.languageName || '-')}
+                  {renderInfoRow('Seviye', lang.languageLevel?.toString() || '-')}
                   {index < employee.userLanguages.length - 1 && <View style={styles.divider} />}
                 </View>
               ))

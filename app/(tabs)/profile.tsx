@@ -2117,9 +2117,9 @@ export default function ProfileScreen() {
         >
           {profileDetails.userLanguages.length > 0 ? (
             profileDetails.userLanguages.map((lang, index) => (
-              <View key={lang.id}>
-                <InfoRow label="Dil" value={lang.language} />
-                <InfoRow label="Seviye" value={lang.level === 0 ? 'Başlangıç' : lang.level === 1 ? 'Orta' : lang.level === 2 ? 'İleri' : 'Anadil'} isLast={index === profileDetails.userLanguages.length - 1} />
+              <View key={lang.userLanguageId}>
+                <InfoRow label="Dil" value={lang.languageName} />
+                <InfoRow label="Seviye" value={lang.languageLevel === 0 ? 'Başlangıç' : lang.languageLevel === 1 ? 'Orta' : lang.languageLevel === 2 ? 'İleri' : 'Anadil'} isLast={index === profileDetails.userLanguages.length - 1} />
               </View>
             ))
           ) : (
