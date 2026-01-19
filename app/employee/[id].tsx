@@ -392,28 +392,25 @@ export default function EmployeeDetailScreen() {
             icon={<Plane size={20} color="#1a1a1a" />}
             canEdit={false}
           >
-            <View style={styles.visaButtonsContainer}>
-              <TouchableOpacity
-                style={styles.visaRequestButton}
-                onPress={() => setVisaRequestModalVisible(true)}
-              >
-                <Text style={styles.visaRequestButtonText}>Vize Evrakı Talep Et</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.visaAddButton}>
-                <Text style={styles.visaAddButtonText}>Ekle</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={styles.visaRequestButton}
+              onPress={() => setVisaRequestModalVisible(true)}
+            >
+              <Text style={styles.visaRequestButtonText}>Vize Evrakı Talep Et</Text>
+            </TouchableOpacity>
 
             {employee.userVisas && employee.userVisas.length > 0 ? (
-              employee.userVisas.map((visa, index) => (
-                <View key={visa.id} style={styles.listItem}>
-                  {renderInfoRow('Ülke', visa.country || '-')}
-                  {renderInfoRow('Vize Tipi', visa.visaType || '-')}
-                  {renderInfoRow('Veriliş Tarihi', formatDate(visa.issueDate))}
-                  {renderInfoRow('Geçerlilik', formatDate(visa.expiryDate))}
-                  {index < employee.userVisas.length - 1 && <View style={styles.divider} />}
-                </View>
-              ))
+              <View style={{ marginTop: 16 }}>
+                {employee.userVisas.map((visa, index) => (
+                  <View key={visa.id} style={styles.listItem}>
+                    {renderInfoRow('Ülke', visa.country || '-')}
+                    {renderInfoRow('Vize Tipi', visa.visaType || '-')}
+                    {renderInfoRow('Veriliş Tarihi', formatDate(visa.issueDate))}
+                    {renderInfoRow('Geçerlilik', formatDate(visa.expiryDate))}
+                    {index < employee.userVisas.length - 1 && <View style={styles.divider} />}
+                  </View>
+                ))}
+              </View>
             ) : (
               <View style={styles.emptyStateContainer}>
                 <View style={styles.infoIconContainer}>
@@ -422,6 +419,10 @@ export default function EmployeeDetailScreen() {
                 <Text style={styles.emptyText}>Vize Bilgisi Bulunmamaktadır.</Text>
               </View>
             )}
+
+            <TouchableOpacity style={styles.visaAddButton}>
+              <Text style={styles.visaAddButtonText}>Ekle</Text>
+            </TouchableOpacity>
           </Accordion>
         </View>
 
@@ -569,18 +570,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E5E5',
     marginVertical: 12,
   },
-  visaButtonsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
   visaRequestButton: {
-    flex: 1,
+    alignSelf: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 32,
     backgroundColor: '#7C3AED',
     borderRadius: 8,
     alignItems: 'center',
+    marginBottom: 16,
   },
   visaRequestButtonText: {
     fontSize: 15,
@@ -588,14 +585,15 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   visaAddButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    alignSelf: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 40,
     backgroundColor: '#fff',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#7C3AED',
     alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 16,
   },
   visaAddButtonText: {
     fontSize: 15,
@@ -604,7 +602,7 @@ const styles = StyleSheet.create({
   },
   emptyStateContainer: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: 16,
   },
   infoIconContainer: {
     width: 48,
