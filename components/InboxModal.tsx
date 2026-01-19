@@ -13,7 +13,7 @@ import {
 import { X, Mail, ChevronLeft, Download, Send, CircleCheck as CheckCircle, Clock, Users, Briefcase } from 'lucide-react-native';
 import { notificationService } from '@/services/notification.service';
 import { userService } from '@/services/user.service';
-import { homeService, UserTrainingStatus, UserAgendaItem } from '@/services/home.service';
+import { homeService, UserTrainingStatus, UserAgendaItem, NewEmployee as HomeNewEmployee } from '@/services/home.service';
 import { UserNotification, UserProfileDetails } from '@/types/backend';
 
 interface NewEmployee {
@@ -21,7 +21,7 @@ interface NewEmployee {
   fullName: string;
   title: string;
   profilePhoto: string;
-  daysRemaining?: number;
+  daysRemaining?: string;
 }
 
 interface InboxModalProps {
@@ -48,11 +48,12 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
   const loadInboxData = async () => {
     try {
       setLoading(true);
-      const [notificationsData, profileData, training, agenda] = await Promise.all([
+      const [notificationsData, profileData, training, agenda, newEmp] = await Promise.all([
         notificationService.getUserNotifications(),
         userService.getUserProfile(backendUserId),
         homeService.getUserTrainingStatus(),
         homeService.listUserAgenda(),
+        homeService.listNewEmployees(),
       ]);
 
       setNotifications(notificationsData);
@@ -60,17 +61,20 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
       setTrainingStatus(training);
       setUserAgenda(agenda.slice(0, 5));
 
-      if (profileData.colleagues && profileData.colleagues.length > 0) {
-        const employees: NewEmployee[] = profileData.colleagues
-          .slice(0, 5)
-          .map(colleague => ({
-            id: colleague.id,
-            fullName: colleague.fullName,
-            title: colleague.title || 'Çalışan',
-            profilePhoto: colleague.profilePhoto,
-          }));
-        setNewEmployees(employees);
-      }
+      const employees: NewEmployee[] = newEmp.slice(0, 5).map(emp => {
+        const startDate = new Date(emp.jobStartDate);
+        const day = startDate.getDate();
+        const month = startDate.toLocaleDateString('tr-TR', { month: 'short' });
+
+        return {
+          id: emp.id,
+          fullName: emp.fullname,
+          title: emp.title || 'Çalışan',
+          profilePhoto: emp.profilePhoto,
+          daysRemaining: `${day} ${month.charAt(0).toUpperCase() + month.slice(1)}`,
+        };
+      });
+      setNewEmployees(employees);
     } catch (error) {
     } finally {
       setLoading(false);
@@ -166,8 +170,8 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
                     <Text style={styles.employeeName}>{employee.fullName || 'Çalışan'}</Text>
                     <Text style={styles.employeeTitle}>{employee.title || 'Pozisyon'}</Text>
                   </View>
-                  {employee.daysRemaining !== undefined && (
-                    <Text style={styles.daysRemaining}>{employee.daysRemaining} Kas</Text>
+                  {employee.daysRemaining && (
+                    <Text style={styles.daysRemaining}>{employee.daysRemaining}</Text>
                   )}
                 </View>
               ))}
