@@ -167,16 +167,23 @@ export default function HomeScreen() {
                 style={styles.profileButton}
                 onPress={() => setProfileMenuVisible(true)}
               >
-                {profileDetails?.profilePhoto && profileDetails.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
-                  <Image
-                    source={{ uri: profileDetails.profilePhoto }}
-                    style={styles.headerProfileImage}
-                  />
-                ) : (
-                  <View style={styles.headerProfilePlaceholder}>
-                    <UserIcon size={20} color="#7C3AED" />
-                  </View>
-                )}
+                {(() => {
+                  const photoUrl = profileDetails?.profilePhoto || user?.profilePictureUrl;
+
+                  if (photoUrl && photoUrl !== 'https://faz2-cdn.herotr.com') {
+                    return (
+                      <Image
+                        source={{ uri: photoUrl }}
+                        style={styles.headerProfileImage}
+                      />
+                    );
+                  }
+                  return (
+                    <View style={styles.headerProfilePlaceholder}>
+                      <UserIcon size={20} color="#7C3AED" />
+                    </View>
+                  );
+                })()}
               </TouchableOpacity>
             </View>
           </View>
@@ -333,7 +340,7 @@ export default function HomeScreen() {
       <ProfileMenu
         visible={profileMenuVisible}
         onClose={() => setProfileMenuVisible(false)}
-        profilePhoto={profileDetails?.profilePhoto}
+        profilePhoto={profileDetails?.profilePhoto || user?.profilePictureUrl}
         email={user?.email || ''}
         onLogout={handleLogout}
       />
