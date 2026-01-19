@@ -30,10 +30,13 @@ import {
   Building2,
   Briefcase,
   Car,
+  CheckCircle,
+  Clock,
 } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
+import { homeService, type UserTrainingStatus } from '@/services/home.service';
 import type { UserProfileDetails } from '@/types/backend';
 import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
 import { Accordion } from '@/components/Accordion';
@@ -45,6 +48,7 @@ export default function EmployeeDetailScreen() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [employee, setEmployee] = useState<UserProfileDetails | null>(null);
+  const [trainingStatus, setTrainingStatus] = useState<UserTrainingStatus | null>(null);
 
   const permissions = usePermissions(employee?.modulePermissions);
   const canViewProfile = permissions.canRead(MODULE_IDS.PROFILE);
@@ -59,8 +63,13 @@ export default function EmployeeDetailScreen() {
       setLoading(true);
       const employeeId = typeof id === 'string' ? parseInt(id) : (Array.isArray(id) ? parseInt(id[0]) : 0);
 
-      const data = await userService.getUserProfile(employeeId);
+      const [data, training] = await Promise.all([
+        userService.getUserProfile(employeeId),
+        homeService.getUserTrainingStatus().catch(() => null),
+      ]);
+
       setEmployee(data);
+      setTrainingStatus(training);
     } catch (error) {
       setEmployee(null);
     } finally {
@@ -204,6 +213,32 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditProfile}
             onEdit={() => handleEditSection('personal')}
           >
+            {trainingStatus && (
+              <View style={styles.trainingCard}>
+                <View style={styles.trainingHeader}>
+                  <Briefcase size={20} color="#7C3AED" />
+                  <Text style={styles.trainingTitle}>Eğitim Durumu</Text>
+                </View>
+                <View style={styles.trainingContent}>
+                  <View style={styles.trainingItem}>
+                    <View style={styles.trainingIconContainer}>
+                      <CheckCircle size={24} color="#10B981" />
+                    </View>
+                    <Text style={styles.trainingCount}>{trainingStatus.plannedCount}</Text>
+                    <Text style={styles.trainingLabel}>Planlanmış</Text>
+                  </View>
+                  <View style={styles.trainingDivider} />
+                  <View style={styles.trainingItem}>
+                    <View style={styles.trainingIconContainer}>
+                      <Clock size={24} color="#EF4444" />
+                    </View>
+                    <Text style={styles.trainingCount}>{trainingStatus.overdueCount}</Text>
+                    <Text style={styles.trainingLabel}>Gecikmiş</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
             {renderInfoRow('TC Kimlik No', employee.personalInformation?.tckn || '-')}
             {renderInfoRow('Ad', employee.personalInformation?.firstName || '-')}
             {renderInfoRow('Soyad', employee.personalInformation?.lastName || '-')}
@@ -545,5 +580,57 @@ const styles = StyleSheet.create({
     color: '#999',
     fontStyle: 'italic',
     paddingVertical: 8,
+  },
+  trainingCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 16,
+    marginBottom: 16,
+  },
+  trainingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  trainingTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  trainingContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  trainingItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 8,
+  },
+  trainingIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  trainingCount: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  trainingLabel: {
+    fontSize: 14,
+    color: '#666',
+  },
+  trainingDivider: {
+    width: 1,
+    height: 60,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 16,
   },
 });
