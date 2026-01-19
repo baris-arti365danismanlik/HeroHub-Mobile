@@ -766,6 +766,21 @@ export interface Workplace {
   organizationId: number;
 }
 
+export interface Country {
+  name: string;
+  areaCode: string | null;
+  code: string | null;
+  id: number;
+  unique: string;
+  createdAt: string;
+  deletedAt: string | null;
+  updatedAt: string | null;
+  createdBy: string;
+  deletedBy: string | null;
+  updatedBy: string | null;
+  isActive: boolean;
+}
+
 export interface City {
   name: string;
   plateNo: string;

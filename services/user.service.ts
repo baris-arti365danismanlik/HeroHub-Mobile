@@ -281,6 +281,21 @@ class UserService {
     };
     await apiClient.put('/profile/update-usermilitary', payload);
   }
+
+  async getCountries(): Promise<any[]> {
+    const response = await apiClient.get<any>('/Profile/Countries');
+    return response.data || [];
+  }
+
+  async getCities(countryId: number): Promise<any[]> {
+    const response = await apiClient.get<any>(`/Profile/Cities/?CountryId=${countryId}`);
+    return response.data || [];
+  }
+
+  async getBadgeCardInfo(userId: number): Promise<any> {
+    const response = await apiClient.get<any>(`/user/badgecard-info?userId=${userId}`);
+    return response.data || null;
+  }
 }
 
 export const userService = new UserService();

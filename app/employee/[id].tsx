@@ -18,6 +18,7 @@ import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
 import { Accordion } from '@/components/Accordion';
 import { normalizePhotoUrl } from '@/utils/formatters';
 import EditSectionModal from '@/components/EditSectionModal';
+import { VisaRequestModal, type VisaRequestData } from '@/components/VisaRequestModal';
 
 export default function EmployeeDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -27,6 +28,7 @@ export default function EmployeeDetailScreen() {
   const [employee, setEmployee] = useState<UserProfileDetails | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editSectionType, setEditSectionType] = useState<'personal' | 'contact' | 'address' | 'health' | 'military' | null>(null);
+  const [visaRequestModalVisible, setVisaRequestModalVisible] = useState(false);
 
   const permissions = usePermissions(employee?.modulePermissions);
   const canViewProfile = permissions.canRead(MODULE_IDS.PROFILE);
@@ -95,6 +97,10 @@ export default function EmployeeDetailScreen() {
 
   const handleSaveSection = async () => {
     await loadEmployeeData();
+  };
+
+  const handleVisaRequest = async (data: VisaRequestData) => {
+    console.log('Visa request submitted:', data);
   };
 
   const renderInfoRow = (label: string, value: string) => (
@@ -386,6 +392,18 @@ export default function EmployeeDetailScreen() {
             icon={<Plane size={20} color="#1a1a1a" />}
             canEdit={false}
           >
+            <View style={styles.visaButtonsContainer}>
+              <TouchableOpacity
+                style={styles.visaRequestButton}
+                onPress={() => setVisaRequestModalVisible(true)}
+              >
+                <Text style={styles.visaRequestButtonText}>Vize Evrakı Talep Et</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.visaAddButton}>
+                <Text style={styles.visaAddButtonText}>Ekle</Text>
+              </TouchableOpacity>
+            </View>
+
             {employee.userVisas && employee.userVisas.length > 0 ? (
               employee.userVisas.map((visa, index) => (
                 <View key={visa.id} style={styles.listItem}>
@@ -397,7 +415,12 @@ export default function EmployeeDetailScreen() {
                 </View>
               ))
             ) : (
-              <Text style={styles.emptyText}>Vize bilgisi bulunmuyor</Text>
+              <View style={styles.emptyStateContainer}>
+                <View style={styles.infoIconContainer}>
+                  <Text style={styles.infoIcon}>ⓘ</Text>
+                </View>
+                <Text style={styles.emptyText}>Vize Bilgisi Bulunmamaktadır.</Text>
+              </View>
             )}
           </Accordion>
         </View>
@@ -414,6 +437,13 @@ export default function EmployeeDetailScreen() {
           setEditSectionType(null);
         }}
         onSave={handleSaveSection}
+      />
+
+      <VisaRequestModal
+        visible={visaRequestModalVisible}
+        onClose={() => setVisaRequestModalVisible(false)}
+        userId={employee?.backendUserId || employee?.id || 0}
+        onSubmit={handleVisaRequest}
       />
     </SafeAreaView>
   );
@@ -538,6 +568,56 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#E5E5E5',
     marginVertical: 12,
+  },
+  visaButtonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  visaRequestButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#7C3AED',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  visaRequestButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  visaAddButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  visaAddButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#7C3AED',
+  },
+  emptyStateContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  infoIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  infoIcon: {
+    fontSize: 24,
+    color: '#9CA3AF',
   },
   emptyText: {
     fontSize: 14,
