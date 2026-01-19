@@ -37,6 +37,7 @@ import { userService } from '@/services/user.service';
 import type { UserProfileDetails } from '@/types/backend';
 import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
 import { Accordion } from '@/components/Accordion';
+import { normalizePhotoUrl } from '@/utils/formatters';
 
 export default function EmployeeDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -155,20 +156,26 @@ export default function EmployeeDetailScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.profileHeaderCard}>
           <View style={styles.profileAvatarContainer}>
-            {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com' && !employee.profilePhoto.endsWith('https://faz2-cdn.herotr.com') ? (
-              <Image
-                source={{ uri: employee.profilePhoto.startsWith('/') ? `https://faz2-cdn.herotr.com${employee.profilePhoto}` : employee.profilePhoto }}
-                style={styles.profileAvatar}
-              />
-            ) : (
-              <View style={styles.profileAvatarPlaceholder}>
-                <Text style={styles.profileAvatarText}>
-                  {employee.personalInformation?.firstName && employee.personalInformation?.lastName
-                    ? `${employee.personalInformation.firstName[0]}${employee.personalInformation.lastName[0]}`
-                    : '?'}
-                </Text>
-              </View>
-            )}
+            {(() => {
+              const photoUrl = normalizePhotoUrl(employee.profilePhoto);
+              if (photoUrl) {
+                return (
+                  <Image
+                    source={{ uri: photoUrl }}
+                    style={styles.profileAvatar}
+                  />
+                );
+              }
+              return (
+                <View style={styles.profileAvatarPlaceholder}>
+                  <Text style={styles.profileAvatarText}>
+                    {employee.personalInformation?.firstName && employee.personalInformation?.lastName
+                      ? `${employee.personalInformation.firstName[0]}${employee.personalInformation.lastName[0]}`
+                      : '?'}
+                  </Text>
+                </View>
+              );
+            })()}
           </View>
           <Text style={styles.profileName}>
             {employee.personalInformation?.firstName && employee.personalInformation?.lastName

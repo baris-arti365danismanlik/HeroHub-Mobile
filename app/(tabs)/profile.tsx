@@ -20,6 +20,7 @@ import { shiftService } from '@/services/shift.service';
 import { userService } from '@/services/user.service';
 import { employmentService } from '@/services/employment.service';
 import PDKSTaskModal, { PDKSTaskData } from '@/components/PDKSTaskModal';
+import { normalizePhotoUrl } from '@/utils/formatters';
 import {
   Asset,
   AssetStatus,
@@ -2838,16 +2839,22 @@ export default function ProfileScreen() {
               showsVerticalScrollIndicator={false}
             >
               <View style={styles.modalUserCard}>
-                {badgeCardInfo?.profilePhoto ? (
-                  <Image
-                    source={{ uri: `https://faz2-api.herotr.com${badgeCardInfo.profilePhoto}` }}
-                    style={styles.modalUserImage}
-                  />
-                ) : (
-                  <View style={styles.modalUserPlaceholder}>
-                    <UserIcon size={24} color="#7C3AED" />
-                  </View>
-                )}
+                {(() => {
+                  const photoUrl = normalizePhotoUrl(badgeCardInfo?.profilePhoto);
+                  if (photoUrl) {
+                    return (
+                      <Image
+                        source={{ uri: photoUrl }}
+                        style={styles.modalUserImage}
+                      />
+                    );
+                  }
+                  return (
+                    <View style={styles.modalUserPlaceholder}>
+                      <UserIcon size={24} color="#7C3AED" />
+                    </View>
+                  );
+                })()}
                 <View style={styles.modalUserInfo}>
                   <Text style={styles.modalUserName}>{badgeCardInfo?.fullName || `${user.firstName} ${user.lastName}`}</Text>
                   <Text style={styles.modalUserRole}>{badgeCardInfo?.title || '—'}</Text>

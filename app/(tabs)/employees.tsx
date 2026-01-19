@@ -33,7 +33,7 @@ import type {
   UserTitle,
   Department,
 } from '@/types/backend';
-import { formatDate } from '@/utils/formatters';
+import { formatDate, normalizePhotoUrl } from '@/utils/formatters';
 
 export default function EmployeesScreen() {
   const router = useRouter();
@@ -143,17 +143,21 @@ export default function EmployeesScreen() {
         >
           <View style={styles.treeCardContent}>
             <View style={styles.treeAvatar}>
-              {employee.profilePhoto && employee.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
-                <Image source={{ uri: employee.profilePhoto }} style={styles.treeAvatarImage} />
-              ) : (
-                <Text style={styles.treeAvatarText}>
-                  {employee.name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .substring(0, 2)}
-                </Text>
-              )}
+              {(() => {
+                const photoUrl = normalizePhotoUrl(employee.profilePhoto);
+                if (photoUrl) {
+                  return <Image source={{ uri: photoUrl }} style={styles.treeAvatarImage} />;
+                }
+                return (
+                  <Text style={styles.treeAvatarText}>
+                    {employee.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .substring(0, 2)}
+                  </Text>
+                );
+              })()}
             </View>
             <View style={styles.treeEmployeeInfo}>
               <Text style={styles.treeEmployeeName}>{employee.name}</Text>
@@ -408,17 +412,21 @@ export default function EmployeesScreen() {
                   onPress={() => router.push(`/employee/${worker.id}`)}
                 >
                   <View style={styles.avatar}>
-                    {worker.profilePhoto && worker.profilePhoto !== 'https://faz2-cdn.herotr.com' ? (
-                      <Image source={{ uri: worker.profilePhoto }} style={styles.avatarImage} />
-                    ) : (
-                      <Text style={styles.avatarText}>
-                        {worker.name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')
-                          .substring(0, 2)}
-                      </Text>
-                    )}
+                    {(() => {
+                      const photoUrl = normalizePhotoUrl(worker.profilePhoto);
+                      if (photoUrl) {
+                        return <Image source={{ uri: photoUrl }} style={styles.avatarImage} />;
+                      }
+                      return (
+                        <Text style={styles.avatarText}>
+                          {worker.name
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')
+                            .substring(0, 2)}
+                        </Text>
+                      );
+                    })()}
                   </View>
                   <View style={styles.employeeInfo}>
                     <Text style={styles.employeeName}>{worker.name}</Text>
