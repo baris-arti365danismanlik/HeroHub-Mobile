@@ -10,7 +10,7 @@ import {
   Image,
   TextInput,
 } from 'react-native';
-import { X, Mail, ChevronLeft, Download, Send, CircleCheck as CheckCircle, Clock, Users, Briefcase } from 'lucide-react-native';
+import { X, Mail, ChevronLeft, Download, Send, CircleCheck as CheckCircle, Clock, Users, Briefcase, Bell } from 'lucide-react-native';
 import { notificationService } from '@/services/notification.service';
 import { userService } from '@/services/user.service';
 import { UserNotification, UserProfileDetails, NewEmployee, RecentActivity } from '@/types/backend';
@@ -20,9 +20,10 @@ interface InboxModalProps {
   onClose: () => void;
   backendUserId: number;
   userName: string;
+  onNotificationRead?: () => void;
 }
 
-export function InboxModal({ visible, onClose, backendUserId, userName }: InboxModalProps) {
+export function InboxModal({ visible, onClose, backendUserId, userName, onNotificationRead }: InboxModalProps) {
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [profileDetails, setProfileDetails] = useState<UserProfileDetails | null>(null);
@@ -118,6 +119,50 @@ export function InboxModal({ visible, onClose, backendUserId, userName }: InboxM
         </View>
       ) : (
         <ScrollView style={styles.content}>
+          {notifications.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Bell size={20} color="#7C3AED" />
+                <Text style={styles.sectionTitle}>Bildirimler</Text>
+              </View>
+              {notifications.map((notification) => (
+                <TouchableOpacity
+                  key={notification.id}
+                  style={[
+                    styles.notificationItem,
+                    !notification.isRead && styles.notificationItemUnread
+                  ]}
+                  onPress={async () => {
+                    if (!notification.isRead) {
+                      try {
+                        await notificationService.markAsRead(notification.id);
+                        setNotifications(prev =>
+                          prev.map(n =>
+                            n.id === notification.id ? { ...n, isRead: true } : n
+                          )
+                        );
+                        onNotificationRead?.();
+                      } catch (error) {
+                      }
+                    }
+                  }}
+                >
+                  <View style={styles.notificationIconContainer}>
+                    <Bell size={16} color={notification.isRead ? '#666' : '#7C3AED'} />
+                  </View>
+                  <View style={styles.notificationContent}>
+                    <Text style={styles.notificationTitle}>{notification.title}</Text>
+                    <Text style={styles.notificationMessage}>{notification.message}</Text>
+                    <Text style={styles.notificationTime}>
+                      {new Date(notification.createdAt).toLocaleDateString('tr-TR')} {formatTime(notification.createdAt)}
+                    </Text>
+                  </View>
+                  {!notification.isRead && <View style={styles.unreadDot} />}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
           <View style={styles.trainingStatusCard}>
             <View style={styles.cardHeader}>
               <Briefcase size={20} color="#7C3AED" />
@@ -428,5 +473,55 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#1a1a1a',
     lineHeight: 20,
+  },
+  notificationItem: {
+    flexDirection: 'row',
+    padding: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 8,
+  },
+  notificationItemUnread: {
+    backgroundColor: '#F3E8FF',
+    borderColor: '#7C3AED',
+  },
+  notificationIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3E8FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  notificationContent: {
+    flex: 1,
+  },
+  notificationTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  notificationMessage: {
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  notificationTime: {
+    fontSize: 11,
+    color: '#999',
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#7C3AED',
+    position: 'absolute',
+    top: 12,
+    right: 12,
   },
 });

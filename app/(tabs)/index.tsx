@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
 import { inboxService } from '@/services/inbox.service';
 import { homeService } from '@/services/home.service';
+import { notificationService } from '@/services/notification.service';
 import type {
   OnboardingTaskCategory,
   NewEmployee,
@@ -67,7 +68,7 @@ export default function HomeScreen() {
         profile,
       ] = await Promise.all([
         userService.getDayOffBalance(user.backend_user_id.toString()).catch(() => null),
-        homeService.getNotificationCount().catch(() => 0),
+        notificationService.getUnreadCount().catch(() => 0),
         inboxService.getUnreadCount(user.id).catch(() => 0),
         homeService.listNewEmployees().catch(() => []),
         homeService.listUserAgenda().catch(() => []),
@@ -315,12 +316,16 @@ export default function HomeScreen() {
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
 
-      {user && (
+      {user && user.backend_user_id && (
         <InboxModal
           visible={inboxVisible}
           onClose={() => setInboxVisible(false)}
-          userId={user.id}
-          onUnreadCountChange={setUnreadCount}
+          backendUserId={user.backend_user_id}
+          userName={`${user.firstName} ${user.lastName}`}
+          onNotificationRead={async () => {
+            const count = await notificationService.getUnreadCount().catch(() => 0);
+            setNotificationCount(count);
+          }}
         />
       )}
 

@@ -9,6 +9,13 @@ export const notificationService = {
     return response.data || [];
   },
 
+  async getUnreadCount(): Promise<number> {
+    const response = await apiClient.get<number>(
+      '/Notification/get-notificationcount'
+    );
+    return response.data || 0;
+  },
+
   async markAsRead(notificationId: number): Promise<void> {
     await apiClient.post(`/Notification/mark-as-read/${notificationId}`);
   },
