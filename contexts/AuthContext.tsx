@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { authService } from '@/services/auth.service';
 import type { User, LoginRequest } from '@/types/backend';
 
@@ -81,6 +82,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -96,6 +105,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+  },
+});
 
 export function useAuth() {
   const context = useContext(AuthContext);
