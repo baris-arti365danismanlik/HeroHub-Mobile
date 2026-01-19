@@ -38,6 +38,7 @@ import type { UserProfileDetails } from '@/types/backend';
 import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
 import { Accordion } from '@/components/Accordion';
 import { normalizePhotoUrl } from '@/utils/formatters';
+import EditSectionModal from '@/components/EditSectionModal';
 
 export default function EmployeeDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -45,6 +46,8 @@ export default function EmployeeDetailScreen() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [employee, setEmployee] = useState<UserProfileDetails | null>(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editSectionType, setEditSectionType] = useState<'personal' | 'contact' | 'address' | 'health' | 'military' | null>(null);
 
   const permissions = usePermissions(employee?.modulePermissions);
   const canViewProfile = permissions.canRead(MODULE_IDS.PROFILE);
@@ -106,7 +109,13 @@ export default function EmployeeDetailScreen() {
     return types[workType] || '-';
   };
 
-  const handleEditSection = (sectionId: string) => {
+  const handleEditSection = (sectionId: 'personal' | 'contact' | 'address' | 'health' | 'military') => {
+    setEditSectionType(sectionId);
+    setEditModalVisible(true);
+  };
+
+  const handleSaveSection = async () => {
+    await loadEmployeeData();
   };
 
   const renderInfoRow = (label: string, value: string) => (
@@ -416,6 +425,17 @@ export default function EmployeeDetailScreen() {
 
         <View style={{ height: 32 }} />
       </ScrollView>
+
+      <EditSectionModal
+        visible={editModalVisible}
+        sectionType={editSectionType}
+        employee={employee}
+        onClose={() => {
+          setEditModalVisible(false);
+          setEditSectionType(null);
+        }}
+        onSave={handleSaveSection}
+      />
     </SafeAreaView>
   );
 }
