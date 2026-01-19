@@ -36,16 +36,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const isAuth = await authService.isAuthenticated();
-      if (isAuth) {
-        const currentUser = await authService.getCurrentUser();
-        if (currentUser) {
-          setUser(currentUser);
-        } else {
-          await authService.logout();
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Auth check timeout')), 5000);
+      });
+
+      const authCheckPromise = (async () => {
+        const isAuth = await authService.isAuthenticated();
+        if (isAuth) {
+          const currentUser = await authService.getCurrentUser();
+          if (currentUser) {
+            setUser(currentUser);
+          } else {
+            await authService.logout();
+          }
         }
-      }
+      })();
+
+      await Promise.race([authCheckPromise, timeoutPromise]);
     } catch (error) {
+      console.error('Auth check error:', error);
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -83,12 +92,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   if (isLoading) {
+    console.log('AuthProvider - Loading...');
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
   }
+
+  console.log('AuthProvider - Loaded, isAuthenticated:', !!user);
 
   return (
     <AuthContext.Provider
