@@ -82,8 +82,16 @@ export default function EmployeesScreen() {
     }
   };
 
-  const handleSaveEmployee = (data: EmployeeFormData) => {
-    loadData();
+  const handleSaveEmployee = async (data: EmployeeFormData) => {
+    try {
+      await userService.createEmployee({
+        ...data,
+        organizationId: user?.organization_id || 2,
+      });
+      await loadData();
+    } catch (error) {
+      console.error('Çalışan eklenirken hata:', error);
+    }
   };
 
   const getProcessedEmployees = () => {

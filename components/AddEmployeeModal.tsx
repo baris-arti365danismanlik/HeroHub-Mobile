@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   TextInput,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { X, ChevronDown, Calendar as CalendarIcon } from 'lucide-react-native';
 import { employmentService } from '@/services/employment.service';
@@ -23,7 +24,7 @@ import type {
 interface AddEmployeeModalProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (data: EmployeeFormData) => void;
+  onSave: (data: EmployeeFormData) => Promise<void>;
   organizationId?: number;
 }
 
@@ -85,6 +86,7 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
   const [managerSearchQuery, setManagerSearchQuery] = useState('');
   const [subordinateSearchQuery, setSubordinateSearchQuery] = useState('');
   const [selectedSubordinates, setSelectedSubordinates] = useState<Set<number>>(new Set());
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -118,9 +120,18 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
     }
   };
 
-  const handleSave = () => {
-    onSave(formData);
-    handleClose();
+  const handleSave = async () => {
+    if (saving) return;
+
+    try {
+      setSaving(true);
+      await onSave(formData);
+      handleClose();
+    } catch (error) {
+      console.error('Çalışan kaydedilemedi:', error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleClose = () => {
@@ -144,6 +155,7 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
     setSubordinateSearchQuery('');
     setExpandedManagerDepts(new Set());
     setExpandedSubordinateDepts(new Set());
+    setSaving(false);
     onClose();
   };
 
@@ -399,11 +411,23 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
           </ScrollView>
 
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={handleClose}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={handleClose}
+              disabled={saving}
+            >
               <Text style={styles.cancelButtonText}>Vazgeç</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Kaydet</Text>
+            <TouchableOpacity
+              style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+              onPress={handleSave}
+              disabled={saving}
+            >
+              {saving ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.saveButtonText}>Kaydet</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -988,6 +1012,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#7C3AED',
     alignItems: 'center',
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#B8A3E0',
+    opacity: 0.7,
   },
   saveButtonText: {
     fontSize: 15,

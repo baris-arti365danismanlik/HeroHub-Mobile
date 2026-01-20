@@ -384,6 +384,57 @@ class UserService {
 
     return response.data;
   }
+
+  async createEmployee(data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    departmentId: number | null;
+    titleId: number | null;
+    workplaceId: number | null;
+    workType: string;
+    managerId: number | null;
+    subordinateIds: number[];
+    notes: string;
+    startDate: string;
+    salary: string;
+    role: string;
+    organizationId: number;
+  }): Promise<any> {
+    const formatDateForAPI = (dateStr: string) => {
+      const parts = dateStr.split('/').map((p: string) => p.trim());
+      if (parts.length === 3) {
+        const [month, day, year] = parts;
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
+      return dateStr;
+    };
+
+    const payload = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      departmentId: data.departmentId || 0,
+      titleId: data.titleId || 0,
+      workplaceId: data.workplaceId || 0,
+      workType: data.workType || '',
+      reportsToUserId: data.managerId || 0,
+      subordinateUserIds: data.subordinateIds || [],
+      notes: data.notes || '',
+      startDate: formatDateForAPI(data.startDate),
+      salary: parseFloat(data.salary) || 0,
+      role: data.role,
+      organizationId: data.organizationId,
+    };
+
+    const response = await newApiClient.post<any>('/User/create', payload);
+
+    if (!response.succeeded && !response.success) {
+      throw new Error(response.friendlyMessage || response.message || 'Çalışan eklenemedi');
+    }
+
+    return response.data || response;
+  }
 }
 
 export const userService = new UserService();
