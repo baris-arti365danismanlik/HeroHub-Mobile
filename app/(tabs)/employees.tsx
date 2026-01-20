@@ -24,6 +24,7 @@ import {
 import { useRouter } from 'expo-router';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { AddEmployeeModal, EmployeeFormData } from '@/components/AddEmployeeModal';
+import { SuccessModal } from '@/components/SuccessModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
 import { employmentService } from '@/services/employment.service';
@@ -52,6 +53,8 @@ export default function EmployeesScreen() {
   const [filterByTitle, setFilterByTitle] = useState<'all' | number>('all');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showTitleDropdown, setShowTitleDropdown] = useState(false);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const { user } = useAuth();
 
   useEffect(() => {
@@ -84,13 +87,18 @@ export default function EmployeesScreen() {
 
   const handleSaveEmployee = async (data: EmployeeFormData) => {
     try {
-      await userService.createEmployee({
+      const response = await userService.createEmployee({
         ...data,
         organizationId: user?.organization_id || 2,
       });
+
       await loadData();
-    } catch (error) {
+
+      setSuccessMessage(response.friendlyMessage || 'Kullanıcı başarıyla oluşturuldu.');
+      setSuccessModalVisible(true);
+    } catch (error: any) {
       console.error('Çalışan eklenirken hata:', error);
+      throw error;
     }
   };
 
@@ -475,6 +483,12 @@ export default function EmployeesScreen() {
         onClose={() => setAddEmployeeModalVisible(false)}
         onSave={handleSaveEmployee}
         organizationId={user?.organization_id || 2}
+      />
+      <SuccessModal
+        visible={successModalVisible}
+        onClose={() => setSuccessModalVisible(false)}
+        title="Başarılı"
+        message={successMessage}
       />
     </SafeAreaView>
   );

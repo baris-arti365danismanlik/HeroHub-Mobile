@@ -405,9 +405,18 @@ class UserService {
       const parts = dateStr.split('/').map((p: string) => p.trim());
       if (parts.length === 3) {
         const [month, day, year] = parts;
-        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        const date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+        return date.toISOString();
       }
-      return dateStr;
+      const date = new Date(dateStr);
+      return date.toISOString();
+    };
+
+    const workTypeMap: { [key: string]: number } = {
+      'Tam Zamanlı': 1,
+      'Yarı Zamanlı': 2,
+      'Freelance': 3,
+      'Stajyer': 4,
     };
 
     const payload = {
@@ -417,37 +426,21 @@ class UserService {
       departmentId: data.departmentId || 0,
       titleId: data.titleId || 0,
       workplaceId: data.workplaceId || 0,
-      workType: data.workType || '',
-      reportsToUserId: data.managerId || 0,
-      subordinateUserIds: data.subordinateIds || [],
-      notes: data.notes || '',
-      startDate: formatDateForAPI(data.startDate),
+      workType: workTypeMap[data.workType] || 1,
       salary: parseFloat(data.salary) || 0,
+      jobDescription: data.notes || '',
+      jobStartDate: formatDateForAPI(data.startDate),
       role: data.role,
-      organizationId: data.organizationId,
+      reporterUserIds: data.subordinateIds || [],
     };
 
-    console.log('Creating employee with payload:', JSON.stringify(payload, null, 2));
+    const response = await newApiClient.post<any>('/User/create-by-hr', payload);
 
-    try {
-      const response = await newApiClient.post<any>('/User/create-user', payload);
-
-      console.log('Create employee response:', JSON.stringify(response, null, 2));
-
-      if (!response.succeeded && !response.success) {
-        throw new Error(response.friendlyMessage || response.message || 'Çalışan eklenemedi');
-      }
-
-      return response.data || response;
-    } catch (error: any) {
-      console.error('Create employee error:', error);
-
-      if (error.message?.includes('405') || error.message?.includes('Method Not Allowed')) {
-        throw new Error('Backend API henüz çalışan eklemeyi desteklemiyor. Lütfen backend ekibine "/User/create-user" endpoint\'ini eklemelerini bildirin.');
-      }
-
-      throw error;
+    if (!response.succeeded && !response.success) {
+      throw new Error(response.friendlyMessage || response.message || 'Çalışan eklenemedi');
     }
+
+    return response;
   }
 }
 
