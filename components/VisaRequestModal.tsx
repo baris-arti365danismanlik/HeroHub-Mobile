@@ -139,12 +139,20 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            <View style={styles.fieldContainer}>
+          <ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={[styles.fieldContainer, showVisaTypeDropdown && { zIndex: 1000 }]}>
               <Text style={styles.label}>Vize Türü</Text>
               <TouchableOpacity
                 style={styles.dropdown}
-                onPress={() => setShowVisaTypeDropdown(!showVisaTypeDropdown)}
+                onPress={() => {
+                  setShowVisaTypeDropdown(!showVisaTypeDropdown);
+                  setShowCountryDropdown(false);
+                  setShowCityDropdown(false);
+                }}
               >
                 <Text style={selectedVisaType ? styles.dropdownText : styles.dropdownPlaceholder}>
                   {selectedVisaType || 'Seçiniz'}
@@ -152,28 +160,34 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 <ChevronDown size={20} color="#999" />
               </TouchableOpacity>
               {showVisaTypeDropdown && (
-                <ScrollView style={[styles.dropdownList, { maxHeight: 250 }]} nestedScrollEnabled>
-                  {VISA_TYPES.map((type) => (
-                    <TouchableOpacity
-                      key={type.id}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setSelectedVisaType(type.name);
-                        setShowVisaTypeDropdown(false);
-                      }}
-                    >
-                      <Text style={styles.dropdownItemText}>{type.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                <View style={styles.dropdownListContainer}>
+                  <ScrollView style={styles.dropdownList} nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                    {VISA_TYPES.map((type) => (
+                      <TouchableOpacity
+                        key={type.id}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setSelectedVisaType(type.name);
+                          setShowVisaTypeDropdown(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{type.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
               )}
             </View>
 
-            <View style={styles.fieldContainer}>
+            <View style={[styles.fieldContainer, showCountryDropdown && { zIndex: 999 }]}>
               <Text style={styles.label}>Başvurulacak Ülke</Text>
               <TouchableOpacity
                 style={styles.dropdown}
-                onPress={() => setShowCountryDropdown(!showCountryDropdown)}
+                onPress={() => {
+                  setShowCountryDropdown(!showCountryDropdown);
+                  setShowVisaTypeDropdown(false);
+                  setShowCityDropdown(false);
+                }}
               >
                 <Text style={selectedCountryName ? styles.dropdownText : styles.dropdownPlaceholder}>
                   {selectedCountryName || 'Seçiniz'}
@@ -181,21 +195,23 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 <ChevronDown size={20} color="#999" />
               </TouchableOpacity>
               {showCountryDropdown && (
-                <ScrollView style={[styles.dropdownList, { maxHeight: 200 }]} nestedScrollEnabled>
-                  {countries.map((country) => (
-                    <TouchableOpacity
-                      key={country.id}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setSelectedCountryId(country.id);
-                        setSelectedCountryName(country.name);
-                        setShowCountryDropdown(false);
-                      }}
-                    >
-                      <Text style={styles.dropdownItemText}>{country.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                <View style={[styles.dropdownListContainer, { maxHeight: 200 }]}>
+                  <ScrollView style={styles.dropdownList} nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                    {countries.map((country) => (
+                      <TouchableOpacity
+                        key={country.id}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setSelectedCountryId(country.id);
+                          setSelectedCountryName(country.name);
+                          setShowCountryDropdown(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{country.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
               )}
             </View>
 
@@ -241,11 +257,15 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
               />
             </View>
 
-            <View style={styles.fieldContainer}>
+            <View style={[styles.fieldContainer, showCityDropdown && { zIndex: 998 }]}>
               <Text style={styles.label}>Evragın İletileceği İl</Text>
               <TouchableOpacity
                 style={styles.dropdown}
-                onPress={() => setShowCityDropdown(!showCityDropdown)}
+                onPress={() => {
+                  setShowCityDropdown(!showCityDropdown);
+                  setShowVisaTypeDropdown(false);
+                  setShowCountryDropdown(false);
+                }}
               >
                 <Text style={selectedCityName ? styles.dropdownText : styles.dropdownPlaceholder}>
                   {selectedCityName || 'Seçiniz'}
@@ -253,21 +273,23 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 <ChevronDown size={20} color="#999" />
               </TouchableOpacity>
               {showCityDropdown && (
-                <ScrollView style={[styles.dropdownList, { maxHeight: 200 }]} nestedScrollEnabled>
-                  {cities.map((city) => (
-                    <TouchableOpacity
-                      key={city.id}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setSelectedCityId(city.id);
-                        setSelectedCityName(city.name);
-                        setShowCityDropdown(false);
-                      }}
-                    >
-                      <Text style={styles.dropdownItemText}>{city.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                <View style={[styles.dropdownListContainer, { maxHeight: 200 }]}>
+                  <ScrollView style={styles.dropdownList} nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                    {cities.map((city) => (
+                      <TouchableOpacity
+                        key={city.id}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setSelectedCityId(city.id);
+                          setSelectedCityName(city.name);
+                          setShowCityDropdown(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{city.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
               )}
             </View>
 
@@ -334,6 +356,7 @@ const styles = StyleSheet.create({
   },
   fieldContainer: {
     marginBottom: 20,
+    position: 'relative',
   },
   label: {
     fontSize: 14,
@@ -360,8 +383,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#999',
   },
-  dropdownList: {
-    marginTop: 8,
+  dropdownListContainer: {
+    position: 'absolute',
+    top: 76,
+    left: 0,
+    right: 0,
+    maxHeight: 250,
     borderWidth: 1,
     borderColor: '#E5E5E5',
     borderRadius: 8,
@@ -373,18 +400,24 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 5,
+    zIndex: 1000,
+  },
+  dropdownList: {
+    flex: 1,
   },
   dropdownItem: {
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#F5F5F5',
+    backgroundColor: '#fff',
   },
   dropdownItemText: {
     fontSize: 15,
     color: '#333',
     lineHeight: 20,
+    fontWeight: '400',
   },
   dateInput: {
     flexDirection: 'row',
