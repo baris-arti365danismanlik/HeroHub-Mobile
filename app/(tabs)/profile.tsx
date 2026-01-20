@@ -2228,7 +2228,14 @@ export default function ProfileScreen() {
           title="VİZE BİLGİLERİ"
           icon={<Globe size={18} color="#7C3AED" />}
           isExpandedDefault={false}
-          subtitle={profileDetails.userVisas.length > 0 ? undefined : 'Bilgi yok'}
+          actionButton={
+            <TouchableOpacity
+              onPress={() => setVisaModalVisible(true)}
+              activeOpacity={0.7}
+            >
+              <Plus size={20} color="#7C3AED" />
+            </TouchableOpacity>
+          }
         >
           <TouchableOpacity
             style={styles.visaRequestButton}
@@ -2241,26 +2248,50 @@ export default function ProfileScreen() {
           {profileDetails.userVisas.length > 0 ? (
             <View style={{ marginTop: 16 }}>
               {profileDetails.userVisas.map((visa, index) => (
-                <View key={visa.id}>
-                  <InfoRow label="Ülke" value={visa.country} />
-                  <InfoRow label="Vize Tipi" value={visa.visaType} />
-                  <InfoRow label="Veriliş Tarihi" value={formatDate(visa.issueDate)} />
-                  <InfoRow label="Bitiş Tarihi" value={formatDate(visa.expiryDate)} isLast={index === profileDetails.userVisas.length - 1} />
+                <View key={visa.id} style={styles.visaCard}>
+                  <View style={styles.visaCardHeader}>
+                    <Text style={styles.visaCardCountry}>{visa.country}</Text>
+                    <View style={styles.visaCardActions}>
+                      <TouchableOpacity
+                        style={styles.visaCardActionButton}
+                        activeOpacity={0.7}
+                      >
+                        <Pencil size={18} color="#7C3AED" />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.visaCardActionButton}
+                        activeOpacity={0.7}
+                      >
+                        <X size={18} color="#DC2626" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  <View style={styles.visaCardContent}>
+                    <View style={styles.visaCardRow}>
+                      <Text style={styles.visaCardLabel}>Vize Türü</Text>
+                      <Text style={styles.visaCardValue}>{visa.visaType}</Text>
+                    </View>
+                    <View style={styles.visaCardRow}>
+                      <Text style={styles.visaCardLabel}>Alındığı Tarih</Text>
+                      <Text style={styles.visaCardValue}>{formatDate(visa.issueDate)}</Text>
+                    </View>
+                    <View style={styles.visaCardRow}>
+                      <Text style={styles.visaCardLabel}>Bittiği Tarih</Text>
+                      <Text style={styles.visaCardValue}>{formatDate(visa.expiryDate)}</Text>
+                    </View>
+                    <View style={[styles.visaCardRow, { borderBottomWidth: 0 }]}>
+                      <Text style={styles.visaCardLabel}>Durum</Text>
+                      <Text style={styles.visaCardValue}>
+                        {new Date(visa.expiryDate) > new Date() ? 'Geçerli' : 'Geçersiz'}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
               ))}
             </View>
           ) : (
-            <View style={styles.visaEmptyStateContainer}>
-              <View style={styles.visaInfoIconContainer}>
-                <Text style={styles.visaInfoIcon}>ⓘ</Text>
-              </View>
-              <Text style={styles.visaEmptyText}>Vize Bilgisi Bulunmamaktadır.</Text>
-            </View>
+            <Text style={styles.visaEmptyText}>Vize bilgisi bulunmamaktadır.</Text>
           )}
-
-          <TouchableOpacity style={styles.visaAddButton} activeOpacity={0.7}>
-            <Text style={styles.visaAddButtonText}>Ekle</Text>
-          </TouchableOpacity>
         </Accordion>
       </>
     );
@@ -6618,45 +6649,54 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
-  visaAddButton: {
-    alignSelf: 'center',
-    minWidth: 120,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#7C3AED',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  visaAddButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#7C3AED',
-  },
-  visaEmptyStateContainer: {
-    alignItems: 'center',
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-  },
-  visaInfoIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  visaCard: {
     backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  visaCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 16,
   },
-  visaInfoIcon: {
-    fontSize: 28,
-    color: '#9CA3AF',
+  visaCardCountry: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1F2937',
+  },
+  visaCardActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  visaCardActionButton: {
+    padding: 4,
+  },
+  visaCardContent: {
+    gap: 0,
+  },
+  visaCardRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  visaCardLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  visaCardValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#1F2937',
   },
   visaEmptyText: {
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
+    marginTop: 16,
   },
 });

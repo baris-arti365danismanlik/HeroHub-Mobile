@@ -10,9 +10,10 @@ interface AccordionProps {
   canEdit?: boolean;
   onEdit?: () => void;
   subtitle?: string;
+  actionButton?: ReactNode;
 }
 
-export function Accordion({ title, icon, children, isExpandedDefault = false, canEdit = false, onEdit, subtitle }: AccordionProps) {
+export function Accordion({ title, icon, children, isExpandedDefault = false, canEdit = false, onEdit, subtitle, actionButton }: AccordionProps) {
   const [isExpanded, setIsExpanded] = useState(isExpandedDefault);
   const rotateAnim = useRef(new Animated.Value(isExpandedDefault ? 1 : 0)).current;
 
@@ -70,6 +71,11 @@ export function Accordion({ title, icon, children, isExpandedDefault = false, ca
           </View>
         </View>
         <View style={styles.headerRight}>
+          {actionButton && (
+            <View style={styles.actionButtonContainer}>
+              {actionButton}
+            </View>
+          )}
           {canEdit && onEdit && (
             <TouchableOpacity
               onPress={handleEditPress}
@@ -139,6 +145,9 @@ const styles = StyleSheet.create({
   subtitleValue: {
     fontSize: 13,
     color: '#6B7280',
+  },
+  actionButtonContainer: {
+    marginRight: 8,
   },
   editButton: {
     padding: 4,
