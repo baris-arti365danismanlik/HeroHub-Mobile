@@ -427,13 +427,27 @@ class UserService {
       organizationId: data.organizationId,
     };
 
-    const response = await newApiClient.post<any>('/User/create', payload);
+    console.log('Creating employee with payload:', JSON.stringify(payload, null, 2));
 
-    if (!response.succeeded && !response.success) {
-      throw new Error(response.friendlyMessage || response.message || 'Çalışan eklenemedi');
+    try {
+      const response = await newApiClient.post<any>('/User/create-user', payload);
+
+      console.log('Create employee response:', JSON.stringify(response, null, 2));
+
+      if (!response.succeeded && !response.success) {
+        throw new Error(response.friendlyMessage || response.message || 'Çalışan eklenemedi');
+      }
+
+      return response.data || response;
+    } catch (error: any) {
+      console.error('Create employee error:', error);
+
+      if (error.message?.includes('405') || error.message?.includes('Method Not Allowed')) {
+        throw new Error('Backend API henüz çalışan eklemeyi desteklemiyor. Lütfen backend ekibine "/User/create-user" endpoint\'ini eklemelerini bildirin.');
+      }
+
+      throw error;
     }
-
-    return response.data || response;
   }
 }
 
