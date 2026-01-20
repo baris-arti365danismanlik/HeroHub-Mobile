@@ -405,12 +405,14 @@ export default function EmployeeDetailScreen() {
             icon={<GraduationCap size={20} color="#1a1a1a" />}
             canEdit={false}
             actionButton={
-              <TouchableOpacity
-                onPress={() => setAddEducationModalVisible(true)}
-                style={{ padding: 4 }}
-              >
-                <Plus size={20} color="#7C3AED" />
-              </TouchableOpacity>
+              canEditProfile ? (
+                <TouchableOpacity
+                  onPress={() => setAddEducationModalVisible(true)}
+                  style={{ padding: 4 }}
+                >
+                  <Plus size={20} color="#7C3AED" />
+                </TouchableOpacity>
+              ) : undefined
             }
           >
             {employee.educations && employee.educations.length > 0 ? (
@@ -503,12 +505,14 @@ export default function EmployeeDetailScreen() {
             canEdit={false}
             subtitle={employee.userVisas && employee.userVisas.length > 0 ? undefined : 'Bilgi yok'}
             actionButton={
-              <TouchableOpacity
-                onPress={() => setVisaRequestModalVisible(true)}
-                style={{ padding: 4 }}
-              >
-                <Plus size={20} color="#7C3AED" />
-              </TouchableOpacity>
+              canEditProfile ? (
+                <TouchableOpacity
+                  onPress={() => setVisaRequestModalVisible(true)}
+                  style={{ padding: 4 }}
+                >
+                  <Plus size={20} color="#7C3AED" />
+                </TouchableOpacity>
+              ) : undefined
             }
           >
             {employee.userVisas && employee.userVisas.length > 0 ? (
@@ -517,14 +521,16 @@ export default function EmployeeDetailScreen() {
                   <View key={visa.id || index} style={styles.visaCard}>
                     <View style={styles.visaCardHeader}>
                       <Text style={styles.visaCountryText}>{visa.country || visa.countryName || '-'}</Text>
-                      <View style={styles.visaCardActions}>
-                        <TouchableOpacity style={styles.visaCardActionButton}>
-                          <Pencil size={18} color="#7C3AED" />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.visaCardActionButton}>
-                          <Trash2 size={18} color="#DC2626" />
-                        </TouchableOpacity>
-                      </View>
+                      {canEditProfile && (
+                        <View style={styles.visaCardActions}>
+                          <TouchableOpacity style={styles.visaCardActionButton}>
+                            <Pencil size={18} color="#7C3AED" />
+                          </TouchableOpacity>
+                          <TouchableOpacity style={styles.visaCardActionButton}>
+                            <Trash2 size={18} color="#DC2626" />
+                          </TouchableOpacity>
+                        </View>
+                      )}
                     </View>
                     <View style={styles.visaCardBody}>
                       {renderInfoRow('Vize Türü', getVisaTypeText(visa.visaType))}
