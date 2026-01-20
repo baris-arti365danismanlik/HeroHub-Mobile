@@ -40,7 +40,7 @@ export interface EmployeeFormData {
   notes: string;
   startDate: string;
   salary: string;
-  role: 'HR' | 'HR Manager' | 'Other';
+  role: 'HR' | 'HR Manager' | 'IT' | 'Other';
 }
 
 export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 }: AddEmployeeModalProps) {
@@ -288,7 +288,7 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                         .flatMap(d => d.users)
                         .find(u => u.id === formData.managerId)
                         ?.lastName
-                    : 'Çalışanların İşini Ara'}
+                    : 'Çalışanların içinde ara'}
                 </Text>
                 <ChevronDown size={20} color="#666" />
               </TouchableOpacity>
@@ -307,17 +307,17 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                 <Text style={styles.pickerText}>
                   {selectedSubordinates.size > 0
                     ? `${selectedSubordinates.size} çalışan seçildi`
-                    : 'Çalışanların İşini Ara'}
+                    : 'Çalışanların içinde ara'}
                 </Text>
                 <ChevronDown size={20} color="#666" />
               </TouchableOpacity>
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Görüş Tesimi</Text>
+              <Text style={styles.label}>Görev Tanımı</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
-                placeholder="Görüş tesimi buraya gelecektir"
+                placeholder="Görev tanımı buraya gelecektir."
                 value={formData.notes}
                 onChangeText={(text) => setFormData({ ...formData, notes: text })}
                 multiline
@@ -353,7 +353,7 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Rol</Text>
+              <Text style={styles.label}>Rolü</Text>
               <View style={styles.radioGroup}>
                 <TouchableOpacity
                   style={styles.radioOption}
@@ -373,6 +373,16 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                     {formData.role === 'HR Manager' && <View style={styles.radioSelected} />}
                   </View>
                   <Text style={styles.radioLabel}>HR Manager</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.radioOption}
+                  onPress={() => setFormData({ ...formData, role: 'IT' })}
+                >
+                  <View style={styles.radioCircle}>
+                    {formData.role === 'IT' && <View style={styles.radioSelected} />}
+                  </View>
+                  <Text style={styles.radioLabel}>IT</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -566,7 +576,7 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                   <View style={styles.searchContainer}>
                     <TextInput
                       style={styles.searchInput}
-                      placeholder="Çalışanların işini ara"
+                      placeholder="Çalışanların içinde ara"
                       value={managerSearchQuery}
                       onChangeText={setManagerSearchQuery}
                     />
@@ -650,7 +660,7 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
                   <View style={styles.searchContainer}>
                     <TextInput
                       style={styles.searchInput}
-                      placeholder="Çalışanların işini ara"
+                      placeholder="Çalışanların içinde ara"
                       value={subordinateSearchQuery}
                       onChangeText={setSubordinateSearchQuery}
                     />
