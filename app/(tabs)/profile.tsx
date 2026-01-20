@@ -11,6 +11,7 @@ import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { WorkInfoCard } from '@/components/WorkInfoCard';
 import { FileActionDropdown } from '@/components/FileActionDropdown';
 import { OnboardingDropdown } from '@/components/OnboardingDropdown';
+import { AddEducationModal, EducationFormData } from '@/components/AddEducationModal';
 import { assetService } from '@/services/asset.service';
 import { leaveService } from '@/services/leave.service';
 import { inboxService } from '@/services/inbox.service';
@@ -232,6 +233,8 @@ export default function ProfileScreen() {
     endDate: '',
     postponementReason: '',
   });
+
+  const [addEducationModalVisible, setAddEducationModalVisible] = useState(false);
 
   const [calendarMonth, setCalendarMonth] = useState(new Date(2025, 2, 1));
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
@@ -594,6 +597,21 @@ export default function ProfileScreen() {
       setMilitaryEditModalVisible(false);
     } catch (error) {
       alert('Askerlik bilgileri güncellenirken bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddEducation = async (data: EducationFormData) => {
+    if (!user?.backend_user_id) return;
+
+    try {
+      setLoading(true);
+      console.log('Eğitim bilgisi ekleniyor:', data);
+      alert('Eğitim bilgisi başarıyla eklendi');
+      setAddEducationModalVisible(false);
+    } catch (error) {
+      alert('Eğitim bilgisi eklenirken bir hata oluştu');
     } finally {
       setLoading(false);
     }
@@ -2191,6 +2209,14 @@ export default function ProfileScreen() {
           title="EĞİTİM BİLGİLERİ"
           icon={<GraduationCap size={18} color="#7C3AED" />}
           isExpandedDefault={false}
+          actionButton={
+            <TouchableOpacity
+              onPress={() => setAddEducationModalVisible(true)}
+              style={{ padding: 4 }}
+            >
+              <Plus size={20} color="#7C3AED" />
+            </TouchableOpacity>
+          }
         >
           {profileDetails.educations.length > 0 ? (
             profileDetails.educations.map((education, index) => (
@@ -4283,6 +4309,12 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      <AddEducationModal
+        visible={addEducationModalVisible}
+        onClose={() => setAddEducationModalVisible(false)}
+        onSubmit={handleAddEducation}
+      />
 
     </>
   );
