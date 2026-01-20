@@ -348,6 +348,42 @@ class UserService {
 
     return response.data;
   }
+
+  async createUserEducation(data: {
+    userId: number;
+    level: number;
+    schoolName: string;
+    department: string;
+    gpa: number;
+    gpaSystem: number;
+    language: number;
+    startDate: string;
+    endDate: string;
+  }): Promise<any> {
+    const payload = {
+      userId: data.userId.toString(),
+      level: data.level,
+      schoolName: data.schoolName,
+      department: data.department,
+      gpa: data.gpa,
+      gpaSystem: data.gpaSystem,
+      language: data.language,
+      startDate: data.startDate,
+      endDate: data.endDate,
+    };
+
+    const response = await apiClient.post<any>('/Profile/create-usereducation', payload);
+
+    if (!response.succeeded && !response.success) {
+      throw new Error(response.friendlyMessage || response.message || 'Eğitim bilgisi eklenemedi');
+    }
+
+    if (!response.data) {
+      throw new Error('Eğitim bilgisi eklenemedi');
+    }
+
+    return response.data;
+  }
 }
 
 export const userService = new UserService();

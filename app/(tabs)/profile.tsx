@@ -607,11 +607,26 @@ export default function ProfileScreen() {
 
     try {
       setLoading(true);
-      console.log('Eğitim bilgisi ekleniyor:', data);
+
+      await userService.createUserEducation({
+        userId: user.backend_user_id,
+        level: data.level,
+        schoolName: data.schoolName,
+        department: data.department,
+        gpa: data.gpa,
+        gpaSystem: data.gpaSystem,
+        language: data.language,
+        startDate: data.startDate,
+        endDate: data.endDate,
+      });
+
+      const updatedProfile = await userService.getUserProfile(user.backend_user_id);
+      setProfileDetails(updatedProfile);
+
       alert('Eğitim bilgisi başarıyla eklendi');
       setAddEducationModalVisible(false);
-    } catch (error) {
-      alert('Eğitim bilgisi eklenirken bir hata oluştu');
+    } catch (error: any) {
+      alert(error.message || 'Eğitim bilgisi eklenirken bir hata oluştu');
     } finally {
       setLoading(false);
     }

@@ -10,12 +10,12 @@ interface AddEducationModalProps {
 }
 
 export interface EducationFormData {
-  schoolType: string;
+  level: number;
   schoolName: string;
   department: string;
-  grade: string;
-  gradeSystem: string;
-  language: string;
+  gpa: number;
+  gpaSystem: number;
+  language: number;
   startDate: string;
   endDate: string;
 }
@@ -51,12 +51,15 @@ const LANGUAGES = [
 ];
 
 export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationModalProps) {
-  const [schoolType, setSchoolType] = useState('');
+  const [schoolTypeId, setSchoolTypeId] = useState<number>(1);
+  const [schoolTypeName, setSchoolTypeName] = useState('İlkokul');
   const [schoolName, setSchoolName] = useState('');
   const [department, setDepartment] = useState('');
   const [grade, setGrade] = useState('');
-  const [gradeSystem, setGradeSystem] = useState('');
-  const [language, setLanguage] = useState('');
+  const [gradeSystemId, setGradeSystemId] = useState<number>(1);
+  const [gradeSystemName, setGradeSystemName] = useState('4.00');
+  const [languageId, setLanguageId] = useState<number>(1);
+  const [languageName, setLanguageName] = useState('Türkçe');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -67,12 +70,15 @@ export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationMo
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   const handleClose = () => {
-    setSchoolType('');
+    setSchoolTypeId(1);
+    setSchoolTypeName('İlkokul');
     setSchoolName('');
     setDepartment('');
     setGrade('');
-    setGradeSystem('');
-    setLanguage('');
+    setGradeSystemId(1);
+    setGradeSystemName('4.00');
+    setLanguageId(1);
+    setLanguageName('Türkçe');
     setStartDate('');
     setEndDate('');
     setShowSchoolTypeDropdown(false);
@@ -81,21 +87,34 @@ export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationMo
     onClose();
   };
 
+  const convertDateToISO = (dateStr: string): string => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('/').map(p => p.trim());
+    if (parts.length === 3) {
+      const [day, month, year] = parts;
+      const date = new Date(`${year}-${month}-${day}`);
+      return date.toISOString();
+    }
+    return '';
+  };
+
   const handleSubmit = () => {
-    if (!schoolType || !schoolName || !startDate) {
-      alert('Lütfen zorunlu alanları doldurunuz');
+    if (!schoolName || !startDate) {
+      alert('Lütfen zorunlu alanları doldurunuz (Okul Adı ve Başlangıç Tarihi)');
       return;
     }
 
+    const gpaValue = parseFloat(grade) || 0;
+
     onSubmit({
-      schoolType,
+      level: schoolTypeId,
       schoolName,
-      department,
-      grade,
-      gradeSystem,
-      language,
-      startDate,
-      endDate,
+      department: department || '',
+      gpa: gpaValue,
+      gpaSystem: gradeSystemId,
+      language: languageId,
+      startDate: convertDateToISO(startDate),
+      endDate: convertDateToISO(endDate),
     });
 
     handleClose();
@@ -127,8 +146,8 @@ export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationMo
                   setShowLanguageDropdown(false);
                 }}
               >
-                <Text style={schoolType ? styles.dropdownText : styles.dropdownPlaceholder}>
-                  {schoolType || 'İlkokul'}
+                <Text style={styles.dropdownText}>
+                  {schoolTypeName}
                 </Text>
                 <ChevronDown size={20} color="#999" />
               </TouchableOpacity>
@@ -140,7 +159,8 @@ export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationMo
                         key={type.id}
                         style={styles.dropdownItem}
                         onPress={() => {
-                          setSchoolType(type.name);
+                          setSchoolTypeId(type.id);
+                          setSchoolTypeName(type.name);
                           setShowSchoolTypeDropdown(false);
                         }}
                       >
@@ -196,8 +216,8 @@ export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationMo
                   setShowLanguageDropdown(false);
                 }}
               >
-                <Text style={gradeSystem ? styles.dropdownText : styles.dropdownPlaceholder}>
-                  {gradeSystem || '4.00'}
+                <Text style={styles.dropdownText}>
+                  {gradeSystemName}
                 </Text>
                 <ChevronDown size={20} color="#999" />
               </TouchableOpacity>
@@ -209,7 +229,8 @@ export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationMo
                         key={system.id}
                         style={styles.dropdownItem}
                         onPress={() => {
-                          setGradeSystem(system.name);
+                          setGradeSystemId(system.id);
+                          setGradeSystemName(system.name);
                           setShowGradeSystemDropdown(false);
                         }}
                       >
@@ -231,8 +252,8 @@ export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationMo
                   setShowGradeSystemDropdown(false);
                 }}
               >
-                <Text style={language ? styles.dropdownText : styles.dropdownPlaceholder}>
-                  {language || 'Türkçe'}
+                <Text style={styles.dropdownText}>
+                  {languageName}
                 </Text>
                 <ChevronDown size={20} color="#999" />
               </TouchableOpacity>
@@ -244,7 +265,8 @@ export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationMo
                         key={lang.id}
                         style={styles.dropdownItem}
                         onPress={() => {
-                          setLanguage(lang.name);
+                          setLanguageId(lang.id);
+                          setLanguageName(lang.name);
                           setShowLanguageDropdown(false);
                         }}
                       >
