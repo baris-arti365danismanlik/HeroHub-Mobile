@@ -1108,11 +1108,21 @@ export default function ProfileScreen() {
       setLoading(true);
 
       const visaTypeMap: Record<string, number> = {
-        'Turist/Turizm Vizesi': 1,
+        'Turist Vizesi': 1,
         'İş Vizesi': 2,
         'Öğrenci Vizesi': 3,
         'Transit Vize': 4,
         'Çalışma Vizesi': 5,
+        'Aile Vizesi': 6,
+        'Geçici Vize': 7,
+        'Daimi Vize': 8,
+        'Ticari Vize': 9,
+        'Diplomatik Vize': 10,
+        'Sağlık Vizesi': 11,
+        'Kültürel Vize': 12,
+        'Gazeteci Vizesi': 13,
+        'Göçmen Vizesi': 14,
+        'Din Görevlisi Vizesi': 15,
       };
 
       const formatDateToISO = (dateStr: string) => {

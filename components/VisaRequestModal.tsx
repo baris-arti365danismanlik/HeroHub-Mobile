@@ -32,11 +32,21 @@ export interface VisaRequestData {
 }
 
 const VISA_TYPES = [
-  { id: 1, name: 'Turist/Turizm Vizesi' },
+  { id: 1, name: 'Turist Vizesi' },
   { id: 2, name: 'İş Vizesi' },
   { id: 3, name: 'Öğrenci Vizesi' },
   { id: 4, name: 'Transit Vize' },
   { id: 5, name: 'Çalışma Vizesi' },
+  { id: 6, name: 'Aile Vizesi' },
+  { id: 7, name: 'Geçici Vize' },
+  { id: 8, name: 'Daimi Vize' },
+  { id: 9, name: 'Ticari Vize' },
+  { id: 10, name: 'Diplomatik Vize' },
+  { id: 11, name: 'Sağlık Vizesi' },
+  { id: 12, name: 'Kültürel Vize' },
+  { id: 13, name: 'Gazeteci Vizesi' },
+  { id: 14, name: 'Göçmen Vizesi' },
+  { id: 15, name: 'Din Görevlisi Vizesi' },
 ];
 
 export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaRequestModalProps) {
@@ -142,7 +152,7 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 <ChevronDown size={20} color="#999" />
               </TouchableOpacity>
               {showVisaTypeDropdown && (
-                <View style={styles.dropdownList}>
+                <ScrollView style={[styles.dropdownList, { maxHeight: 250 }]} nestedScrollEnabled>
                   {VISA_TYPES.map((type) => (
                     <TouchableOpacity
                       key={type.id}
@@ -155,7 +165,7 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                       <Text style={styles.dropdownItemText}>{type.name}</Text>
                     </TouchableOpacity>
                   ))}
-                </View>
+                </ScrollView>
               )}
             </View>
 
@@ -356,17 +366,25 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5E5',
     borderRadius: 8,
     backgroundColor: '#fff',
-    maxHeight: 200,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   dropdownItem: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#F5F5F5',
   },
   dropdownItemText: {
     fontSize: 15,
-    color: '#1a1a1a',
+    color: '#333',
+    lineHeight: 20,
   },
   dateInput: {
     flexDirection: 'row',
