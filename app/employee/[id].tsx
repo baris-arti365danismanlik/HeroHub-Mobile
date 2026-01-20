@@ -9,7 +9,7 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import { ArrowLeft, User, Phone, Mail, MapPin, Heart, FileText, Shield, Users, GraduationCap, Award, MessageCircle, Globe, Plane, CreditCard as Edit2, ChevronDown, ChevronUp, Building2, Briefcase, Car } from 'lucide-react-native';
+import { ArrowLeft, User, Phone, Mail, MapPin, Heart, FileText, Shield, Users, GraduationCap, Award, MessageCircle, Globe, Plane, CreditCard as Edit2, ChevronDown, ChevronUp, Building2, Briefcase, Car, Plus } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
@@ -19,6 +19,7 @@ import { Accordion } from '@/components/Accordion';
 import { normalizePhotoUrl } from '@/utils/formatters';
 import EditSectionModal from '@/components/EditSectionModal';
 import { VisaRequestModal, type VisaRequestData } from '@/components/VisaRequestModal';
+import { AddEducationModal, EducationFormData } from '@/components/AddEducationModal';
 
 export default function EmployeeDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -29,6 +30,7 @@ export default function EmployeeDetailScreen() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editSectionType, setEditSectionType] = useState<'personal' | 'contact' | 'address' | 'health' | 'military' | null>(null);
   const [visaRequestModalVisible, setVisaRequestModalVisible] = useState(false);
+  const [addEducationModalVisible, setAddEducationModalVisible] = useState(false);
 
   const permissions = usePermissions(employee?.modulePermissions);
   const canViewProfile = permissions.canRead(MODULE_IDS.PROFILE);
@@ -101,6 +103,36 @@ export default function EmployeeDetailScreen() {
 
   const handleVisaRequest = async (data: VisaRequestData) => {
     console.log('Visa request submitted:', data);
+  };
+
+  const handleAddEducation = async (data: EducationFormData) => {
+    const employeeId = typeof id === 'string' ? parseInt(id) : (Array.isArray(id) ? parseInt(id[0]) : 0);
+    if (!employeeId) return;
+
+    try {
+      setLoading(true);
+
+      await userService.createUserEducation({
+        userId: employeeId,
+        level: data.level,
+        schoolName: data.schoolName,
+        department: data.department,
+        gpa: data.gpa,
+        gpaSystem: data.gpaSystem,
+        language: data.language,
+        startDate: data.startDate,
+        endDate: data.endDate,
+      });
+
+      await loadEmployeeData();
+
+      alert('Eğitim bilgisi başarıyla eklendi');
+      setAddEducationModalVisible(false);
+    } catch (error: any) {
+      alert(error.message || 'Eğitim bilgisi eklenirken bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderInfoRow = (label: string, value: string) => (
@@ -302,6 +334,14 @@ export default function EmployeeDetailScreen() {
             title="EĞİTİM BİLGİLERİ"
             icon={<GraduationCap size={20} color="#1a1a1a" />}
             canEdit={false}
+            actionButton={
+              <TouchableOpacity
+                onPress={() => setAddEducationModalVisible(true)}
+                style={{ padding: 4 }}
+              >
+                <Plus size={20} color="#7C3AED" />
+              </TouchableOpacity>
+            }
           >
             {employee.educations && employee.educations.length > 0 ? (
               employee.educations.map((education, index) => (
@@ -392,6 +432,14 @@ export default function EmployeeDetailScreen() {
             icon={<Plane size={20} color="#1a1a1a" />}
             canEdit={false}
             subtitle={employee.userVisas && employee.userVisas.length > 0 ? undefined : 'Bilgi yok'}
+            actionButton={
+              <TouchableOpacity
+                onPress={() => setVisaRequestModalVisible(true)}
+                style={{ padding: 4 }}
+              >
+                <Plus size={20} color="#7C3AED" />
+              </TouchableOpacity>
+            }
           >
             <TouchableOpacity
               style={styles.visaRequestButton}
@@ -446,6 +494,12 @@ export default function EmployeeDetailScreen() {
         onClose={() => setVisaRequestModalVisible(false)}
         userId={employee?.backendUserId || employee?.id || 0}
         onSubmit={handleVisaRequest}
+      />
+
+      <AddEducationModal
+        visible={addEducationModalVisible}
+        onClose={() => setAddEducationModalVisible(false)}
+        onSubmit={handleAddEducation}
       />
     </SafeAreaView>
   );
