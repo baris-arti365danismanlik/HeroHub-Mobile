@@ -1116,22 +1116,29 @@ export default function ProfileScreen() {
       };
 
       const formatDateToISO = (dateStr: string) => {
-        const parts = dateStr.split('/');
+        const parts = dateStr.split('/').map(p => p.trim());
         if (parts.length === 3) {
           const [day, month, year] = parts;
-          return new Date(`${year}-${month}-${day}`).toISOString();
+          const date = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
+          return date.toISOString();
         }
         return new Date(dateStr).toISOString();
       };
 
-      await userService.createUserVisa({
+      const payload = {
         userId: user.backend_user_id,
         visaType: visaTypeMap[data.visaType] || 1,
         countryId: data.countryId,
         visaStartDate: formatDateToISO(data.entryDate),
         visaEndDate: formatDateToISO(data.exitDate),
-        note: data.notes,
-      });
+        note: data.notes || '',
+      };
+
+      console.log('Creating visa with payload:', payload);
+
+      const result = await userService.createUserVisa(payload);
+
+      console.log('Visa creation result:', result);
 
       setVisaModalVisible(false);
       setVisaSuccessVisible(true);
@@ -1140,8 +1147,10 @@ export default function ProfileScreen() {
         const updatedProfile = await userService.getUserProfile(user.backend_user_id);
         setProfileDetails(updatedProfile);
       }
-    } catch (error) {
-      alert('Vize oluşturulurken bir hata oluştu');
+    } catch (error: any) {
+      console.error('Visa creation error:', error);
+      const errorMessage = error?.message || error?.response?.data?.friendlyMessage || 'Vize oluşturulurken bir hata oluştu';
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

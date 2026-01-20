@@ -323,10 +323,29 @@ class UserService {
     visaEndDate: string;
     note: string;
   }): Promise<any> {
-    const response = await apiClient.post<any>('/Profile/create-uservisa', data);
-    if (!response.data) {
-      throw new Error('Failed to create user visa');
+    const payload = {
+      userId: data.userId,
+      visaType: data.visaType,
+      countryId: data.countryId,
+      visaStartDate: data.visaStartDate,
+      visaEndDate: data.visaEndDate,
+      note: data.note || '',
+    };
+
+    console.log('API Request Payload:', JSON.stringify(payload, null, 2));
+
+    const response = await apiClient.post<any>('/Profile/create-uservisa', payload);
+
+    console.log('API Response:', JSON.stringify(response, null, 2));
+
+    if (!response.succeeded && !response.success) {
+      throw new Error(response.friendlyMessage || response.message || 'Vize oluşturulamadı');
     }
+
+    if (!response.data) {
+      throw new Error('Vize oluşturulamadı');
+    }
+
     return response.data;
   }
 }
