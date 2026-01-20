@@ -908,6 +908,34 @@ export default function ProfileScreen() {
     return dateStr;
   };
 
+  const getVisaTypeText = (visaType: number | string): string => {
+    if (typeof visaType === 'string') return visaType;
+    const types = [
+      '',
+      'Turist Vizesi',
+      'İş Vizesi',
+      'Öğrenci Vizesi',
+      'Transit Vize',
+      'Çalışma Vizesi',
+      'Aile Vizesi',
+      'Geçici Vize',
+      'Daimi Vize',
+      'Ticari Vize',
+      'Diplomatik Vize',
+      'Sağlık Vizesi',
+      'Kültürel Vize',
+      'Gazeteci Vizesi',
+      'Göçmen Vizesi',
+      'Din Görevlisi Vizesi',
+    ];
+    return types[visaType] || '-';
+  };
+
+  const getVisaStatusText = (status: number): string => {
+    const statuses = ['Beklemede', 'Onaylandı', 'Reddedildi', 'Geçersiz'];
+    return statuses[status] || '-';
+  };
+
   const formatDateForApi = (dateStr: string): Date => {
     if (!dateStr) return new Date();
 
@@ -2329,10 +2357,10 @@ export default function ProfileScreen() {
 
           {profileDetails.userVisas.length > 0 ? (
             <View style={{ marginTop: 16 }}>
-              {profileDetails.userVisas.map((visa, index) => (
-                <View key={visa.id} style={styles.visaCard}>
+              {profileDetails.userVisas.map((visa: any, index: number) => (
+                <View key={visa.id || index} style={styles.visaCard}>
                   <View style={styles.visaCardHeader}>
-                    <Text style={styles.visaCardCountry}>{visa.country}</Text>
+                    <Text style={styles.visaCardCountry}>{visa.country || visa.countryName || '-'}</Text>
                     <View style={styles.visaCardActions}>
                       <TouchableOpacity
                         style={styles.visaCardActionButton}
@@ -2351,20 +2379,20 @@ export default function ProfileScreen() {
                   <View style={styles.visaCardContent}>
                     <View style={styles.visaCardRow}>
                       <Text style={styles.visaCardLabel}>Vize Türü</Text>
-                      <Text style={styles.visaCardValue}>{visa.visaType}</Text>
+                      <Text style={styles.visaCardValue}>{getVisaTypeText(visa.visaType)}</Text>
                     </View>
                     <View style={styles.visaCardRow}>
                       <Text style={styles.visaCardLabel}>Alındığı Tarih</Text>
-                      <Text style={styles.visaCardValue}>{formatDate(visa.issueDate)}</Text>
+                      <Text style={styles.visaCardValue}>{formatDate(visa.issueDate || visa.visaStartDate)}</Text>
                     </View>
                     <View style={styles.visaCardRow}>
-                      <Text style={styles.visaCardLabel}>Bittiği Tarih</Text>
-                      <Text style={styles.visaCardValue}>{formatDate(visa.expiryDate)}</Text>
+                      <Text style={styles.visaCardLabel}>Bitiş Tarihi</Text>
+                      <Text style={styles.visaCardValue}>{formatDate(visa.expiryDate || visa.visaEndDate)}</Text>
                     </View>
                     <View style={[styles.visaCardRow, { borderBottomWidth: 0 }]}>
                       <Text style={styles.visaCardLabel}>Durum</Text>
                       <Text style={styles.visaCardValue}>
-                        {new Date(visa.expiryDate) > new Date() ? 'Geçerli' : 'Geçersiz'}
+                        {visa.status !== undefined ? getVisaStatusText(visa.status) : (new Date(visa.expiryDate || visa.visaEndDate) > new Date() ? 'Geçerli' : 'Geçersiz')}
                       </Text>
                     </View>
                   </View>

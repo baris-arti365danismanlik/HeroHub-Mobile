@@ -9,7 +9,7 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import { ArrowLeft, User, Phone, Mail, MapPin, Heart, FileText, Shield, Users, GraduationCap, Award, MessageCircle, Globe, Plane, CreditCard as Edit2, ChevronDown, ChevronUp, Building2, Briefcase, Car, Plus } from 'lucide-react-native';
+import { ArrowLeft, User, Phone, Mail, MapPin, Heart, FileText, Shield, Users, GraduationCap, Award, MessageCircle, Globe, Plane, CreditCard as Edit2, ChevronDown, ChevronUp, Building2, Briefcase, Car, Plus, Pencil, Trash2 } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
@@ -33,6 +33,8 @@ export default function EmployeeDetailScreen() {
   const [visaRequestModalVisible, setVisaRequestModalVisible] = useState(false);
   const [addEducationModalVisible, setAddEducationModalVisible] = useState(false);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [successTitle, setSuccessTitle] = useState<string>('Başarılı');
 
   const permissions = usePermissions(employee?.modulePermissions);
   const canViewProfile = permissions.canRead(MODULE_IDS.PROFILE);
@@ -94,6 +96,34 @@ export default function EmployeeDetailScreen() {
     return types[workType] || '-';
   };
 
+  const getVisaTypeText = (visaType: number | string): string => {
+    if (typeof visaType === 'string') return visaType;
+    const types = [
+      '',
+      'Turist Vizesi',
+      'İş Vizesi',
+      'Öğrenci Vizesi',
+      'Transit Vize',
+      'Çalışma Vizesi',
+      'Aile Vizesi',
+      'Geçici Vize',
+      'Daimi Vize',
+      'Ticari Vize',
+      'Diplomatik Vize',
+      'Sağlık Vizesi',
+      'Kültürel Vize',
+      'Gazeteci Vizesi',
+      'Göçmen Vizesi',
+      'Din Görevlisi Vizesi',
+    ];
+    return types[visaType] || '-';
+  };
+
+  const getVisaStatusText = (status: number): string => {
+    const statuses = ['Beklemede', 'Onaylandı', 'Reddedildi', 'Geçersiz'];
+    return statuses[status] || '-';
+  };
+
   const handleEditSection = (sectionId: 'personal' | 'contact' | 'address' | 'health' | 'military') => {
     setEditSectionType(sectionId);
     setEditModalVisible(true);
@@ -133,6 +163,8 @@ export default function EmployeeDetailScreen() {
       await loadEmployeeData();
 
       setVisaRequestModalVisible(false);
+      setSuccessTitle('Başarılı');
+      setSuccessMessage('Vize bilgisi başarıyla eklendi');
       setSuccessModalVisible(true);
     } catch (error: any) {
       alert(error.message || 'Vize bilgisi eklenirken bir hata oluştu');
@@ -162,8 +194,10 @@ export default function EmployeeDetailScreen() {
 
       await loadEmployeeData();
 
-      alert('Eğitim bilgisi başarıyla eklendi');
       setAddEducationModalVisible(false);
+      setSuccessTitle('Başarılı');
+      setSuccessMessage('Eğitim bilgisi başarıyla eklendi');
+      setSuccessModalVisible(true);
     } catch (error: any) {
       alert(error.message || 'Eğitim bilgisi eklenirken bir hata oluştu');
     } finally {
@@ -477,22 +511,27 @@ export default function EmployeeDetailScreen() {
               </TouchableOpacity>
             }
           >
-            <TouchableOpacity
-              style={styles.visaRequestButton}
-              onPress={() => setVisaRequestModalVisible(true)}
-            >
-              <Text style={styles.visaRequestButtonText}>Vize Evrakı Talep Et</Text>
-            </TouchableOpacity>
-
             {employee.userVisas && employee.userVisas.length > 0 ? (
-              <View style={{ marginTop: 16 }}>
-                {employee.userVisas.map((visa, index) => (
-                  <View key={visa.id} style={styles.listItem}>
-                    {renderInfoRow('Ülke', visa.country || '-')}
-                    {renderInfoRow('Vize Tipi', visa.visaType || '-')}
-                    {renderInfoRow('Veriliş Tarihi', formatDate(visa.issueDate))}
-                    {renderInfoRow('Geçerlilik', formatDate(visa.expiryDate))}
-                    {index < employee.userVisas.length - 1 && <View style={styles.divider} />}
+              <View style={{ marginTop: 16, gap: 12 }}>
+                {employee.userVisas.map((visa: any, index: number) => (
+                  <View key={visa.id || index} style={styles.visaCard}>
+                    <View style={styles.visaCardHeader}>
+                      <Text style={styles.visaCountryText}>{visa.country || visa.countryName || '-'}</Text>
+                      <View style={styles.visaCardActions}>
+                        <TouchableOpacity style={styles.visaCardActionButton}>
+                          <Pencil size={18} color="#7C3AED" />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.visaCardActionButton}>
+                          <Trash2 size={18} color="#DC2626" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    <View style={styles.visaCardBody}>
+                      {renderInfoRow('Vize Türü', getVisaTypeText(visa.visaType))}
+                      {renderInfoRow('Alındığı Tarih', formatDate(visa.issueDate || visa.visaStartDate))}
+                      {renderInfoRow('Bitiş Tarihi', formatDate(visa.expiryDate || visa.visaEndDate))}
+                      {visa.status !== undefined && renderInfoRow('Durum', getVisaStatusText(visa.status))}
+                    </View>
                   </View>
                 ))}
               </View>
@@ -504,10 +543,6 @@ export default function EmployeeDetailScreen() {
                 <Text style={styles.emptyText}>Vize Bilgisi Bulunmamaktadır.</Text>
               </View>
             )}
-
-            <TouchableOpacity style={styles.visaAddButton}>
-              <Text style={styles.visaAddButtonText}>Ekle</Text>
-            </TouchableOpacity>
           </Accordion>
         </View>
 
@@ -541,8 +576,8 @@ export default function EmployeeDetailScreen() {
       <SuccessModal
         visible={successModalVisible}
         onClose={() => setSuccessModalVisible(false)}
-        title="Başarılı"
-        message="Vize bilgisi başarıyla eklendi"
+        title={successTitle}
+        message={successMessage}
       />
     </SafeAreaView>
   );
@@ -668,40 +703,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E5E5',
     marginVertical: 12,
   },
-  visaRequestButton: {
-    alignSelf: 'center',
-    minWidth: 200,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    backgroundColor: '#7C3AED',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  visaRequestButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  visaAddButton: {
-    alignSelf: 'center',
-    minWidth: 120,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#7C3AED',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  visaAddButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#7C3AED',
-  },
   emptyStateContainer: {
     alignItems: 'center',
     paddingVertical: 24,
@@ -724,5 +725,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
+  },
+  visaCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  visaCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  visaCountryText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  visaCardActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  visaCardActionButton: {
+    padding: 4,
+  },
+  visaCardBody: {
+    gap: 4,
   },
 });
