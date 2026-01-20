@@ -20,6 +20,7 @@ import { normalizePhotoUrl } from '@/utils/formatters';
 import EditSectionModal from '@/components/EditSectionModal';
 import { VisaRequestModal, type VisaRequestData } from '@/components/VisaRequestModal';
 import { AddEducationModal, EducationFormData } from '@/components/AddEducationModal';
+import { SuccessModal } from '@/components/SuccessModal';
 
 export default function EmployeeDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -31,6 +32,7 @@ export default function EmployeeDetailScreen() {
   const [editSectionType, setEditSectionType] = useState<'personal' | 'contact' | 'address' | 'health' | 'military' | null>(null);
   const [visaRequestModalVisible, setVisaRequestModalVisible] = useState(false);
   const [addEducationModalVisible, setAddEducationModalVisible] = useState(false);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   const permissions = usePermissions(employee?.modulePermissions);
   const canViewProfile = permissions.canRead(MODULE_IDS.PROFILE);
@@ -102,7 +104,41 @@ export default function EmployeeDetailScreen() {
   };
 
   const handleVisaRequest = async (data: VisaRequestData) => {
-    console.log('Visa request submitted:', data);
+    const employeeId = typeof id === 'string' ? parseInt(id) : (Array.isArray(id) ? parseInt(id[0]) : 0);
+    if (!employeeId) return;
+
+    try {
+      setLoading(true);
+
+      const convertDateToISO = (dateStr: string): string => {
+        if (!dateStr) return '';
+        const parts = dateStr.split('/').map(p => p.trim());
+        if (parts.length === 3) {
+          const [day, month, year] = parts;
+          const date = new Date(`${year}-${month}-${day}`);
+          return date.toISOString();
+        }
+        return '';
+      };
+
+      await userService.createUserVisa({
+        userId: employeeId,
+        visaType: data.visaTypeId,
+        countryId: data.countryId,
+        visaStartDate: convertDateToISO(data.entryDate),
+        visaEndDate: convertDateToISO(data.exitDate),
+        note: data.notes,
+      });
+
+      await loadEmployeeData();
+
+      setVisaRequestModalVisible(false);
+      setSuccessModalVisible(true);
+    } catch (error: any) {
+      alert(error.message || 'Vize bilgisi eklenirken bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddEducation = async (data: EducationFormData) => {
@@ -500,6 +536,13 @@ export default function EmployeeDetailScreen() {
         visible={addEducationModalVisible}
         onClose={() => setAddEducationModalVisible(false)}
         onSubmit={handleAddEducation}
+      />
+
+      <SuccessModal
+        visible={successModalVisible}
+        onClose={() => setSuccessModalVisible(false)}
+        title="Başarılı"
+        message="Vize bilgisi başarıyla eklendi"
       />
     </SafeAreaView>
   );

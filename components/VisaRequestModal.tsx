@@ -21,6 +21,7 @@ interface VisaRequestModalProps {
 }
 
 export interface VisaRequestData {
+  visaTypeId: number;
   visaType: string;
   countryId: number;
   countryName: string;
@@ -52,6 +53,7 @@ const VISA_TYPES = [
 export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaRequestModalProps) {
   const [countries, setCountries] = useState<any[]>([]);
   const [cities, setCities] = useState<any[]>([]);
+  const [selectedVisaTypeId, setSelectedVisaTypeId] = useState<number | null>(null);
   const [selectedVisaType, setSelectedVisaType] = useState<string>('');
   const [selectedCountryId, setSelectedCountryId] = useState<number | null>(null);
   const [selectedCountryName, setSelectedCountryName] = useState<string>('');
@@ -92,12 +94,13 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
   };
 
   const handleSubmit = async () => {
-    if (!selectedVisaType || !selectedCountryId || !entryDate || !exitDate) {
+    if (!selectedVisaTypeId || !selectedCountryId || !entryDate || !exitDate) {
       alert('Lütfen zorunlu alanları doldurun');
       return;
     }
 
     await onSubmit({
+      visaTypeId: selectedVisaTypeId,
       visaType: selectedVisaType,
       countryId: selectedCountryId,
       countryName: selectedCountryName,
@@ -112,6 +115,7 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
   };
 
   const handleClose = () => {
+    setSelectedVisaTypeId(null);
     setSelectedVisaType('');
     setSelectedCountryId(null);
     setSelectedCountryName('');
@@ -167,6 +171,7 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                         key={type.id}
                         style={styles.dropdownItem}
                         onPress={() => {
+                          setSelectedVisaTypeId(type.id);
                           setSelectedVisaType(type.name);
                           setShowVisaTypeDropdown(false);
                         }}
