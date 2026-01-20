@@ -658,10 +658,16 @@ export interface UserPassport {
 export interface UserVisa {
   id: number;
   userId: number;
-  country: string;
-  visaType: string;
-  issueDate: string;
-  expiryDate: string;
+  country?: string;
+  countryId?: number;
+  countryName?: string;
+  visaType: number | string;
+  issueDate?: string;
+  expiryDate?: string;
+  visaStartDate?: string;
+  visaEndDate?: string;
+  status?: number;
+  note?: string;
 }
 
 export interface ModulePermission {

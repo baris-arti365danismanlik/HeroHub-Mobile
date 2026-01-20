@@ -2383,16 +2383,16 @@ export default function ProfileScreen() {
                     </View>
                     <View style={styles.visaCardRow}>
                       <Text style={styles.visaCardLabel}>Alındığı Tarih</Text>
-                      <Text style={styles.visaCardValue}>{formatDate(visa.issueDate || visa.visaStartDate)}</Text>
+                      <Text style={styles.visaCardValue}>{(visa.issueDate || visa.visaStartDate) ? formatDate(visa.issueDate || visa.visaStartDate) : '-'}</Text>
                     </View>
                     <View style={styles.visaCardRow}>
                       <Text style={styles.visaCardLabel}>Bitiş Tarihi</Text>
-                      <Text style={styles.visaCardValue}>{formatDate(visa.expiryDate || visa.visaEndDate)}</Text>
+                      <Text style={styles.visaCardValue}>{(visa.expiryDate || visa.visaEndDate) ? formatDate(visa.expiryDate || visa.visaEndDate) : '-'}</Text>
                     </View>
                     <View style={[styles.visaCardRow, { borderBottomWidth: 0 }]}>
                       <Text style={styles.visaCardLabel}>Durum</Text>
                       <Text style={styles.visaCardValue}>
-                        {visa.status !== undefined ? getVisaStatusText(visa.status) : (new Date(visa.expiryDate || visa.visaEndDate) > new Date() ? 'Geçerli' : 'Geçersiz')}
+                        {visa.status !== undefined ? getVisaStatusText(visa.status) : ((visa.expiryDate || visa.visaEndDate) && new Date(visa.expiryDate || visa.visaEndDate || '') > new Date() ? 'Geçerli' : 'Geçersiz')}
                       </Text>
                     </View>
                   </View>

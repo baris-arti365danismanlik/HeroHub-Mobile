@@ -528,8 +528,8 @@ export default function EmployeeDetailScreen() {
                     </View>
                     <View style={styles.visaCardBody}>
                       {renderInfoRow('Vize Türü', getVisaTypeText(visa.visaType))}
-                      {renderInfoRow('Alındığı Tarih', formatDate(visa.issueDate || visa.visaStartDate))}
-                      {renderInfoRow('Bitiş Tarihi', formatDate(visa.expiryDate || visa.visaEndDate))}
+                      {renderInfoRow('Alındığı Tarih', (visa.issueDate || visa.visaStartDate) ? formatDate(visa.issueDate || visa.visaStartDate || '') : '-')}
+                      {renderInfoRow('Bitiş Tarihi', (visa.expiryDate || visa.visaEndDate) ? formatDate(visa.expiryDate || visa.visaEndDate || '') : '-')}
                       {visa.status !== undefined && renderInfoRow('Durum', getVisaStatusText(visa.status))}
                     </View>
                   </View>
