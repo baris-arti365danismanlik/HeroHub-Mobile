@@ -1,5 +1,5 @@
-import React, { useState, useEffect, ReactNode } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect, ReactNode, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { ChevronDown, Pencil } from 'lucide-react-native';
 
 interface AccordionProps {
@@ -14,16 +14,47 @@ interface AccordionProps {
 
 export function Accordion({ title, icon, children, isExpandedDefault = false, canEdit = false, onEdit, subtitle }: AccordionProps) {
   const [isExpanded, setIsExpanded] = useState(isExpandedDefault);
+  const rotateAnim = useRef(new Animated.Value(isExpandedDefault ? 1 : 0)).current;
 
   useEffect(() => {
     setIsExpanded(isExpandedDefault);
+    Animated.timing(rotateAnim, {
+      toValue: isExpandedDefault ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   }, [isExpandedDefault]);
+
+  const handlePress = () => {
+    const newValue = !isExpanded;
+    setIsExpanded(newValue);
+
+    Animated.timing(rotateAnim, {
+      toValue: newValue ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleEditPress = (e: any) => {
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
+    if (onEdit) {
+      onEdit();
+    }
+  };
+
+  const rotation = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.header}
-        onPress={() => setIsExpanded(!isExpanded)}
+        onPress={handlePress}
         activeOpacity={0.7}
       >
         <View style={styles.headerLeft}>
@@ -41,19 +72,16 @@ export function Accordion({ title, icon, children, isExpandedDefault = false, ca
         <View style={styles.headerRight}>
           {canEdit && onEdit && (
             <TouchableOpacity
-              onPress={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
+              onPress={handleEditPress}
               style={styles.editButton}
               activeOpacity={0.7}
             >
               <Pencil size={16} color="#7C3AED" />
             </TouchableOpacity>
           )}
-          <View style={[styles.chevron, isExpanded && styles.chevronExpanded]}>
+          <Animated.View style={[styles.chevron, { transform: [{ rotate: rotation }] }]}>
             <ChevronDown size={20} color="#666" />
-          </View>
+          </Animated.View>
         </View>
       </TouchableOpacity>
 
@@ -116,10 +144,8 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   chevron: {
-    transform: [{ rotate: '0deg' }],
-  },
-  chevronExpanded: {
-    transform: [{ rotate: '180deg' }],
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     paddingHorizontal: 16,
