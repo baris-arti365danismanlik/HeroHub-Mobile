@@ -11,11 +11,12 @@ import {
   TextInput,
   SafeAreaView,
 } from 'react-native';
-import { X, Mail, ChevronLeft, Download, Send, CircleCheck as CheckCircle, Clock, Users, Briefcase, Bell, QrCode } from 'lucide-react-native';
+import { X, Mail, ChevronLeft, Download, Send, CircleCheck as CheckCircle, Clock, Users, Briefcase, Bell, QrCode, Check } from 'lucide-react-native';
 import { notificationService } from '@/services/notification.service';
 import { userService } from '@/services/user.service';
 import { UserNotification, UserProfileDetails, NewEmployee, RecentActivity, NotificationDetail } from '@/types/backend';
 import { normalizePhotoUrl } from '@/utils/formatters';
+import { SurveyModal } from './SurveyModal';
 
 interface InboxModalProps {
   visible: boolean;
@@ -33,6 +34,9 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [selectedNotification, setSelectedNotification] = useState<NotificationDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [surveyModalVisible, setSurveyModalVisible] = useState(false);
+  const [surveyAnswerId, setSurveyAnswerId] = useState<number | null>(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     if (visible && backendUserId) {
@@ -122,6 +126,25 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
     setSelectedNotification(null);
   };
 
+  const handleOpenSurvey = () => {
+    if (!selectedNotification || !selectedNotification.data) return;
+
+    try {
+      const surveyData = JSON.parse(selectedNotification.data);
+      setSurveyAnswerId(surveyData.SurveyAnswerId);
+      setSurveyModalVisible(true);
+    } catch (error) {
+      console.error('Error parsing survey data:', error);
+    }
+  };
+
+  const handleSurveySuccess = () => {
+    setShowSuccessMessage(true);
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 3000);
+  };
+
   const renderNotificationDetail = () => {
     if (!selectedNotification) return null;
 
@@ -164,7 +187,7 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
           </View>
 
           {isSurvey && (
-            <TouchableOpacity style={styles.surveyButton} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.surveyButton} activeOpacity={0.8} onPress={handleOpenSurvey}>
               <Text style={styles.surveyButtonText}>Anketi Doldur</Text>
               <QrCode size={20} color="#fff" />
             </TouchableOpacity>
@@ -341,24 +364,46 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
   );
 
   return (
-    <Modal
-      visible={visible}
-      transparent={false}
-      animationType="slide"
-      onRequestClose={selectedNotification ? handleBackFromDetail : onClose}
-    >
-      <SafeAreaView style={styles.modalContainer}>
-        {loadingDetail ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#7C3AED" />
-          </View>
-        ) : selectedNotification ? (
-          renderNotificationDetail()
-        ) : (
-          renderInboxContent()
-        )}
-      </SafeAreaView>
-    </Modal>
+    <>
+      <Modal
+        visible={visible}
+        transparent={false}
+        animationType="slide"
+        onRequestClose={selectedNotification ? handleBackFromDetail : onClose}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          {loadingDetail ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#7C3AED" />
+            </View>
+          ) : selectedNotification ? (
+            renderNotificationDetail()
+          ) : (
+            renderInboxContent()
+          )}
+
+          {showSuccessMessage && (
+            <View style={styles.successMessageContainer}>
+              <View style={styles.successMessage}>
+                <View style={styles.successIconContainer}>
+                  <Check size={20} color="#10B981" />
+                </View>
+                <Text style={styles.successMessageText}>Anket başarıyla cevaplandı.</Text>
+              </View>
+            </View>
+          )}
+        </SafeAreaView>
+      </Modal>
+
+      {surveyAnswerId && (
+        <SurveyModal
+          visible={surveyModalVisible}
+          onClose={() => setSurveyModalVisible(false)}
+          surveyAnswerId={surveyAnswerId}
+          onSuccess={handleSurveySuccess}
+        />
+      )}
+    </>
   );
 }
 
@@ -723,5 +768,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  successMessageContainer: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  successMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  successIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#D1FAE5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  successMessageText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1a1a1a',
   },
 });
