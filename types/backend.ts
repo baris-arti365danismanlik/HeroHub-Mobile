@@ -848,6 +848,22 @@ export interface UserNotification {
   link?: string;
 }
 
+export interface NotificationDetail {
+  id: number;
+  title: string;
+  senderUserId: number;
+  senderUserFullname: string;
+  senderImageUrl: string;
+  receiverUserId: number;
+  message: string;
+  data: string;
+  actionType: string;
+  inboxComponentType: number;
+  responded: boolean;
+  isRead: boolean;
+  updatedAt: string;
+}
+
 export interface TrainingStatus {
   planned: number;
   delayed: number;

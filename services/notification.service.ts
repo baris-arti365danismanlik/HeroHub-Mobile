@@ -1,5 +1,5 @@
 import { apiClient } from './api.client';
-import { UserNotification } from '@/types/backend';
+import { UserNotification, NotificationDetail } from '@/types/backend';
 
 export const notificationService = {
   async getUserNotifications(): Promise<UserNotification[]> {
@@ -7,6 +7,13 @@ export const notificationService = {
       '/Notification/get-usernotifications'
     );
     return response.data || [];
+  },
+
+  async getNotificationDetail(notificationId: number): Promise<NotificationDetail> {
+    const response = await apiClient.get<NotificationDetail>(
+      `/Notification/get-notification?Id=${notificationId}`
+    );
+    return response.data;
   },
 
   async getUnreadCount(): Promise<number> {

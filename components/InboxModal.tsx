@@ -11,10 +11,10 @@ import {
   TextInput,
   SafeAreaView,
 } from 'react-native';
-import { X, Mail, ChevronLeft, Download, Send, CircleCheck as CheckCircle, Clock, Users, Briefcase, Bell } from 'lucide-react-native';
+import { X, Mail, ChevronLeft, Download, Send, CircleCheck as CheckCircle, Clock, Users, Briefcase, Bell, QrCode } from 'lucide-react-native';
 import { notificationService } from '@/services/notification.service';
 import { userService } from '@/services/user.service';
-import { UserNotification, UserProfileDetails, NewEmployee, RecentActivity } from '@/types/backend';
+import { UserNotification, UserProfileDetails, NewEmployee, RecentActivity, NotificationDetail } from '@/types/backend';
 import { normalizePhotoUrl } from '@/utils/formatters';
 
 interface InboxModalProps {
@@ -31,6 +31,8 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
   const [profileDetails, setProfileDetails] = useState<UserProfileDetails | null>(null);
   const [newEmployees, setNewEmployees] = useState<NewEmployee[]>([]);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [selectedNotification, setSelectedNotification] = useState<NotificationDetail | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   useEffect(() => {
     if (visible && backendUserId) {
@@ -87,6 +89,89 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
+  const handleNotificationClick = async (notificationId: number) => {
+    try {
+      setLoadingDetail(true);
+      const detail = await notificationService.getNotificationDetail(notificationId);
+      setSelectedNotification(detail);
+
+      if (!detail.isRead) {
+        await notificationService.markAsRead(notificationId);
+        setNotifications(prev =>
+          prev.map(n =>
+            n.id === notificationId ? { ...n, isRead: true } : n
+          )
+        );
+        onNotificationRead?.();
+      }
+    } catch (error) {
+      console.error('Error loading notification detail:', error);
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
+
+  const handleBackFromDetail = () => {
+    setSelectedNotification(null);
+  };
+
+  const renderNotificationDetail = () => {
+    if (!selectedNotification) return null;
+
+    const senderPhotoUrl = normalizePhotoUrl(selectedNotification.senderImageUrl);
+    const isSurvey = selectedNotification.inboxComponentType === 7;
+
+    return (
+      <>
+        <View style={styles.headerBar}>
+          <TouchableOpacity onPress={handleBackFromDetail} style={styles.backButton}>
+            <ChevronLeft size={24} color="#1a1a1a" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>GELEN KUTUSU</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        <ScrollView style={styles.detailContainer}>
+          <View style={styles.detailHeader}>
+            {senderPhotoUrl ? (
+              <Image
+                source={{ uri: senderPhotoUrl }}
+                style={styles.senderPhoto}
+              />
+            ) : (
+              <View style={styles.senderPhotoPlaceholder}>
+                <Text style={styles.senderInitial}>
+                  {selectedNotification.senderUserFullname.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
+            <View style={styles.senderInfo}>
+              <Text style={styles.senderName}>{selectedNotification.senderUserFullname}</Text>
+              <Text style={styles.notificationDate}>{formatDate(selectedNotification.updatedAt)}</Text>
+            </View>
+          </View>
+
+          <View style={styles.detailContent}>
+            <Text style={styles.detailTitle}>{selectedNotification.title}</Text>
+            <Text style={styles.detailMessage}>{selectedNotification.message}</Text>
+          </View>
+
+          {isSurvey && (
+            <TouchableOpacity style={styles.surveyButton} activeOpacity={0.8}>
+              <Text style={styles.surveyButtonText}>Anketi Doldur</Text>
+              <QrCode size={20} color="#fff" />
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      </>
+    );
   };
 
   const renderInboxContent = () => (
@@ -150,20 +235,7 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
                   styles.notificationItem,
                   !notification.isRead && styles.notificationItemUnread
                 ]}
-                onPress={async () => {
-                  if (!notification.isRead) {
-                    try {
-                      await notificationService.markAsRead(notification.id);
-                      setNotifications(prev =>
-                        prev.map(n =>
-                          n.id === notification.id ? { ...n, isRead: true } : n
-                        )
-                      );
-                      onNotificationRead?.();
-                    } catch (error) {
-                    }
-                  }
-                }}
+                onPress={() => handleNotificationClick(notification.id)}
               >
                 <View style={styles.notificationIconContainer}>
                   <Bell size={16} color={notification.isRead ? '#666' : '#7C3AED'} />
@@ -273,10 +345,18 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
       visible={visible}
       transparent={false}
       animationType="slide"
-      onRequestClose={onClose}
+      onRequestClose={selectedNotification ? handleBackFromDetail : onClose}
     >
       <SafeAreaView style={styles.modalContainer}>
-        {renderInboxContent()}
+        {loadingDetail ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#7C3AED" />
+          </View>
+        ) : selectedNotification ? (
+          renderNotificationDetail()
+        ) : (
+          renderInboxContent()
+        )}
       </SafeAreaView>
     </Modal>
   );
@@ -568,5 +648,80 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
+  },
+  detailContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  detailHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    gap: 16,
+  },
+  senderPhoto: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+  },
+  senderPhotoPlaceholder: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#FDE047',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  senderInitial: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  senderInfo: {
+    flex: 1,
+  },
+  senderName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#7C3AED',
+    marginBottom: 4,
+  },
+  notificationDate: {
+    fontSize: 14,
+    color: '#9CA3AF',
+  },
+  detailContent: {
+    padding: 20,
+    paddingTop: 0,
+  },
+  detailTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 16,
+    lineHeight: 30,
+  },
+  detailMessage: {
+    fontSize: 15,
+    color: '#4B5563',
+    lineHeight: 24,
+  },
+  surveyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#7C3AED',
+    marginHorizontal: 20,
+    marginTop: 24,
+    marginBottom: 40,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  surveyButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
