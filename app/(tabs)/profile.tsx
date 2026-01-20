@@ -2235,12 +2235,14 @@ export default function ProfileScreen() {
           icon={<GraduationCap size={18} color="#7C3AED" />}
           isExpandedDefault={false}
           actionButton={
-            <TouchableOpacity
-              onPress={() => setAddEducationModalVisible(true)}
-              style={{ padding: 4 }}
-            >
-              <Plus size={20} color="#7C3AED" />
-            </TouchableOpacity>
+            isAdmin ? (
+              <TouchableOpacity
+                onPress={() => setAddEducationModalVisible(true)}
+                style={{ padding: 4 }}
+              >
+                <Plus size={20} color="#7C3AED" />
+              </TouchableOpacity>
+            ) : undefined
           }
         >
           {profileDetails.educations.length > 0 ? (
@@ -2339,21 +2341,25 @@ export default function ProfileScreen() {
           icon={<Globe size={18} color="#7C3AED" />}
           isExpandedDefault={false}
           actionButton={
-            <TouchableOpacity
-              onPress={() => setVisaModalVisible(true)}
-              activeOpacity={0.7}
-            >
-              <Plus size={20} color="#7C3AED" />
-            </TouchableOpacity>
+            isAdmin ? (
+              <TouchableOpacity
+                onPress={() => setVisaModalVisible(true)}
+                activeOpacity={0.7}
+              >
+                <Plus size={20} color="#7C3AED" />
+              </TouchableOpacity>
+            ) : undefined
           }
         >
-          <TouchableOpacity
-            style={styles.visaRequestButton}
-            activeOpacity={0.7}
-            onPress={() => setVisaModalVisible(true)}
-          >
-            <Text style={styles.visaRequestButtonText}>Vize Evrakı Talep Et</Text>
-          </TouchableOpacity>
+          {isAdmin && (
+            <TouchableOpacity
+              style={styles.visaRequestButton}
+              activeOpacity={0.7}
+              onPress={() => setVisaModalVisible(true)}
+            >
+              <Text style={styles.visaRequestButtonText}>Vize Evrakı Talep Et</Text>
+            </TouchableOpacity>
+          )}
 
           {profileDetails.userVisas.length > 0 ? (
             <View style={{ marginTop: 16 }}>
@@ -2361,20 +2367,22 @@ export default function ProfileScreen() {
                 <View key={visa.id || index} style={styles.visaCard}>
                   <View style={styles.visaCardHeader}>
                     <Text style={styles.visaCardCountry}>{visa.country || visa.countryName || '-'}</Text>
-                    <View style={styles.visaCardActions}>
-                      <TouchableOpacity
-                        style={styles.visaCardActionButton}
-                        activeOpacity={0.7}
-                      >
-                        <Pencil size={18} color="#7C3AED" />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.visaCardActionButton}
-                        activeOpacity={0.7}
-                      >
-                        <X size={18} color="#DC2626" />
-                      </TouchableOpacity>
-                    </View>
+                    {isAdmin && (
+                      <View style={styles.visaCardActions}>
+                        <TouchableOpacity
+                          style={styles.visaCardActionButton}
+                          activeOpacity={0.7}
+                        >
+                          <Pencil size={18} color="#7C3AED" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.visaCardActionButton}
+                          activeOpacity={0.7}
+                        >
+                          <X size={18} color="#DC2626" />
+                        </TouchableOpacity>
+                      </View>
+                    )}
                   </View>
                   <View style={styles.visaCardContent}>
                     <View style={styles.visaCardRow}>
