@@ -314,6 +314,21 @@ class UserService {
 
     await apiClient.post('/Profile/send-visarequest', payload);
   }
+
+  async createUserVisa(data: {
+    userId: number;
+    visaType: number;
+    countryId: number;
+    visaStartDate: string;
+    visaEndDate: string;
+    note: string;
+  }): Promise<any> {
+    const response = await apiClient.post<any>('/Profile/create-uservisa', data);
+    if (!response.data) {
+      throw new Error('Failed to create user visa');
+    }
+    return response.data;
+  }
 }
 
 export const userService = new UserService();

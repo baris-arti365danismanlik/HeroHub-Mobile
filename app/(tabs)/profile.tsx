@@ -1101,10 +1101,50 @@ export default function ProfileScreen() {
     setWelcomePackageModalVisible(true);
   };
 
-  const handleVisaRequest = (data: VisaRequestData) => {
-    setVisaRequestData(data);
-    setVisaModalVisible(false);
-    setVisaPreviewVisible(true);
+  const handleVisaRequest = async (data: VisaRequestData) => {
+    if (!user?.backend_user_id) return;
+
+    try {
+      setLoading(true);
+
+      const visaTypeMap: Record<string, number> = {
+        'Turist/Turizm Vizesi': 1,
+        'İş Vizesi': 2,
+        'Öğrenci Vizesi': 3,
+        'Transit Vize': 4,
+        'Çalışma Vizesi': 5,
+      };
+
+      const formatDateToISO = (dateStr: string) => {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          const [day, month, year] = parts;
+          return new Date(`${year}-${month}-${day}`).toISOString();
+        }
+        return new Date(dateStr).toISOString();
+      };
+
+      await userService.createUserVisa({
+        userId: user.backend_user_id,
+        visaType: visaTypeMap[data.visaType] || 1,
+        countryId: data.countryId,
+        visaStartDate: formatDateToISO(data.entryDate),
+        visaEndDate: formatDateToISO(data.exitDate),
+        note: data.notes,
+      });
+
+      setVisaModalVisible(false);
+      setVisaSuccessVisible(true);
+
+      if (profileDetails) {
+        const updatedProfile = await userService.getUserProfile(user.backend_user_id);
+        setProfileDetails(updatedProfile);
+      }
+    } catch (error) {
+      alert('Vize oluşturulurken bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSendVisa = async () => {
@@ -3416,8 +3456,8 @@ export default function ProfileScreen() {
           setVisaSuccessVisible(false);
           setVisaRequestData(null);
         }}
-        title="Başvuru Başarıyla Gönderildi"
-        message="Talebiniz başarı ile iletildi."
+        title="Vize bilgisi başarıyla eklendi"
+        message="Vize bilgisi başarıyla kaydedildi."
       />
 
       <DatePicker

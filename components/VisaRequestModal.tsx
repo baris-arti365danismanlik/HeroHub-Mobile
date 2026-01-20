@@ -17,7 +17,7 @@ interface VisaRequestModalProps {
   visible: boolean;
   onClose: () => void;
   userId: number;
-  onSubmit: (data: VisaRequestData) => void;
+  onSubmit: (data: VisaRequestData) => Promise<void>;
 }
 
 export interface VisaRequestData {
@@ -81,19 +81,19 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
     }
   };
 
-  const handleSubmit = () => {
-    if (!selectedVisaType || !selectedCountryId || !entryDate || !exitDate || !selectedCityId) {
-      alert('Lütfen tüm alanları doldurun');
+  const handleSubmit = async () => {
+    if (!selectedVisaType || !selectedCountryId || !entryDate || !exitDate) {
+      alert('Lütfen zorunlu alanları doldurun');
       return;
     }
 
-    onSubmit({
+    await onSubmit({
       visaType: selectedVisaType,
       countryId: selectedCountryId,
       countryName: selectedCountryName,
       entryDate,
       exitDate,
-      cityId: selectedCityId,
+      cityId: selectedCityId || 0,
       cityName: selectedCityName,
       notes,
     });
