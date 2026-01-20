@@ -334,6 +334,7 @@ export default function HomeScreen() {
         onClose={() => setProfileMenuVisible(false)}
         profilePhoto={profileDetails?.profilePhoto || user?.profilePictureUrl}
         email={user?.email || ''}
+        name={user ? `${user.firstName} ${user.lastName}` : ''}
         onLogout={handleLogout}
       />
     </>

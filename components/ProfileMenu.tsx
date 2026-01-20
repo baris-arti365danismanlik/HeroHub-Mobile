@@ -7,13 +7,14 @@ import {
   Modal,
   Image,
 } from 'react-native';
-import { User as UserIcon, LogOut } from 'lucide-react-native';
+import { LogOut } from 'lucide-react-native';
 
 interface ProfileMenuProps {
   visible: boolean;
   onClose: () => void;
   profilePhoto?: string;
   email: string;
+  name?: string;
   onLogout: () => void;
 }
 
@@ -22,8 +23,23 @@ export function ProfileMenu({
   onClose,
   profilePhoto,
   email,
+  name,
   onLogout,
 }: ProfileMenuProps) {
+  const getInitials = () => {
+    if (name) {
+      const names = name.split(' ');
+      if (names.length >= 2) {
+        return `${names[0][0]}${names[1][0]}`.toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
+    }
+    if (email) {
+      return email.substring(0, 2).toUpperCase();
+    }
+    return 'AR';
+  };
+
   return (
     <Modal
       visible={visible}
@@ -39,13 +55,23 @@ export function ProfileMenu({
         <View style={styles.modalContent}>
           <View style={styles.profileSection}>
             {profilePhoto ? (
-              <Image
-                source={{ uri: profilePhoto }}
-                style={styles.profileImage}
-              />
+              <View style={styles.avatarContainer}>
+                <Image
+                  source={{ uri: profilePhoto }}
+                  style={styles.profileImage}
+                />
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>365</Text>
+                </View>
+              </View>
             ) : (
-              <View style={styles.profileImagePlaceholder}>
-                <UserIcon size={32} color="#7C3AED" />
+              <View style={styles.avatarContainer}>
+                <View style={styles.profileImagePlaceholder}>
+                  <Text style={styles.initialsText}>{getInitials()}</Text>
+                </View>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>365</Text>
+                </View>
               </View>
             )}
             <Text style={styles.emailText}>{email || 'E-posta bilgisi yok'}</Text>
@@ -94,20 +120,43 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     paddingHorizontal: 20,
   },
-  profileImage: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+  avatarContainer: {
+    position: 'relative',
     marginBottom: 12,
   },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
   profileImagePlaceholder: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#E0D4F7',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FCD34D',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+  },
+  initialsText: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1F2937',
+  },
+  badge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#1F2937',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#fff',
   },
   emailText: {
     fontSize: 14,

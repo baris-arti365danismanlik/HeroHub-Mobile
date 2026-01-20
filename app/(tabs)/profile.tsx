@@ -50,6 +50,7 @@ import {
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
 import { DatePicker } from '@/components/DatePicker';
+import { ProfileMenu } from '@/components/ProfileMenu';
 import { WelcomePackageModal } from '@/components/WelcomePackageModal';
 import { SuccessModal } from '@/components/SuccessModal';
 import { VisaRequestModal, type VisaRequestData } from '@/components/VisaRequestModal';
@@ -67,6 +68,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
   const [selectedSection, setSelectedSection] = useState('Özet');
   const [profileDetails, setProfileDetails] = useState<UserProfileDetails | null>(null);
   const [countries, setCountries] = useState<Country[]>([]);
@@ -2828,7 +2830,10 @@ export default function ProfileScreen() {
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.profileButton}>
+            <TouchableOpacity
+              style={styles.profileButton}
+              onPress={() => setProfileMenuVisible(true)}
+            >
               {user.profilePictureUrl ? (
                 <Image
                   source={{ uri: user.profilePictureUrl }}
@@ -3320,6 +3325,19 @@ export default function ProfileScreen() {
         visible={pdksTaskModalVisible}
         onClose={() => setPdksTaskModalVisible(false)}
         onSubmit={handleCreatePDKSTask}
+      />
+
+      <ProfileMenu
+        visible={profileMenuVisible}
+        onClose={() => setProfileMenuVisible(false)}
+        profilePhoto={normalizePhotoUrl(user?.profilePictureUrl)}
+        email={user?.email || ''}
+        name={user ? `${user.firstName} ${user.lastName}` : ''}
+        onLogout={async () => {
+          setProfileMenuVisible(false);
+          await logout();
+          router.replace('/(auth)/login');
+        }}
       />
 
       {user && user.backend_user_id && (
