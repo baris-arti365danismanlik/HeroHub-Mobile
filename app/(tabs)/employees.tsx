@@ -28,6 +28,7 @@ import { SuccessModal } from '@/components/SuccessModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
 import { employmentService } from '@/services/employment.service';
+import { usePermissions, MODULE_IDS } from '@/hooks/usePermissions';
 import type {
   GroupedEmployees,
   TreeEmployee,
@@ -56,6 +57,7 @@ export default function EmployeesScreen() {
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const { user } = useAuth();
+  const { isAdmin, canWrite } = usePermissions(user?.modulePermissions);
 
   useEffect(() => {
     if (user?.organization_id) {
@@ -240,14 +242,16 @@ export default function EmployeesScreen() {
         </View>
 
         <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={styles.addButton}
-            activeOpacity={0.7}
-            onPress={() => setAddEmployeeModalVisible(true)}
-          >
-            <UserPlus size={20} color="#7C3AED" />
-            <Text style={styles.addButtonText}>Yeni Çalışan Ekle</Text>
-          </TouchableOpacity>
+          {(isAdmin() || canWrite(MODULE_IDS.EMPLOYEES)) && (
+            <TouchableOpacity
+              style={styles.addButton}
+              activeOpacity={0.7}
+              onPress={() => setAddEmployeeModalVisible(true)}
+            >
+              <UserPlus size={20} color="#7C3AED" />
+              <Text style={styles.addButtonText}>Yeni Çalışan Ekle</Text>
+            </TouchableOpacity>
+          )}
 
           <View style={styles.actionButtons}>
             <TouchableOpacity
@@ -400,16 +404,18 @@ export default function EmployeesScreen() {
             </View>
           </View>
         ) : (
-          <View style={styles.treeHeaderRow}>
-            <TouchableOpacity
-              style={styles.addTreeButton}
-              activeOpacity={0.7}
-              onPress={() => setAddEmployeeModalVisible(true)}
-            >
-              <UserPlus size={18} color="#fff" />
-              <Text style={styles.addTreeButtonText}>Yeni Çalışan Ekle</Text>
-            </TouchableOpacity>
-          </View>
+          (isAdmin() || canWrite(MODULE_IDS.EMPLOYEES)) && (
+            <View style={styles.treeHeaderRow}>
+              <TouchableOpacity
+                style={styles.addTreeButton}
+                activeOpacity={0.7}
+                onPress={() => setAddEmployeeModalVisible(true)}
+              >
+                <UserPlus size={18} color="#fff" />
+                <Text style={styles.addTreeButtonText}>Yeni Çalışan Ekle</Text>
+              </TouchableOpacity>
+            </View>
+          )
         )}
       </View>
 
@@ -538,6 +544,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+    gap: 12,
   },
   addButton: {
     flexDirection: 'row',
@@ -549,7 +556,6 @@ const styles = StyleSheet.create({
     borderColor: '#7C3AED',
     borderRadius: 8,
     flex: 1,
-    marginRight: 12,
   },
   addButtonText: {
     fontSize: 15,
@@ -559,6 +565,7 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     gap: 8,
+    marginLeft: 'auto',
   },
   iconButton: {
     padding: 8,
