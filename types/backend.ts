@@ -115,6 +115,7 @@ export interface User {
   department?: string;
   reportsToId?: number;
   userStatus?: number;
+  modulePermissions?: ModulePermission[];
 }
 
 export interface UserDayOffBalance {

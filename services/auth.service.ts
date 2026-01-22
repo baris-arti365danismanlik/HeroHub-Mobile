@@ -24,6 +24,7 @@ class AuthService {
           createdAt: new Date().toISOString(),
           backend_user_id: response.data.id,
           organization_id: response.data.organizationId,
+          role: response.data.role,
         };
 
         await tokenStorage.setUserData(userData);
@@ -47,7 +48,36 @@ class AuthService {
         return null;
       }
 
-      const userData = await tokenStorage.getUserData();
+      let userData = await tokenStorage.getUserData();
+
+      if (userData && !userData.role && token) {
+        try {
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          let jsonPayload;
+
+          if (typeof atob !== 'undefined') {
+            jsonPayload = decodeURIComponent(
+              atob(base64)
+                .split('')
+                .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+            );
+          } else {
+            const decoded = Buffer.from(base64, 'base64').toString('utf-8');
+            jsonPayload = decoded;
+          }
+
+          const payload = JSON.parse(jsonPayload);
+          const role = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+          if (role) {
+            userData = { ...userData, role };
+            await tokenStorage.setUserData(userData);
+          }
+        } catch (parseError) {
+        }
+      }
+
       return userData;
     } catch (error: any) {
       return null;
