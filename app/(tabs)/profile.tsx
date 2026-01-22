@@ -2723,13 +2723,6 @@ export default function ProfileScreen() {
               <Text style={styles.onboardingSectionTitle}>İŞE BAŞLAMA (ONBOARDING)</Text>
             </View>
 
-            <TouchableOpacity
-              style={styles.welcomePackageButtonMain}
-              onPress={() => setWelcomePackageModalVisible(true)}
-            >
-              <Text style={styles.welcomePackageButtonMainText}>Hoşgeldin Paketi Gönder</Text>
-            </TouchableOpacity>
-
         <View style={styles.onboardingStepsContainer}>
           {onboardingSteps.map((step, index) => (
             <View key={step.id} style={styles.onboardingStepWrapper}>
