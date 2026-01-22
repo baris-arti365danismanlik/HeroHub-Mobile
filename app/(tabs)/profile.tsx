@@ -133,6 +133,9 @@ export default function ProfileScreen() {
   const [dayOffBalance, setDayOffBalance] = useState<number>(0);
   const [incomingDayOffs, setIncomingDayOffs] = useState<any[]>([]);
   const [pastDayOffs, setPastDayOffs] = useState<any[]>([]);
+  const [pastDayOffsLeaveType, setPastDayOffsLeaveType] = useState<number | null>(null);
+  const [pastDayOffsYear, setPastDayOffsYear] = useState<number>(new Date().getFullYear());
+  const [showPastLeaveTypeDropdown, setShowPastLeaveTypeDropdown] = useState(false);
   const [showLeaveTypeDropdown, setShowLeaveTypeDropdown] = useState(false);
   const [showDurationDropdown, setShowDurationDropdown] = useState(false);
   const [startDatePickerVisible, setStartDatePickerVisible] = useState(false);
@@ -318,7 +321,7 @@ export default function ProfileScreen() {
         const [balance, incoming, past] = await Promise.all([
           leaveService.getDayOffBalance(user.backend_user_id),
           leaveService.getIncomingDayOffs(user.backend_user_id),
-          leaveService.getPastDayOffs(user.backend_user_id),
+          leaveService.getPastDayOffs(user.backend_user_id, pastDayOffsLeaveType, pastDayOffsYear),
         ]);
 
         setDayOffBalance(balance.remainingDays);
@@ -333,7 +336,7 @@ export default function ProfileScreen() {
     if (selectedSection === 'İzin Bilgileri') {
       fetchLeaveData();
     }
-  }, [user?.backend_user_id, selectedSection]);
+  }, [user?.backend_user_id, selectedSection, pastDayOffsLeaveType, pastDayOffsYear]);
 
   const calculateWorkDuration = (startDate: string): string => {
     if (!startDate) return '-';
@@ -717,7 +720,6 @@ export default function ProfileScreen() {
         employmentService.getCities(1),
       ]);
 
-      console.log('Salary Data:', salaryData);
       setWorkingInformation(workingInfo);
       setPositions(positionsData);
       setUserSalary(salaryData);
@@ -727,7 +729,6 @@ export default function ProfileScreen() {
       setWorkplaces(workplacesData);
       setCities(citiesData);
     } catch (error) {
-      console.error('Employment data load error:', error);
     } finally {
       setEmploymentLoading(false);
     }
@@ -1632,6 +1633,43 @@ export default function ProfileScreen() {
         icon={<Umbrella size={18} color="#1a1a1a" />}
         isExpandedDefault={false}
       >
+        <View style={styles.filtersRow}>
+          <View style={styles.filterColumn}>
+            <Text style={styles.filterLabel}>İzin Türü</Text>
+            <TouchableOpacity
+              style={styles.filterDropdown}
+              onPress={() => setShowPastLeaveTypeDropdown(true)}
+            >
+              <Text style={styles.filterDropdownText}>
+                {pastDayOffsLeaveType === null ? 'Tümü' :
+                 pastDayOffsLeaveType === 1 ? 'Yıllık İzin' :
+                 pastDayOffsLeaveType === 2 ? 'Hastalık İzni' :
+                 pastDayOffsLeaveType === 3 ? 'Doğum İzni' :
+                 pastDayOffsLeaveType === 4 ? 'Babalık İzni' :
+                 pastDayOffsLeaveType === 5 ? 'Evlilik İzni' :
+                 pastDayOffsLeaveType === 6 ? 'Ölüm İzni' :
+                 pastDayOffsLeaveType === 7 ? 'Doğum Günü İzni' :
+                 pastDayOffsLeaveType === 8 ? 'Ücretsiz İzin' : 'Tümü'}
+              </Text>
+              <ChevronDown size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.filterColumn}>
+            <Text style={styles.filterLabel}>Yıl</Text>
+            <TextInput
+              style={styles.filterDropdown}
+              value={String(pastDayOffsYear)}
+              onChangeText={(text) => {
+                const year = parseInt(text);
+                if (!isNaN(year) && year >= 2000 && year <= 2100) {
+                  setPastDayOffsYear(year);
+                }
+              }}
+              keyboardType="number-pad"
+              maxLength={4}
+            />
+          </View>
+        </View>
         {leaveLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="small" color="#7C3AED" />
@@ -1823,11 +1861,7 @@ export default function ProfileScreen() {
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color="#7C3AED" />
             </View>
-          ) : (() => {
-            console.log('UserSalary state:', userSalary);
-            console.log('Has salary?', userSalary && userSalary.salary);
-            return userSalary && userSalary.salary;
-          })() ? (
+          ) : userSalary && userSalary.salary ? (
             <View style={styles.positionSection}>
               <View style={styles.positionHeader}>
                 <Text style={styles.positionTitle}>
@@ -4461,6 +4495,76 @@ export default function ProfileScreen() {
         onSubmit={handleSubmitDriverLicense}
       />
 
+      <Modal
+        visible={showPastLeaveTypeDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPastLeaveTypeDropdown(false)}
+      >
+        <TouchableOpacity
+          style={styles.dropdownModalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowPastLeaveTypeDropdown(false)}
+        >
+          <View style={styles.dropdownModalContent}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <TouchableOpacity
+                style={styles.optionItem}
+                onPress={() => {
+                  setPastDayOffsLeaveType(null);
+                  setShowPastLeaveTypeDropdown(false);
+                }}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.optionText,
+                    pastDayOffsLeaveType === null && styles.optionTextSelected,
+                  ]}
+                >
+                  Tümü
+                </Text>
+                {pastDayOffsLeaveType === null && (
+                  <Check size={18} color="#7C3AED" />
+                )}
+              </TouchableOpacity>
+              {[
+                { id: 1, name: 'Yıllık İzin' },
+                { id: 2, name: 'Hastalık İzni' },
+                { id: 3, name: 'Doğum İzni' },
+                { id: 4, name: 'Babalık İzni' },
+                { id: 5, name: 'Evlilik İzni' },
+                { id: 6, name: 'Ölüm İzni' },
+                { id: 7, name: 'Doğum Günü İzni' },
+                { id: 8, name: 'Ücretsiz İzin' },
+              ].map((type) => (
+                <TouchableOpacity
+                  key={type.id}
+                  style={styles.optionItem}
+                  onPress={() => {
+                    setPastDayOffsLeaveType(type.id);
+                    setShowPastLeaveTypeDropdown(false);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      pastDayOffsLeaveType === type.id && styles.optionTextSelected,
+                    ]}
+                  >
+                    {type.name}
+                  </Text>
+                  {pastDayOffsLeaveType === type.id && (
+                    <Check size={18} color="#7C3AED" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
     </>
   );
 }
@@ -7047,5 +7151,34 @@ const styles = StyleSheet.create({
   },
   positionDetails: {
     paddingHorizontal: 16,
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  optionText: {
+    fontSize: 15,
+    color: '#1a1a1a',
+  },
+  optionTextSelected: {
+    color: '#7C3AED',
+    fontWeight: '600',
+  },
+  dropdownModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  dropdownModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    width: '100%',
+    maxHeight: 400,
+    paddingVertical: 8,
   },
 });

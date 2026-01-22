@@ -84,11 +84,15 @@ export const leaveService = {
     return response.data;
   },
 
-  async getPastDayOffs(userId?: number): Promise<DayOffRecord[]> {
-    const params = userId ? { userId } : undefined;
+  async getPastDayOffs(userId?: number, dayOffType?: number | null, year?: number): Promise<DayOffRecord[]> {
+    const params: any = {};
+    if (userId) params.userId = userId;
+    if (dayOffType) params.dayOffType = dayOffType;
+    if (year) params.year = year;
+
     const response = await apiHttpClient.get<DayOffRecord[]>(
       '/userDayOff/get-pastDayOff',
-      params
+      Object.keys(params).length > 0 ? params : undefined
     );
     return response.data || [];
   },
