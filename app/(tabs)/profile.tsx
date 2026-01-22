@@ -190,6 +190,7 @@ export default function ProfileScreen() {
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
   const [folderHistory, setFolderHistory] = useState<Array<{ id: number | null; name: string }>>([{ id: null, name: 'Ana Klasör' }]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [employmentLoading, setEmploymentLoading] = useState(false);
   const [workingInformation, setWorkingInformation] = useState<WorkingInformation[]>([]);
@@ -2987,14 +2988,18 @@ export default function ProfileScreen() {
       });
     });
 
-    const files = documents.map(doc => ({
-      id: doc.id,
-      name: doc.name,
-      type: doc.type,
-      count: doc.count,
-      size: doc.size,
-      icon: doc.icon
-    }));
+    const files = documents
+      .map(doc => ({
+        id: doc.id,
+        name: doc.name,
+        type: doc.type,
+        count: doc.count,
+        size: doc.size,
+        icon: doc.icon
+      }))
+      .filter(file =>
+        file.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
     console.log('Files array length:', files.length);
 
@@ -3059,6 +3064,8 @@ export default function ProfileScreen() {
               style={styles.searchInput}
               placeholder="Belgelerin içinde ara..."
               placeholderTextColor="#999"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
             />
           </View>
 
