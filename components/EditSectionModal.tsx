@@ -259,44 +259,12 @@ export default function EditSectionModal({
   const renderContactForm = () => (
     <>
       <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>E-posta</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.email}
-          onChangeText={(text) => setFormData({ ...formData, email: text })}
-          placeholder="E-posta"
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Telefon</Text>
+        <Text style={styles.inputLabel}>Cep Telefonu</Text>
         <TextInput
           style={styles.input}
           value={formData.phoneNumber}
           onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
-          placeholder="Telefon"
-          keyboardType="phone-pad"
-        />
-      </View>
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>İş E-postası</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.businessEmail}
-          onChangeText={(text) => setFormData({ ...formData, businessEmail: text })}
-          placeholder="İş E-postası"
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>İş Telefonu</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.businessPhone}
-          onChangeText={(text) => setFormData({ ...formData, businessPhone: text })}
-          placeholder="İş Telefonu"
+          placeholder="Cep Telefonu"
           keyboardType="phone-pad"
         />
       </View>
@@ -311,12 +279,44 @@ export default function EditSectionModal({
         />
       </View>
       <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Diğer E-posta</Text>
+        <Text style={styles.inputLabel}>İş Telefonu</Text>
+        <TextInput
+          style={styles.input}
+          value={formData.businessPhone}
+          onChangeText={(text) => setFormData({ ...formData, businessPhone: text })}
+          placeholder="İş Telefonu"
+          keyboardType="phone-pad"
+        />
+      </View>
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>E-Posta</Text>
+        <TextInput
+          style={styles.input}
+          value={formData.email}
+          onChangeText={(text) => setFormData({ ...formData, email: text })}
+          placeholder="E-Posta"
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+      </View>
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>İş E-Postası</Text>
+        <TextInput
+          style={styles.input}
+          value={formData.businessEmail}
+          onChangeText={(text) => setFormData({ ...formData, businessEmail: text })}
+          placeholder="İş E-Postası"
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+      </View>
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>Diğer E-Posta</Text>
         <TextInput
           style={styles.input}
           value={formData.otherEmail}
           onChangeText={(text) => setFormData({ ...formData, otherEmail: text })}
-          placeholder="Diğer E-posta"
+          placeholder="Diğer E-Posta"
           keyboardType="email-address"
           autoCapitalize="none"
         />

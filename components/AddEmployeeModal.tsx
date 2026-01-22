@@ -198,10 +198,10 @@ export function AddEmployeeModal({ visible, onClose, onSave, organizationId = 2 
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>E-posta Adresi</Text>
+              <Text style={styles.label}>E-Posta Adresi</Text>
               <TextInput
                 style={styles.input}
-                placeholder="E-posta Adresi"
+                placeholder="E-Posta Adresi"
                 value={formData.email}
                 onChangeText={(text) => setFormData({ ...formData, email: text })}
                 keyboardType="email-address"

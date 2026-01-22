@@ -2070,7 +2070,7 @@ export default function ProfileScreen() {
               <InfoRow label="Ev Telefonu" value={userContact?.homePhone ? formatPhone(userContact.homePhone) : '-'} />
               <InfoRow label="İş Telefonu" value={userContact?.businessPhone ? formatPhone(userContact.businessPhone) : '-'} />
               <InfoRow label="E-Posta" value={userContact?.email || '-'} />
-              <InfoRow label="İş E-Posta" value={userContact?.businessEmail || '-'} />
+              <InfoRow label="İş E-Postası" value={userContact?.businessEmail || '-'} />
               <InfoRow label="Diğer E-Posta" value={userContact?.otherEmail || '-'} isLast />
             </View>
           )}

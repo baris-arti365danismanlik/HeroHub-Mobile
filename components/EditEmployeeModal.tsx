@@ -138,33 +138,33 @@ export default function EditEmployeeModal({
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>İletişim Bilgileri</Text>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>E-posta</Text>
+                <Text style={styles.inputLabel}>E-Posta</Text>
                 <TextInput
                   style={styles.input}
                   value={formData.email}
                   onChangeText={(text) => setFormData({ ...formData, email: text })}
-                  placeholder="E-posta"
+                  placeholder="E-Posta"
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Telefon</Text>
+                <Text style={styles.inputLabel}>Cep Telefonu</Text>
                 <TextInput
                   style={styles.input}
                   value={formData.phoneNumber}
                   onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
-                  placeholder="Telefon"
+                  placeholder="Cep Telefonu"
                   keyboardType="phone-pad"
                 />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>İş E-postası</Text>
+                <Text style={styles.inputLabel}>İş E-Postası</Text>
                 <TextInput
                   style={styles.input}
                   value={formData.businessEmail}
                   onChangeText={(text) => setFormData({ ...formData, businessEmail: text })}
-                  placeholder="İş E-postası"
+                  placeholder="İş E-Postası"
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
