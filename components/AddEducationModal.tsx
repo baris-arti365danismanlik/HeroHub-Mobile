@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import { X, ChevronDown, Calendar } from 'lucide-react-native';
-import { DatePicker } from './DatePicker';
+import { X } from 'lucide-react-native';
 
 interface AddEducationModalProps {
   visible: boolean;
@@ -20,101 +19,33 @@ export interface EducationFormData {
   endDate: string;
 }
 
-const SCHOOL_TYPES = [
-  { id: 1, name: 'İlkokul' },
-  { id: 2, name: 'Ortaokul' },
-  { id: 3, name: 'Lise' },
-  { id: 4, name: 'Ön Lisans' },
-  { id: 5, name: 'Lisans' },
-  { id: 6, name: 'Yüksek Lisans' },
-  { id: 7, name: 'Doktora' },
-];
-
-const GRADE_SYSTEMS = [
-  { id: 1, name: '4.00' },
-  { id: 2, name: '5.00' },
-  { id: 3, name: '10.00' },
-  { id: 4, name: '100.00' },
-];
-
-const LANGUAGES = [
-  { id: 1, name: 'Türkçe' },
-  { id: 2, name: 'İngilizce' },
-  { id: 3, name: 'Almanca' },
-  { id: 4, name: 'Fransızca' },
-  { id: 5, name: 'İspanyolca' },
-  { id: 6, name: 'İtalyanca' },
-  { id: 7, name: 'Rusça' },
-  { id: 8, name: 'Çince' },
-  { id: 9, name: 'Japonca' },
-  { id: 10, name: 'Arapça' },
-];
-
 export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationModalProps) {
-  const [schoolTypeId, setSchoolTypeId] = useState<number>(1);
-  const [schoolTypeName, setSchoolTypeName] = useState('İlkokul');
   const [schoolName, setSchoolName] = useState('');
   const [department, setDepartment] = useState('');
-  const [grade, setGrade] = useState('');
-  const [gradeSystemId, setGradeSystemId] = useState<number>(1);
-  const [gradeSystemName, setGradeSystemName] = useState('4.00');
-  const [languageId, setLanguageId] = useState<number>(1);
-  const [languageName, setLanguageName] = useState('Türkçe');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-
-  const [showSchoolTypeDropdown, setShowSchoolTypeDropdown] = useState(false);
-  const [showGradeSystemDropdown, setShowGradeSystemDropdown] = useState(false);
-  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   const handleClose = () => {
-    setSchoolTypeId(1);
-    setSchoolTypeName('İlkokul');
     setSchoolName('');
     setDepartment('');
-    setGrade('');
-    setGradeSystemId(1);
-    setGradeSystemName('4.00');
-    setLanguageId(1);
-    setLanguageName('Türkçe');
-    setStartDate('');
-    setEndDate('');
-    setShowSchoolTypeDropdown(false);
-    setShowGradeSystemDropdown(false);
-    setShowLanguageDropdown(false);
     onClose();
   };
 
-  const convertDateToISO = (dateStr: string): string => {
-    if (!dateStr) return '';
-    const parts = dateStr.split('/').map(p => p.trim());
-    if (parts.length === 3) {
-      const [day, month, year] = parts;
-      const date = new Date(`${year}-${month}-${day}`);
-      return date.toISOString();
-    }
-    return '';
-  };
-
   const handleSubmit = () => {
-    if (!schoolName || !startDate) {
-      alert('Lütfen zorunlu alanları doldurunuz (Okul Adı ve Başlangıç Tarihi)');
+    if (!schoolName) {
+      alert('Lütfen okul adını giriniz');
       return;
     }
 
-    const gpaValue = parseFloat(grade) || 0;
+    const currentDate = new Date().toISOString();
 
     onSubmit({
-      level: schoolTypeId,
+      level: 5,
       schoolName,
       department: department || '',
-      gpa: gpaValue,
-      gpaSystem: gradeSystemId,
-      language: languageId,
-      startDate: convertDateToISO(startDate),
-      endDate: convertDateToISO(endDate),
+      gpa: 0,
+      gpaSystem: 1,
+      language: 1,
+      startDate: currentDate,
+      endDate: currentDate,
     });
 
     handleClose();
@@ -136,49 +67,13 @@ export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationMo
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={[styles.fieldContainer, showSchoolTypeDropdown && { zIndex: 1000 }]}>
-              <Text style={styles.label}>Okul Türü</Text>
-              <TouchableOpacity
-                style={styles.dropdown}
-                onPress={() => {
-                  setShowSchoolTypeDropdown(!showSchoolTypeDropdown);
-                  setShowGradeSystemDropdown(false);
-                  setShowLanguageDropdown(false);
-                }}
-              >
-                <Text style={styles.dropdownText}>
-                  {schoolTypeName}
-                </Text>
-                <ChevronDown size={20} color="#999" />
-              </TouchableOpacity>
-              {showSchoolTypeDropdown && (
-                <View style={styles.dropdownListContainer}>
-                  <ScrollView style={styles.dropdownList} nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                    {SCHOOL_TYPES.map((type) => (
-                      <TouchableOpacity
-                        key={type.id}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setSchoolTypeId(type.id);
-                          setSchoolTypeName(type.name);
-                          setShowSchoolTypeDropdown(false);
-                        }}
-                      >
-                        <Text style={styles.dropdownItemText}>{type.name}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-
             <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Okul Adı</Text>
+              <Text style={styles.label}>Okul Adı *</Text>
               <TextInput
                 style={styles.textInput}
                 value={schoolName}
                 onChangeText={setSchoolName}
-                placeholder=""
+                placeholder="Örn: İstanbul Üniversitesi"
                 placeholderTextColor="#999"
               />
             </View>
@@ -189,136 +84,8 @@ export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationMo
                 style={styles.textInput}
                 value={department}
                 onChangeText={setDepartment}
-                placeholder=""
+                placeholder="Örn: Bilgisayar Mühendisliği"
                 placeholderTextColor="#999"
-              />
-            </View>
-
-            <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Not</Text>
-              <TextInput
-                style={styles.textInput}
-                value={grade}
-                onChangeText={setGrade}
-                placeholder=""
-                placeholderTextColor="#999"
-                keyboardType="decimal-pad"
-              />
-            </View>
-
-            <View style={[styles.fieldContainer, showGradeSystemDropdown && { zIndex: 999 }]}>
-              <Text style={styles.label}>Not Sistemi</Text>
-              <TouchableOpacity
-                style={styles.dropdown}
-                onPress={() => {
-                  setShowGradeSystemDropdown(!showGradeSystemDropdown);
-                  setShowSchoolTypeDropdown(false);
-                  setShowLanguageDropdown(false);
-                }}
-              >
-                <Text style={styles.dropdownText}>
-                  {gradeSystemName}
-                </Text>
-                <ChevronDown size={20} color="#999" />
-              </TouchableOpacity>
-              {showGradeSystemDropdown && (
-                <View style={styles.dropdownListContainer}>
-                  <ScrollView style={styles.dropdownList} nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                    {GRADE_SYSTEMS.map((system) => (
-                      <TouchableOpacity
-                        key={system.id}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setGradeSystemId(system.id);
-                          setGradeSystemName(system.name);
-                          setShowGradeSystemDropdown(false);
-                        }}
-                      >
-                        <Text style={styles.dropdownItemText}>{system.name}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-
-            <View style={[styles.fieldContainer, showLanguageDropdown && { zIndex: 998 }]}>
-              <Text style={styles.label}>Eğitim Dili</Text>
-              <TouchableOpacity
-                style={styles.dropdown}
-                onPress={() => {
-                  setShowLanguageDropdown(!showLanguageDropdown);
-                  setShowSchoolTypeDropdown(false);
-                  setShowGradeSystemDropdown(false);
-                }}
-              >
-                <Text style={styles.dropdownText}>
-                  {languageName}
-                </Text>
-                <ChevronDown size={20} color="#999" />
-              </TouchableOpacity>
-              {showLanguageDropdown && (
-                <View style={[styles.dropdownListContainer, { maxHeight: 200 }]}>
-                  <ScrollView style={styles.dropdownList} nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                    {LANGUAGES.map((lang) => (
-                      <TouchableOpacity
-                        key={lang.id}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setLanguageId(lang.id);
-                          setLanguageName(lang.name);
-                          setShowLanguageDropdown(false);
-                        }}
-                      >
-                        <Text style={styles.dropdownItemText}>{lang.name}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-
-            <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Başlangıç Tarihi</Text>
-              <TouchableOpacity
-                style={styles.dateInput}
-                onPress={() => setShowStartDatePicker(true)}
-              >
-                <Text style={startDate ? styles.dateText : styles.datePlaceholder}>
-                  {startDate || 'Başlangıç Tarihi Seçin'}
-                </Text>
-                <Calendar size={20} color="#7C3AED" />
-              </TouchableOpacity>
-              <DatePicker
-                visible={showStartDatePicker}
-                onClose={() => setShowStartDatePicker(false)}
-                onSelectDate={(date) => {
-                  setStartDate(date);
-                  setShowStartDatePicker(false);
-                }}
-                initialDate={startDate}
-              />
-            </View>
-
-            <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Bitiş Tarihi</Text>
-              <TouchableOpacity
-                style={styles.dateInput}
-                onPress={() => setShowEndDatePicker(true)}
-              >
-                <Text style={endDate ? styles.dateText : styles.datePlaceholder}>
-                  {endDate || 'Bitiş Tarihi Seçin'}
-                </Text>
-                <Calendar size={20} color="#7C3AED" />
-              </TouchableOpacity>
-              <DatePicker
-                visible={showEndDatePicker}
-                onClose={() => setShowEndDatePicker(false)}
-                onSelectDate={(date) => {
-                  setEndDate(date);
-                  setShowEndDatePicker(false);
-                }}
-                initialDate={endDate}
               />
             </View>
           </ScrollView>
@@ -328,7 +95,7 @@ export function AddEducationModal({ visible, onClose, onSubmit }: AddEducationMo
               <Text style={styles.cancelButtonText}>Vazgeç</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
-              <Text style={styles.submitButtonText}>Kaydet</Text>
+              <Text style={styles.submitButtonText}>Ekle</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -372,7 +139,6 @@ const styles = StyleSheet.create({
   },
   fieldContainer: {
     marginBottom: 20,
-    position: 'relative',
   },
   label: {
     fontSize: 14,
@@ -389,80 +155,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     fontSize: 15,
     color: '#1a1a1a',
-  },
-  dropdown: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: '#fff',
-  },
-  dropdownText: {
-    fontSize: 15,
-    color: '#1a1a1a',
-  },
-  dropdownPlaceholder: {
-    fontSize: 15,
-    color: '#999',
-  },
-  dropdownListContainer: {
-    position: 'absolute',
-    top: 76,
-    left: 0,
-    right: 0,
-    maxHeight: 250,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-    zIndex: 1000,
-  },
-  dropdownList: {
-    flex: 1,
-  },
-  dropdownItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
-    backgroundColor: '#fff',
-  },
-  dropdownItemText: {
-    fontSize: 15,
-    color: '#333',
-    lineHeight: 20,
-    fontWeight: '400',
-  },
-  dateInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: '#fff',
-  },
-  dateText: {
-    fontSize: 15,
-    color: '#1a1a1a',
-  },
-  datePlaceholder: {
-    fontSize: 15,
-    color: '#999',
   },
   footer: {
     flexDirection: 'row',

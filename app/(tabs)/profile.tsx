@@ -2385,23 +2385,6 @@ export default function ProfileScreen() {
         </Accordion>
 
         <Accordion
-          title="SOSYAL LİNKLER"
-          icon={<Globe size={18} color="#1a1a1a" />}
-          isExpandedDefault={false}
-        >
-          {profileDetails.socialMedia ? (
-            <>
-              <InfoRow label="LinkedIn" value={profileDetails.socialMedia.linkedin || '-'} />
-              <InfoRow label="Twitter" value={profileDetails.socialMedia.twitter || '-'} />
-              <InfoRow label="Facebook" value={profileDetails.socialMedia.facebook || '-'} />
-              <InfoRow label="Instagram" value={profileDetails.socialMedia.instagram || '-'} isLast />
-            </>
-          ) : (
-            <InfoRow label="Sosyal Medya" value="Bilgi yok" isLast />
-          )}
-        </Accordion>
-
-        <Accordion
           title="SERTİFİKALAR"
           icon={<Award size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
@@ -2425,6 +2408,23 @@ export default function ProfileScreen() {
             ))
           ) : (
             <InfoRow label="Sertifika" value="Bilgi yok" isLast />
+          )}
+        </Accordion>
+
+        <Accordion
+          title="SOSYAL LİNKLER"
+          icon={<Globe size={18} color="#1a1a1a" />}
+          isExpandedDefault={false}
+        >
+          {profileDetails.socialMedia ? (
+            <>
+              <InfoRow label="LinkedIn" value={profileDetails.socialMedia.linkedin || '-'} />
+              <InfoRow label="Twitter" value={profileDetails.socialMedia.twitter || '-'} />
+              <InfoRow label="Facebook" value={profileDetails.socialMedia.facebook || '-'} />
+              <InfoRow label="Instagram" value={profileDetails.socialMedia.instagram || '-'} isLast />
+            </>
+          ) : (
+            <InfoRow label="Sosyal Medya" value="Bilgi yok" isLast />
           )}
         </Accordion>
 
