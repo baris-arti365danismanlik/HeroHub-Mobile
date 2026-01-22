@@ -2201,7 +2201,7 @@ export default function ProfileScreen() {
           {expandedSections['military'] && (
             <View style={styles.profileSectionContent}>
               <InfoRow
-                label="Durum"
+                label="Askerlik Durumu"
                 value={userMilitary?.militaryStatus === 0 ? 'Yapıldı' : userMilitary?.militaryStatus === 1 ? 'Ertelendi' : userMilitary?.militaryStatus === 2 ? 'Muaf' : 'Uygulanmaz'}
                 isLast
               />
