@@ -3099,6 +3099,24 @@ export default function ProfileScreen() {
               ]}
             >
               <TouchableOpacity
+                style={styles.fileItemDots}
+                activeOpacity={0.7}
+                onPress={(e) => {
+                  const target = e.nativeEvent;
+                  setSelectedFile({
+                    id: item.id,
+                    name: item.name,
+                    type: item.type as 'folder' | 'file',
+                    position: { x: target.pageX, y: target.pageY },
+                  });
+                  setFileDropdownVisible(true);
+                }}
+              >
+                <View style={styles.dot} />
+                <View style={styles.dot} />
+                <View style={styles.dot} />
+              </TouchableOpacity>
+              <TouchableOpacity
                 style={styles.fileItemLeft}
                 activeOpacity={item.type === 'folder' ? 0.7 : 1}
                 onPress={() => {
@@ -3117,28 +3135,8 @@ export default function ProfileScreen() {
                   </Text>
                 </View>
               </TouchableOpacity>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <TouchableOpacity
-                  style={styles.fileItemDots}
-                  activeOpacity={0.7}
-                  onPress={(e) => {
-                    const target = e.nativeEvent;
-                    setSelectedFile({
-                      id: item.id,
-                      name: item.name,
-                      type: item.type as 'folder' | 'file',
-                      position: { x: target.pageX, y: target.pageY },
-                    });
-                    setFileDropdownVisible(true);
-                  }}
-                >
-                  <View style={styles.dot} />
-                  <View style={styles.dot} />
-                  <View style={styles.dot} />
-                </TouchableOpacity>
-                <View style={styles.fileArrowContainer}>
-                  <ChevronRight size={18} color="#7C3AED" />
-                </View>
+              <View style={styles.fileArrowContainer}>
+                <ChevronRight size={18} color="#7C3AED" />
               </View>
             </View>
           ))}
@@ -5236,9 +5234,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     gap: 12,
+    marginLeft: 12,
   },
   fileItemDots: {
     gap: 2,
+    padding: 8,
   },
   dot: {
     width: 3,
