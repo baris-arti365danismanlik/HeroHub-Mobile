@@ -96,18 +96,27 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
               </TouchableOpacity>
               {showTypeDropdown && (
                 <View style={styles.dropdownMenu}>
-                  {LEAVE_TYPES.map((type) => (
-                    <TouchableOpacity
-                      key={type}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setLeaveType(type);
-                        setShowTypeDropdown(false);
-                      }}
-                    >
-                      <Text style={styles.dropdownItemText}>{type}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  <ScrollView
+                    style={styles.dropdownScroll}
+                    nestedScrollEnabled={true}
+                    showsVerticalScrollIndicator={true}
+                  >
+                    {LEAVE_TYPES.map((type, index) => (
+                      <TouchableOpacity
+                        key={type}
+                        style={[
+                          styles.dropdownItem,
+                          index === LEAVE_TYPES.length - 1 && styles.dropdownItemLast
+                        ]}
+                        onPress={() => {
+                          setLeaveType(type);
+                          setShowTypeDropdown(false);
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{type}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
                 </View>
               )}
             </View>
@@ -241,15 +250,23 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     borderRadius: 8,
     backgroundColor: '#fff',
-    maxHeight: 200,
+    maxHeight: 250,
+    overflow: 'hidden',
+  },
+  dropdownScroll: {
+    maxHeight: 250,
   },
   dropdownItem: {
-    padding: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
+  dropdownItemLast: {
+    borderBottomWidth: 0,
+  },
   dropdownItemText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#1a1a1a',
   },
   input: {
