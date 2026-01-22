@@ -8,13 +8,11 @@ import {
   ScrollView,
   ActivityIndicator,
   Image,
-  TextInput,
   SafeAreaView,
 } from 'react-native';
 import { ChevronLeft, Bell, QrCode, Check } from 'lucide-react-native';
 import { notificationService } from '@/services/notification.service';
-import { userService } from '@/services/user.service';
-import { UserNotification, UserProfileDetails, NotificationDetail } from '@/types/backend';
+import { UserNotification, NotificationDetail } from '@/types/backend';
 import { normalizePhotoUrl } from '@/utils/formatters';
 import { SurveyModal } from './SurveyModal';
 
@@ -29,7 +27,6 @@ interface InboxModalProps {
 export function InboxModal({ visible, onClose, backendUserId, userName, onNotificationRead }: InboxModalProps) {
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
-  const [profileDetails, setProfileDetails] = useState<UserProfileDetails | null>(null);
   const [selectedNotification, setSelectedNotification] = useState<NotificationDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [surveyModalVisible, setSurveyModalVisible] = useState(false);
@@ -45,13 +42,8 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
   const loadInboxData = async () => {
     try {
       setLoading(true);
-      const [notificationsData, profileData] = await Promise.all([
-        notificationService.getUserNotifications(),
-        userService.getUserProfile(backendUserId),
-      ]);
-
+      const notificationsData = await notificationService.getUserNotifications();
       setNotifications(notificationsData);
-      setProfileDetails(profileData);
     } catch (error) {
     } finally {
       setLoading(false);
@@ -173,35 +165,8 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
         <TouchableOpacity onPress={onClose} style={styles.backButton}>
           <ChevronLeft size={24} color="#1a1a1a" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Gelen Kutusu</Text>
+        <Text style={styles.headerTitle}>GELEN KUTUSU</Text>
         <View style={{ width: 40 }} />
-      </View>
-
-      <View style={styles.modalHeader}>
-        <View style={styles.profileSection}>
-          {(() => {
-            const photoUrl = normalizePhotoUrl(profileDetails?.profilePhoto);
-            if (photoUrl) {
-              return (
-                <Image
-                  source={{ uri: photoUrl }}
-                  style={styles.profileImage}
-                />
-              );
-            }
-            return (
-              <View style={styles.profileImagePlaceholder}>
-                <Text style={styles.profileInitial}>
-                  {userName ? userName.charAt(0).toUpperCase() : 'K'}
-                </Text>
-              </View>
-            );
-          })()}
-          <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>Merhaba,</Text>
-            <Text style={styles.userName}>{userName || 'Kullanıcı'}</Text>
-          </View>
-        </View>
       </View>
 
       {loading ? (
@@ -216,34 +181,28 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
         </View>
       ) : (
         <ScrollView style={styles.content}>
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Bell size={20} color="#7C3AED" />
-              <Text style={styles.sectionTitle}>Bildirimler</Text>
-            </View>
-            {notifications.map((notification) => (
-              <TouchableOpacity
-                key={notification.id}
-                style={[
-                  styles.notificationItem,
-                  !notification.isRead && styles.notificationItemUnread
-                ]}
-                onPress={() => handleNotificationClick(notification.id)}
-              >
-                <View style={styles.notificationIconContainer}>
-                  <Bell size={16} color={notification.isRead ? '#666' : '#7C3AED'} />
-                </View>
-                <View style={styles.notificationContent}>
-                  <Text style={styles.notificationTitle}>{notification.title}</Text>
-                  <Text style={styles.notificationMessage}>{notification.message}</Text>
-                  <Text style={styles.notificationTime}>
-                    {new Date(notification.createdAt).toLocaleDateString('tr-TR')} {formatTime(notification.createdAt)}
-                  </Text>
-                </View>
-                {!notification.isRead && <View style={styles.unreadDot} />}
-              </TouchableOpacity>
-            ))}
-          </View>
+          {notifications.map((notification, index) => (
+            <TouchableOpacity
+              key={notification.id}
+              style={[
+                styles.notificationItem,
+                selectedNotification?.id === notification.id && styles.notificationItemSelected
+              ]}
+              onPress={() => handleNotificationClick(notification.id)}
+            >
+              <View style={styles.notificationHeader}>
+                <Text style={styles.senderName}>{notification.type || 'Sistem Bildirimi'}</Text>
+                <Text style={styles.notificationDate}>
+                  {new Date(notification.createdAt).toLocaleDateString('tr-TR') === new Date().toLocaleDateString('tr-TR')
+                    ? `Bugün, ${formatTime(notification.createdAt)}`
+                    : `${new Date(notification.createdAt).getDate()} ${new Date(notification.createdAt).toLocaleDateString('tr-TR', { month: 'long' })} ${new Date(notification.createdAt).getFullYear()}, ${formatTime(notification.createdAt)}`
+                  }
+                </Text>
+              </View>
+              <Text style={styles.notificationTitle}>{notification.title}</Text>
+              <Text style={styles.notificationMessage}>{notification.message}</Text>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
       )}
     </>
@@ -302,10 +261,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     backgroundColor: '#fff',
   },
   backButton: {
@@ -313,52 +270,12 @@ const styles = StyleSheet.create({
     width: 40,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
     flex: 1,
     textAlign: 'center',
-  },
-  modalHeader: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  profileImage: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-  },
-  profileImagePlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#E0D4F7',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileInitial: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#7C3AED',
-  },
-  greetingContainer: {
-    flex: 1,
-  },
-  greeting: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1a1a1a',
+    letterSpacing: 0.5,
   },
   loadingContainer: {
     padding: 40,
@@ -385,71 +302,43 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  section: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
+    backgroundColor: '#fff',
   },
   notificationItem: {
-    flexDirection: 'row',
-    padding: 12,
+    padding: 16,
     backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
-  notificationItemUnread: {
+  notificationItemSelected: {
     backgroundColor: '#F3E8FF',
-    borderColor: '#7C3AED',
   },
-  notificationIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F3E8FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+  notificationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 6,
   },
-  notificationContent: {
-    flex: 1,
+  senderName: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: '#666',
+  },
+  notificationDate: {
+    fontSize: 12,
+    color: '#999',
   },
   notificationTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: '#1a1a1a',
     marginBottom: 4,
+    lineHeight: 20,
   },
   notificationMessage: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#666',
     lineHeight: 18,
-    marginBottom: 4,
-  },
-  notificationTime: {
-    fontSize: 11,
-    color: '#999',
-  },
-  unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#7C3AED',
-    position: 'absolute',
-    top: 12,
-    right: 12,
   },
   detailContainer: {
     flex: 1,
