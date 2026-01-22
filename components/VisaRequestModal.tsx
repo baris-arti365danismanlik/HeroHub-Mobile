@@ -58,7 +58,6 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
   const [selectedCountryName, setSelectedCountryName] = useState<string>('');
   const [entryDate, setEntryDate] = useState<string>('');
   const [exitDate, setExitDate] = useState<string>('');
-  const [notes, setNotes] = useState<string>('');
   const [showVisaTypeDropdown, setShowVisaTypeDropdown] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [showEntryDatePicker, setShowEntryDatePicker] = useState(false);
@@ -94,7 +93,7 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
       exitDate,
       cityId: 0,
       cityName: '',
-      notes,
+      notes: '',
     });
 
     handleClose();
@@ -107,7 +106,6 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
     setSelectedCountryName('');
     setEntryDate('');
     setExitDate('');
-    setNotes('');
     setShowVisaTypeDropdown(false);
     setShowCountryDropdown(false);
     setShowEntryDatePicker(false);
@@ -242,19 +240,6 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 initialDate={exitDate}
               />
             </View>
-
-            <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Not</Text>
-              <TextInput
-                style={styles.textArea}
-                placeholder="Varsa iletmek istediği detayları çalışan bu alandan gönderebilir."
-                placeholderTextColor="#999"
-                multiline
-                numberOfLines={4}
-                value={notes}
-                onChangeText={setNotes}
-              />
-            </View>
           </ScrollView>
 
           <View style={styles.footer}>
@@ -387,18 +372,6 @@ const styles = StyleSheet.create({
   datePlaceholder: {
     fontSize: 15,
     color: '#999',
-  },
-  textArea: {
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    minHeight: 100,
-    textAlignVertical: 'top',
-    fontSize: 15,
-    color: '#1a1a1a',
   },
   footer: {
     flexDirection: 'row',

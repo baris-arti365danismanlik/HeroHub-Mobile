@@ -1769,31 +1769,40 @@ export default function ProfileScreen() {
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color="#7C3AED" />
             </View>
-          ) : positions.length > 0 ? (
-            <>
-              {currentPositions.map((position) => (
-                <WorkInfoCard
-                  key={position.id}
-                  title={position.positionName}
-                  details={[
-                    { label: 'Başlangıç', value: formatDate(position.startDate) },
-                  ]}
-                  onEdit={() => handleEdit('position-current')}
+          ) : profileDetails && (profileDetails.currentTitle || profileDetails.department || profileDetails.jobStartDate) ? (
+            <View style={styles.positionSection}>
+              <View style={styles.positionHeader}>
+                <Text style={styles.positionTitle}>{profileDetails.currentTitle || 'Pozisyon Belirtilmemiş'}</Text>
+                <TouchableOpacity style={styles.positionEditButton} onPress={() => handleEdit('position-current')}>
+                  <Pencil size={16} color="#7C3AED" />
+                </TouchableOpacity>
+              </View>
+              {profileDetails.jobStartDate && (
+                <InfoRow
+                  label="Tarih"
+                  value={formatDate(profileDetails.jobStartDate)}
                 />
-              ))}
-              {pastPositions.map((position) => (
-                <WorkInfoCard
-                  key={position.id}
-                  title={position.positionName}
-                  details={[
-                    { label: 'Başlangıç', value: formatDate(position.startDate) },
-                    { label: 'Bitiş', value: formatDate(position.endDate || '') },
-                  ]}
-                  onEdit={() => handleEdit('position-past')}
-                  isPast
+              )}
+              {profileDetails.department && (
+                <InfoRow
+                  label="Departman"
+                  value={profileDetails.department}
                 />
-              ))}
-            </>
+              )}
+              {currentWorkInfo?.workPlaceName && (
+                <InfoRow
+                  label="İş Yeri"
+                  value={currentWorkInfo.workPlaceName}
+                />
+              )}
+              {profileDetails.reportsTo && (
+                <InfoRow
+                  label="Yönetici"
+                  value={profileDetails.reportsTo.fullname || profileDetails.reportsTo.name}
+                  isLast
+                />
+              )}
+            </View>
           ) : (
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>Pozisyon bilgisi bulunmuyor</Text>
@@ -6996,5 +7005,24 @@ const styles = StyleSheet.create({
   },
   addIconButton: {
     padding: 4,
+  },
+  positionSection: {
+    paddingVertical: 8,
+  },
+  positionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    paddingHorizontal: 16,
+  },
+  positionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    flex: 1,
+  },
+  positionEditButton: {
+    padding: 8,
   },
 });
