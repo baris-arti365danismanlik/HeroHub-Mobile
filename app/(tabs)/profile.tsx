@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, TextInput, Modal, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -132,10 +132,11 @@ export default function ProfileScreen() {
   });
   const [dayOffBalance, setDayOffBalance] = useState<number>(0);
   const [incomingDayOffs, setIncomingDayOffs] = useState<any[]>([]);
-  const [pastDayOffs, setPastDayOffs] = useState<any[]>([]);
+  const [allPastDayOffs, setAllPastDayOffs] = useState<any[]>([]);
   const [pastDayOffsLeaveType, setPastDayOffsLeaveType] = useState<number | null>(null);
   const [pastDayOffsYear, setPastDayOffsYear] = useState<number>(new Date().getFullYear());
   const [showPastLeaveTypeDropdown, setShowPastLeaveTypeDropdown] = useState(false);
+  const [showPastYearDropdown, setShowPastYearDropdown] = useState(false);
   const [showLeaveTypeDropdown, setShowLeaveTypeDropdown] = useState(false);
   const [showDurationDropdown, setShowDurationDropdown] = useState(false);
   const [startDatePickerVisible, setStartDatePickerVisible] = useState(false);
@@ -315,27 +316,19 @@ export default function ProfileScreen() {
         return;
       }
 
-      console.log('Fetching leave data with filters:', {
-        userId: user.backend_user_id,
-        leaveType: pastDayOffsLeaveType,
-        year: pastDayOffsYear
-      });
-
       try {
         setLeaveLoading(true);
 
         const [balance, incoming, past] = await Promise.all([
           leaveService.getDayOffBalance(user.backend_user_id),
           leaveService.getIncomingDayOffs(user.backend_user_id),
-          leaveService.getPastDayOffs(user.backend_user_id, pastDayOffsLeaveType, pastDayOffsYear),
+          leaveService.getPastDayOffs(user.backend_user_id),
         ]);
 
-        console.log('Past day offs received:', past.length);
         setDayOffBalance(balance.remainingDays);
         setIncomingDayOffs(incoming);
-        setPastDayOffs(past);
+        setAllPastDayOffs(past);
       } catch (error) {
-        console.error('Error fetching leave data:', error);
       } finally {
         setLeaveLoading(false);
       }
@@ -344,7 +337,24 @@ export default function ProfileScreen() {
     if (selectedSection === 'İzin Bilgileri') {
       fetchLeaveData();
     }
-  }, [user?.backend_user_id, selectedSection, pastDayOffsLeaveType, pastDayOffsYear]);
+  }, [user?.backend_user_id, selectedSection]);
+
+  const filteredPastDayOffs = useMemo(() => {
+    return allPastDayOffs.filter((dayOff) => {
+      if (pastDayOffsLeaveType !== null && dayOff.dayOffType !== pastDayOffsLeaveType) {
+        return false;
+      }
+
+      if (pastDayOffsYear) {
+        const startYear = new Date(dayOff.startDate).getFullYear();
+        if (startYear !== pastDayOffsYear) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [allPastDayOffs, pastDayOffsLeaveType, pastDayOffsYear]);
 
   const calculateWorkDuration = (startDate: string): string => {
     if (!startDate) return '-';
@@ -1664,31 +1674,23 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.filterColumn}>
             <Text style={styles.filterLabel}>Yıl</Text>
-            <TextInput
-              style={styles.yearFilterInput}
-              value={String(pastDayOffsYear)}
-              onChangeText={(text) => {
-                if (text === '') {
-                  setPastDayOffsYear(new Date().getFullYear());
-                  return;
-                }
-                const year = parseInt(text);
-                if (!isNaN(year)) {
-                  setPastDayOffsYear(year);
-                }
-              }}
-              keyboardType="number-pad"
-              maxLength={4}
-              placeholder="YYYY"
-            />
+            <TouchableOpacity
+              style={styles.filterDropdown}
+              onPress={() => setShowPastYearDropdown(true)}
+            >
+              <Text style={styles.filterDropdownText}>
+                {pastDayOffsYear}
+              </Text>
+              <ChevronDown size={16} color="#666" />
+            </TouchableOpacity>
           </View>
         </View>
         {leaveLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="small" color="#7C3AED" />
           </View>
-        ) : pastDayOffs.length > 0 ? (
-          pastDayOffs.map((request) => {
+        ) : filteredPastDayOffs.length > 0 ? (
+          filteredPastDayOffs.map((request) => {
             const getLeaveColor = (status: number) => {
               if (status === 1) return '#10B981';
               if (status === 2) return '#EF4444';
@@ -4578,6 +4580,47 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </Modal>
 
+      <Modal
+        visible={showPastYearDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPastYearDropdown(false)}
+      >
+        <TouchableOpacity
+          style={styles.dropdownModalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowPastYearDropdown(false)}
+        >
+          <View style={styles.dropdownModalContent}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+                <TouchableOpacity
+                  key={year}
+                  style={styles.optionItem}
+                  onPress={() => {
+                    setPastDayOffsYear(year);
+                    setShowPastYearDropdown(false);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      pastDayOffsYear === year && styles.optionTextSelected,
+                    ]}
+                  >
+                    {year}
+                  </Text>
+                  {pastDayOffsYear === year && (
+                    <Check size={18} color="#7C3AED" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
     </>
   );
 }
@@ -7193,15 +7236,5 @@ const styles = StyleSheet.create({
     width: '100%',
     maxHeight: 400,
     paddingVertical: 8,
-  },
-  yearFilterInput: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    fontSize: 14,
-    color: '#1a1a1a',
   },
 });
