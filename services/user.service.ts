@@ -385,6 +385,74 @@ class UserService {
     return response.data;
   }
 
+  async createUserCertificate(data: {
+    userId: number;
+    name: string;
+    issuer: string;
+    issueDate: string;
+    expiryDate?: string;
+  }): Promise<any> {
+    const payload = {
+      userId: data.userId,
+      name: data.name,
+      issuer: data.issuer,
+      issueDate: data.issueDate,
+      expiryDate: data.expiryDate || null,
+    };
+
+    const response = await apiClient.post<any>('/Profile/create-usercertificate', payload);
+
+    if (!response.succeeded && !response.success) {
+      throw new Error(response.friendlyMessage || response.message || 'Sertifika eklenemedi');
+    }
+
+    return response.data || response;
+  }
+
+  async createUserLanguage(data: {
+    userId: number;
+    languageId: number;
+    languageLevel: number;
+  }): Promise<any> {
+    const payload = {
+      userId: data.userId,
+      languageId: data.languageId,
+      languageLevel: data.languageLevel,
+    };
+
+    const response = await apiClient.post<any>('/Profile/create-userlanguage', payload);
+
+    if (!response.succeeded && !response.success) {
+      throw new Error(response.friendlyMessage || response.message || 'Dil bilgisi eklenemedi');
+    }
+
+    return response.data || response;
+  }
+
+  async createUserDriverLicense(data: {
+    userId: number;
+    licenseType: string;
+    licenseNumber: string;
+    issueDate: string;
+    expiryDate: string;
+  }): Promise<any> {
+    const payload = {
+      userId: data.userId,
+      licenseType: data.licenseType,
+      licenseNumber: data.licenseNumber,
+      issueDate: data.issueDate,
+      expiryDate: data.expiryDate,
+    };
+
+    const response = await apiClient.post<any>('/Profile/create-userdriverlicense', payload);
+
+    if (!response.succeeded && !response.success) {
+      throw new Error(response.friendlyMessage || response.message || 'Ehliyet bilgisi eklenemedi');
+    }
+
+    return response.data || response;
+  }
+
   async createEmployee(data: {
     firstName: string;
     lastName: string;

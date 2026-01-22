@@ -12,6 +12,10 @@ import { WorkInfoCard } from '@/components/WorkInfoCard';
 import { FileActionDropdown } from '@/components/FileActionDropdown';
 import { OnboardingDropdown } from '@/components/OnboardingDropdown';
 import { AddEducationModal, EducationFormData } from '@/components/AddEducationModal';
+import { AddCertificateModal, CertificateData } from '@/components/AddCertificateModal';
+import { AddLanguageModal, LanguageData } from '@/components/AddLanguageModal';
+import { AddVisaModal, VisaData } from '@/components/AddVisaModal';
+import { AddDriverLicenseModal, DriverLicenseData } from '@/components/AddDriverLicenseModal';
 import { assetService } from '@/services/asset.service';
 import { leaveService } from '@/services/leave.service';
 import { inboxService } from '@/services/inbox.service';
@@ -98,6 +102,10 @@ export default function ProfileScreen() {
   const [visaPreviewVisible, setVisaPreviewVisible] = useState(false);
   const [visaSuccessVisible, setVisaSuccessVisible] = useState(false);
   const [visaRequestData, setVisaRequestData] = useState<VisaRequestData | null>(null);
+  const [addCertificateModalVisible, setAddCertificateModalVisible] = useState(false);
+  const [addLanguageModalVisible, setAddLanguageModalVisible] = useState(false);
+  const [addVisaModalVisible, setAddVisaModalVisible] = useState(false);
+  const [addDriverLicenseModalVisible, setAddDriverLicenseModalVisible] = useState(false);
   const [leaveModalVisible, setLeaveModalVisible] = useState(false);
   const [leaveSuccessModalVisible, setLeaveSuccessModalVisible] = useState(false);
   const [leaveForm, setLeaveForm] = useState({
@@ -1042,6 +1050,120 @@ export default function ProfileScreen() {
     } catch (error) {
     } finally {
       setLeaveLoading(false);
+    }
+  };
+
+  const handleSubmitCertificate = async (data: CertificateData) => {
+    if (!user?.backend_user_id) {
+      alert('Kullanıcı bilgisi bulunamadı');
+      return;
+    }
+
+    try {
+      const formatDate = (dateStr: string) => {
+        const parts = dateStr.split('/').map((p: string) => p.trim());
+        if (parts.length === 3) {
+          const [day, month, year] = parts;
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+        return dateStr;
+      };
+
+      await userService.createUserCertificate({
+        userId: user.backend_user_id,
+        name: data.name,
+        issuer: data.issuer,
+        issueDate: formatDate(data.issueDate),
+        expiryDate: data.expiryDate ? formatDate(data.expiryDate) : undefined,
+      });
+
+      alert('Sertifika başarıyla eklendi');
+      await loadUserProfile();
+    } catch (error: any) {
+      alert(error.message || 'Sertifika eklenirken bir hata oluştu');
+    }
+  };
+
+  const handleSubmitLanguage = async (data: LanguageData) => {
+    if (!user?.backend_user_id) {
+      alert('Kullanıcı bilgisi bulunamadı');
+      return;
+    }
+
+    try {
+      await userService.createUserLanguage({
+        userId: user.backend_user_id,
+        languageId: data.languageId,
+        languageLevel: data.languageLevel,
+      });
+
+      alert('Dil bilgisi başarıyla eklendi');
+      await loadUserProfile();
+    } catch (error: any) {
+      alert(error.message || 'Dil bilgisi eklenirken bir hata oluştu');
+    }
+  };
+
+  const handleSubmitVisa = async (data: VisaData) => {
+    if (!user?.backend_user_id) {
+      alert('Kullanıcı bilgisi bulunamadı');
+      return;
+    }
+
+    try {
+      const formatDate = (dateStr: string) => {
+        const parts = dateStr.split('/').map((p: string) => p.trim());
+        if (parts.length === 3) {
+          const [day, month, year] = parts;
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+        return dateStr;
+      };
+
+      await userService.createUserVisa({
+        userId: user.backend_user_id,
+        visaType: data.visaType,
+        countryId: data.countryId,
+        visaStartDate: formatDate(data.visaStartDate),
+        visaEndDate: formatDate(data.visaEndDate),
+        note: data.note,
+      });
+
+      alert('Vize bilgisi başarıyla eklendi');
+      await loadUserProfile();
+    } catch (error: any) {
+      alert(error.message || 'Vize bilgisi eklenirken bir hata oluştu');
+    }
+  };
+
+  const handleSubmitDriverLicense = async (data: DriverLicenseData) => {
+    if (!user?.backend_user_id) {
+      alert('Kullanıcı bilgisi bulunamadı');
+      return;
+    }
+
+    try {
+      const formatDate = (dateStr: string) => {
+        const parts = dateStr.split('/').map((p: string) => p.trim());
+        if (parts.length === 3) {
+          const [day, month, year] = parts;
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+        return dateStr;
+      };
+
+      await userService.createUserDriverLicense({
+        userId: user.backend_user_id,
+        licenseType: data.licenseType,
+        licenseNumber: data.licenseNumber,
+        issueDate: formatDate(data.issueDate),
+        expiryDate: formatDate(data.expiryDate),
+      });
+
+      alert('Ehliyet bilgisi başarıyla eklendi');
+      await loadUserProfile();
+    } catch (error: any) {
+      alert(error.message || 'Ehliyet bilgisi eklenirken bir hata oluştu');
     }
   };
 
@@ -2146,7 +2268,7 @@ export default function ProfileScreen() {
           icon={<CreditCard size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
           actionButton={
-            <TouchableOpacity style={styles.addIconButton}>
+            <TouchableOpacity style={styles.addIconButton} onPress={() => setAddDriverLicenseModalVisible(true)}>
               <Plus size={18} color="#7C3AED" />
             </TouchableOpacity>
           }
@@ -2222,7 +2344,7 @@ export default function ProfileScreen() {
           icon={<GraduationCap size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
           actionButton={
-            <TouchableOpacity style={styles.addIconButton}>
+            <TouchableOpacity style={styles.addIconButton} onPress={() => setAddEducationModalVisible(true)}>
               <Plus size={18} color="#7C3AED" />
             </TouchableOpacity>
           }
@@ -2268,7 +2390,7 @@ export default function ProfileScreen() {
           icon={<Award size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
           actionButton={
-            <TouchableOpacity style={styles.addIconButton}>
+            <TouchableOpacity style={styles.addIconButton} onPress={() => setAddCertificateModalVisible(true)}>
               <Plus size={18} color="#7C3AED" />
             </TouchableOpacity>
           }
@@ -2295,7 +2417,7 @@ export default function ProfileScreen() {
           icon={<Languages size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
           actionButton={
-            <TouchableOpacity style={styles.addIconButton}>
+            <TouchableOpacity style={styles.addIconButton} onPress={() => setAddLanguageModalVisible(true)}>
               <Plus size={18} color="#7C3AED" />
             </TouchableOpacity>
           }
@@ -2333,7 +2455,7 @@ export default function ProfileScreen() {
           icon={<Globe size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
           actionButton={
-            <TouchableOpacity style={styles.addIconButton}>
+            <TouchableOpacity style={styles.addIconButton} onPress={() => setAddVisaModalVisible(true)}>
               <Plus size={18} color="#7C3AED" />
             </TouchableOpacity>
           }
@@ -4276,6 +4398,30 @@ export default function ProfileScreen() {
         visible={addEducationModalVisible}
         onClose={() => setAddEducationModalVisible(false)}
         onSubmit={handleAddEducation}
+      />
+
+      <AddCertificateModal
+        visible={addCertificateModalVisible}
+        onClose={() => setAddCertificateModalVisible(false)}
+        onSubmit={handleSubmitCertificate}
+      />
+
+      <AddLanguageModal
+        visible={addLanguageModalVisible}
+        onClose={() => setAddLanguageModalVisible(false)}
+        onSubmit={handleSubmitLanguage}
+      />
+
+      <AddVisaModal
+        visible={addVisaModalVisible}
+        onClose={() => setAddVisaModalVisible(false)}
+        onSubmit={handleSubmitVisa}
+      />
+
+      <AddDriverLicenseModal
+        visible={addDriverLicenseModalVisible}
+        onClose={() => setAddDriverLicenseModalVisible(false)}
+        onSubmit={handleSubmitDriverLicense}
       />
 
     </>
