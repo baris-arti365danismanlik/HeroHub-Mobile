@@ -259,12 +259,12 @@ export default function EditSectionModal({
   const renderContactForm = () => (
     <>
       <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Cep Telefonu</Text>
+        <Text style={styles.inputLabel}>Şahsi Telefon</Text>
         <TextInput
           style={styles.input}
           value={formData.phoneNumber}
           onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
-          placeholder="Cep Telefonu"
+          placeholder="Şahsi Telefon"
           keyboardType="phone-pad"
         />
       </View>
@@ -289,12 +289,12 @@ export default function EditSectionModal({
         />
       </View>
       <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>E-Posta</Text>
+        <Text style={styles.inputLabel}>Şahsi E-Posta</Text>
         <TextInput
           style={styles.input}
           value={formData.email}
           onChangeText={(text) => setFormData({ ...formData, email: text })}
-          placeholder="E-Posta"
+          placeholder="Şahsi E-Posta"
           keyboardType="email-address"
           autoCapitalize="none"
         />

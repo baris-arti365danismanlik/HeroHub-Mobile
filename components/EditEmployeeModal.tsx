@@ -138,24 +138,34 @@ export default function EditEmployeeModal({
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>İletişim Bilgileri</Text>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>E-Posta</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.email}
-                  onChangeText={(text) => setFormData({ ...formData, email: text })}
-                  placeholder="E-Posta"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Cep Telefonu</Text>
+                <Text style={styles.inputLabel}>Şahsi Telefon</Text>
                 <TextInput
                   style={styles.input}
                   value={formData.phoneNumber}
                   onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
-                  placeholder="Cep Telefonu"
+                  placeholder="Şahsi Telefon"
                   keyboardType="phone-pad"
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>İş Telefonu</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.businessPhone}
+                  onChangeText={(text) => setFormData({ ...formData, businessPhone: text })}
+                  placeholder="İş Telefonu"
+                  keyboardType="phone-pad"
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Şahsi E-Posta</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.email}
+                  onChangeText={(text) => setFormData({ ...formData, email: text })}
+                  placeholder="Şahsi E-Posta"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
                 />
               </View>
               <View style={styles.inputGroup}>
@@ -167,16 +177,6 @@ export default function EditEmployeeModal({
                   placeholder="İş E-Postası"
                   keyboardType="email-address"
                   autoCapitalize="none"
-                />
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>İş Telefonu</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.businessPhone}
-                  onChangeText={(text) => setFormData({ ...formData, businessPhone: text })}
-                  placeholder="İş Telefonu"
-                  keyboardType="phone-pad"
                 />
               </View>
             </View>

@@ -295,10 +295,10 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditProfile}
             onEdit={() => handleEditSection('contact')}
           >
-            {renderInfoRow('Cep Telefonu', employee.userContact?.phoneNumber || '-')}
+            {renderInfoRow('Şahsi Telefon', employee.userContact?.phoneNumber || '-')}
             {renderInfoRow('Ev Telefonu', employee.userContact?.homePhone || '-')}
             {renderInfoRow('İş Telefonu', employee.userContact?.businessPhone || '-')}
-            {renderInfoRow('E-Posta', employee.userContact?.email || '-')}
+            {renderInfoRow('Şahsi E-Posta', employee.userContact?.email || '-')}
             {renderInfoRow('İş E-Postası', employee.userContact?.businessEmail || '-')}
             {renderInfoRow('Diğer E-Posta', employee.userContact?.otherEmail || '-')}
           </Accordion>
