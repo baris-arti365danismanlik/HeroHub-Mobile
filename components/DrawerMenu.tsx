@@ -22,7 +22,7 @@ import {
   UserIcon,
   ContactRound,
 } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface DrawerMenuProps {
@@ -33,13 +33,14 @@ interface DrawerMenuProps {
 interface MenuItem {
   id: string;
   label: string;
-  icon: React.ReactNode;
+  icon: (color: string) => React.ReactNode;
   route: string;
   roles?: string[];
 }
 
 export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user } = useAuth();
   const translateX = useSharedValue(-280);
   const opacity = useSharedValue(0);
@@ -80,39 +81,39 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
     {
       id: 'home',
       label: 'Anasayfa',
-      icon: <Home size={18} color="#333" />,
+      icon: (color: string) => <Home size={18} color={color} />,
       route: '/(tabs)',
     },
     {
       id: 'profile',
       label: 'Profilim',
-      icon: <UserIcon size={18} color="#333" />,
+      icon: (color: string) => <UserIcon size={18} color={color} />,
       route: '/(tabs)/profile',
     },
     {
       id: 'employees',
       label: 'Çalışanlar',
-      icon: <Users size={18} color="#333" />,
+      icon: (color: string) => <Users size={18} color={color} />,
       route: '/(tabs)/employees',
       roles: ['Admin', 'Manager', 'HR', '365 Admin'],
     },
     {
       id: 'employees-alt',
       label: 'Çalışanlar',
-      icon: <ContactRound size={18} color="#333" />,
+      icon: (color: string) => <ContactRound size={18} color={color} />,
       route: '/(tabs)/employees',
     },
     {
       id: 'admin',
       label: 'Admin',
-      icon: <Settings size={18} color="#333" />,
+      icon: (color: string) => <Settings size={18} color={color} />,
       route: '/(tabs)/admin',
       roles: ['Admin', '365 Admin'],
     },
     {
       id: 'plus-admin',
       label: 'Artı Admin',
-      icon: <Plus size={18} color="#333" />,
+      icon: (color: string) => <Plus size={18} color={color} />,
       route: '/(tabs)/plus-admin',
       roles: ['SuperAdmin', '365 Admin'],
     },
@@ -122,6 +123,13 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
     if (!item.roles || item.roles.length === 0) return true;
     if (!user?.role) return false;
     return item.roles.includes(user.role);
+  };
+
+  const isActive = (route: string): boolean => {
+    if (route === '/(tabs)') {
+      return pathname === '/' || pathname === '/(tabs)';
+    }
+    return pathname === route || pathname.startsWith(route);
   };
 
   const handleNavigation = (route: string) => {
@@ -157,16 +165,27 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
             <View style={styles.menuItems}>
               {menuItems.map((item) => {
                 if (!hasAccess(item)) return null;
+                const active = isActive(item.route);
+                const iconColor = active ? '#7C3AED' : '#333';
+                const textColor = active ? '#7C3AED' : '#333';
 
                 return (
                   <TouchableOpacity
                     key={item.id}
-                    style={styles.menuItem}
+                    style={[
+                      styles.menuItem,
+                      active && styles.menuItemActive
+                    ]}
                     onPress={() => handleNavigation(item.route)}
                     activeOpacity={0.7}
                   >
-                    <View style={styles.menuItemIcon}>{item.icon}</View>
-                    <Text style={styles.menuItemText}>{item.label}</Text>
+                    <View style={styles.menuItemIcon}>{item.icon(iconColor)}</View>
+                    <Text style={[
+                      styles.menuItemText,
+                      active && styles.menuItemTextActive
+                    ]}>
+                      {item.label}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -235,6 +254,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 12,
     backgroundColor: 'transparent',
+    borderRadius: 8,
+    marginHorizontal: 8,
+  },
+  menuItemActive: {
+    backgroundColor: '#F3E8FF',
   },
   menuItemIcon: {
     width: 18,
@@ -246,5 +270,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#333',
     fontWeight: '400',
+  },
+  menuItemTextActive: {
+    color: '#7C3AED',
+    fontWeight: '600',
   },
 });
