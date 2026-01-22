@@ -20,6 +20,7 @@ import {
   Calendar,
   Building2,
   Network,
+  X,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { DrawerMenu } from '@/components/DrawerMenu';
@@ -251,7 +252,7 @@ export default function EmployeesScreen() {
         </View>
 
         <View style={styles.actionRow}>
-          {(isAdmin() || canWrite(MODULE_IDS.EMPLOYEES)) && (
+          {isAdmin() && (
             <TouchableOpacity
               style={styles.addButton}
               activeOpacity={0.7}
@@ -281,11 +282,20 @@ export default function EmployeesScreen() {
           <Search size={20} color="#999" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Arama"
+            placeholder="Çalışanlar içinde ara..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor="#999"
           />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setSearchQuery('')}
+              style={styles.clearSearchButton}
+              activeOpacity={0.7}
+            >
+              <X size={18} color="#999" />
+            </TouchableOpacity>
+          )}
         </View>
 
         {viewMode === 'list' ? (
@@ -406,7 +416,7 @@ export default function EmployeesScreen() {
             </View>
           </View>
         ) : (
-          (isAdmin() || canWrite(MODULE_IDS.EMPLOYEES)) && (
+          isAdmin() && (
             <View style={styles.treeHeaderRow}>
               <TouchableOpacity
                 style={styles.addTreeButton}
@@ -602,6 +612,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1a1a1a',
   },
+  clearSearchButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
   filterRow: {
     flexDirection: 'row',
     gap: 8,
@@ -692,7 +706,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 8,
     backgroundColor: '#F0E7FF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -701,7 +715,7 @@ const styles = StyleSheet.create({
   avatarImage: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 8,
   },
   avatarText: {
     fontSize: 18,
@@ -759,7 +773,7 @@ const styles = StyleSheet.create({
   treeAvatar: {
     width: 52,
     height: 52,
-    borderRadius: 26,
+    borderRadius: 8,
     backgroundColor: '#F3E8FF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -767,7 +781,7 @@ const styles = StyleSheet.create({
   treeAvatarImage: {
     width: 52,
     height: 52,
-    borderRadius: 26,
+    borderRadius: 8,
   },
   treeAvatarText: {
     fontSize: 17,
