@@ -38,6 +38,25 @@ export enum MilitaryStatus {
   NotApplicable = 3,
 }
 
+export enum DriverLicenseClass {
+  M = 1,
+  A1 = 2,
+  A2 = 3,
+  A = 4,
+  B = 5,
+  BE = 6,
+  C1 = 7,
+  C1E = 8,
+  C = 9,
+  CE = 10,
+  D1 = 11,
+  D1E = 12,
+  D = 13,
+  DE = 14,
+  F = 15,
+  G = 16,
+}
+
 export enum DayOffType {
   Annual = 0,
   Sick = 1,

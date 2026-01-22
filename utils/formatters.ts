@@ -1,4 +1,4 @@
-import { Gender, BloodType, MaritalStatus, EducationLevel } from '@/types/backend';
+import { Gender, BloodType, MaritalStatus, EducationLevel, DriverLicenseClass } from '@/types/backend';
 
 export const formatGender = (gender?: Gender): string => {
   if (gender === undefined) return '-';
@@ -69,6 +69,46 @@ export const formatEducationLevel = (level?: EducationLevel): string => {
       return 'Yüksek Lisans';
     case EducationLevel.Doctorate:
       return 'Doktora';
+    default:
+      return '-';
+  }
+};
+
+export const formatDriverLicenseClass = (licenseClass?: number): string => {
+  if (licenseClass === undefined) return '-';
+  switch (licenseClass) {
+    case DriverLicenseClass.M:
+      return 'M';
+    case DriverLicenseClass.A1:
+      return 'A1';
+    case DriverLicenseClass.A2:
+      return 'A2';
+    case DriverLicenseClass.A:
+      return 'A';
+    case DriverLicenseClass.B:
+      return 'B';
+    case DriverLicenseClass.BE:
+      return 'BE';
+    case DriverLicenseClass.C1:
+      return 'C1';
+    case DriverLicenseClass.C1E:
+      return 'C1E';
+    case DriverLicenseClass.C:
+      return 'C';
+    case DriverLicenseClass.CE:
+      return 'CE';
+    case DriverLicenseClass.D1:
+      return 'D1';
+    case DriverLicenseClass.D1E:
+      return 'D1E';
+    case DriverLicenseClass.D:
+      return 'D';
+    case DriverLicenseClass.DE:
+      return 'DE';
+    case DriverLicenseClass.F:
+      return 'F';
+    case DriverLicenseClass.G:
+      return 'G';
     default:
       return '-';
   }

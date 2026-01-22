@@ -70,7 +70,8 @@ import {
   formatMaritalStatus,
   formatDate,
   formatPhone,
-  formatEducationLevel
+  formatEducationLevel,
+  formatDriverLicenseClass
 } from '@/utils/formatters';
 
 export default function ProfileScreen() {
@@ -2417,8 +2418,10 @@ export default function ProfileScreen() {
           {driverLicenses.length > 0 ? (
             driverLicenses.map((license, index) => (
               <View key={license.driverLicenseId}>
-                <Text style={styles.licenseHeader}>{index + 1}. Ehliyet</Text>
-                <InfoRow label="Ehliyet Sınıfı" value={license.class?.toString() || '-'} />
+                <View style={styles.licenseHeaderContainer}>
+                  <Text style={styles.licenseHeader}>{index + 1}. Ehliyet</Text>
+                </View>
+                <InfoRow label="Ehliyet Sınıfı" value={formatDriverLicenseClass(license.class)} />
                 <InfoRow label="Geçerlilik Tarihi" value={formatDate(license.endDate)} isLast={index === driverLicenses.length - 1} />
               </View>
             ))
@@ -6760,13 +6763,18 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
   },
+  licenseHeaderContainer: {
+    backgroundColor: '#F3F4F6',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    width: '100%',
+  },
   licenseHeader: {
     fontSize: 14,
     fontWeight: '600',
     color: '#1a1a1a',
-    marginTop: 8,
-    marginBottom: 8,
-    paddingHorizontal: 16,
   },
   onboardingContainer: {
     flex: 1,
