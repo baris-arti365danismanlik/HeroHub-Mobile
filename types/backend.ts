@@ -42,7 +42,7 @@ export enum DayOffType {
   Annual = 0,
   Sick = 1,
   Maternity = 2,
-  Paternity = 3,
+  SGKReport = 3,
   Marriage = 4,
   Death = 5,
   Birthday = 6,

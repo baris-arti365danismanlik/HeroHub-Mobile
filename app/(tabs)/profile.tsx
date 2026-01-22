@@ -1582,14 +1582,15 @@ export default function ProfileScreen() {
 
             const getLeaveTypeName = (type: number) => {
               const types: Record<number, string> = {
-                1: 'Yıllık İzin',
-                2: 'Hastalık İzni',
-                3: 'Doğum İzni',
-                4: 'Babalık İzni',
-                5: 'Evlilik İzni',
-                6: 'Ölüm İzni',
-                7: 'Doğum Günü İzni',
-                8: 'Ücretsiz İzin',
+                0: 'Yıllık İzin',
+                1: 'Hastalık İzni',
+                2: 'Doğum İzni',
+                3: 'SGK Rapor',
+                4: 'Evlilik İzni',
+                5: 'Ölüm İzni',
+                6: 'Doğum Günü İzni',
+                7: 'Ücretsiz İzin',
+                8: 'Diğer',
               };
               return types[type] || 'Diğer';
             };
@@ -1661,14 +1662,15 @@ export default function ProfileScreen() {
             >
               <Text style={styles.filterDropdownText}>
                 {pastDayOffsLeaveType === null ? 'Tümü' :
-                 pastDayOffsLeaveType === 1 ? 'Yıllık İzin' :
-                 pastDayOffsLeaveType === 2 ? 'Hastalık İzni' :
-                 pastDayOffsLeaveType === 3 ? 'Doğum İzni' :
-                 pastDayOffsLeaveType === 4 ? 'Babalık İzni' :
-                 pastDayOffsLeaveType === 5 ? 'Evlilik İzni' :
-                 pastDayOffsLeaveType === 6 ? 'Ölüm İzni' :
-                 pastDayOffsLeaveType === 7 ? 'Doğum Günü İzni' :
-                 pastDayOffsLeaveType === 8 ? 'Ücretsiz İzin' : 'Tümü'}
+                 pastDayOffsLeaveType === 0 ? 'Yıllık İzin' :
+                 pastDayOffsLeaveType === 1 ? 'Hastalık İzni' :
+                 pastDayOffsLeaveType === 2 ? 'Doğum İzni' :
+                 pastDayOffsLeaveType === 3 ? 'SGK Rapor' :
+                 pastDayOffsLeaveType === 4 ? 'Evlilik İzni' :
+                 pastDayOffsLeaveType === 5 ? 'Ölüm İzni' :
+                 pastDayOffsLeaveType === 6 ? 'Doğum Günü İzni' :
+                 pastDayOffsLeaveType === 7 ? 'Ücretsiz İzin' :
+                 pastDayOffsLeaveType === 8 ? 'Diğer' : 'Tümü'}
               </Text>
               <ChevronDown size={16} color="#666" />
             </TouchableOpacity>
@@ -1700,14 +1702,15 @@ export default function ProfileScreen() {
 
             const getLeaveTypeName = (type: number) => {
               const types: Record<number, string> = {
-                1: 'Yıllık İzin',
-                2: 'Hastalık İzni',
-                3: 'Doğum İzni',
-                4: 'Babalık İzni',
-                5: 'Evlilik İzni',
-                6: 'Ölüm İzni',
-                7: 'Doğum Günü İzni',
-                8: 'Ücretsiz İzin',
+                0: 'Yıllık İzin',
+                1: 'Hastalık İzni',
+                2: 'Doğum İzni',
+                3: 'SGK Rapor',
+                4: 'Evlilik İzni',
+                5: 'Ölüm İzni',
+                6: 'Doğum Günü İzni',
+                7: 'Ücretsiz İzin',
+                8: 'Diğer',
               };
               return types[type] || 'Diğer';
             };
@@ -4511,14 +4514,15 @@ export default function ProfileScreen() {
                 )}
               </TouchableOpacity>
               {[
-                { id: 1, name: 'Yıllık İzin' },
-                { id: 2, name: 'Hastalık İzni' },
-                { id: 3, name: 'Doğum İzni' },
-                { id: 4, name: 'Babalık İzni' },
-                { id: 5, name: 'Evlilik İzni' },
-                { id: 6, name: 'Ölüm İzni' },
-                { id: 7, name: 'Doğum Günü İzni' },
-                { id: 8, name: 'Ücretsiz İzin' },
+                { id: 0, name: 'Yıllık İzin' },
+                { id: 1, name: 'Hastalık İzni' },
+                { id: 2, name: 'Doğum İzni' },
+                { id: 3, name: 'SGK Rapor' },
+                { id: 4, name: 'Evlilik İzni' },
+                { id: 5, name: 'Ölüm İzni' },
+                { id: 6, name: 'Doğum Günü İzni' },
+                { id: 7, name: 'Ücretsiz İzin' },
+                { id: 8, name: 'Diğer' },
               ].map((type) => (
                 <TouchableOpacity
                   key={type.id}

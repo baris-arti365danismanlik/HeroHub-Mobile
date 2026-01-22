@@ -160,8 +160,8 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
         return 'Hastalık İzni';
       case DayOffType.Maternity:
         return 'Doğum İzni';
-      case DayOffType.Paternity:
-        return 'Babalık İzni';
+      case DayOffType.SGKReport:
+        return 'SGK Rapor';
       case DayOffType.Marriage:
         return 'Evlilik İzni';
       case DayOffType.Death:
