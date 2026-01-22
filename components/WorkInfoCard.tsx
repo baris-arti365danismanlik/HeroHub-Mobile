@@ -45,7 +45,7 @@ export function WorkInfoCard({ title, details, onEdit, isPast = false }: WorkInf
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#F8F9FA',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,

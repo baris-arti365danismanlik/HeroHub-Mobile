@@ -51,6 +51,7 @@ import {
   Department,
   Workplace,
   City,
+  EducationLevel,
 } from '@/types/backend';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
@@ -65,7 +66,8 @@ import {
   formatBloodType,
   formatMaritalStatus,
   formatDate,
-  formatPhone
+  formatPhone,
+  formatEducationLevel
 } from '@/utils/formatters';
 
 export default function ProfileScreen() {
@@ -2366,10 +2368,10 @@ export default function ProfileScreen() {
           }
         >
           {profileDetails.educations.length > 0 ? (
-            profileDetails.educations.map((education, index) => (
+            profileDetails.educations.map((education) => (
               <WorkInfoCard
                 key={education.educationId}
-                title={`${index + 1}. Eğitim`}
+                title={formatEducationLevel(education.level)}
                 details={[
                   { label: 'Okul', value: education.schoolName },
                   { label: 'Bölüm', value: education.department },

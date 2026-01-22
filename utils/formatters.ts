@@ -1,4 +1,4 @@
-import { Gender, BloodType, MaritalStatus } from '@/types/backend';
+import { Gender, BloodType, MaritalStatus, EducationLevel } from '@/types/backend';
 
 export const formatGender = (gender?: Gender): string => {
   if (gender === undefined) return '-';
@@ -47,6 +47,28 @@ export const formatMaritalStatus = (status?: MaritalStatus): string => {
       return 'Boşanmış';
     case MaritalStatus.Widowed:
       return 'Dul';
+    default:
+      return '-';
+  }
+};
+
+export const formatEducationLevel = (level?: EducationLevel): string => {
+  if (level === undefined) return '-';
+  switch (level) {
+    case EducationLevel.PrimarySchool:
+      return 'İlkokul';
+    case EducationLevel.MiddleSchool:
+      return 'Ortaokul';
+    case EducationLevel.HighSchool:
+      return 'Lise';
+    case EducationLevel.AssociateDegree:
+      return 'Önlisans';
+    case EducationLevel.BachelorDegree:
+      return 'Lisans';
+    case EducationLevel.MasterDegree:
+      return 'Yüksek Lisans';
+    case EducationLevel.Doctorate:
+      return 'Doktora';
     default:
       return '-';
   }
