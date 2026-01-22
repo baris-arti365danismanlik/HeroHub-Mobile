@@ -2878,6 +2878,119 @@ export default function ProfileScreen() {
     );
   };
 
+  const getDaysInMonth = (month: number, year: number) => {
+    return new Date(year, month, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (month: number, year: number) => {
+    const day = new Date(year, month - 1, 1).getDay();
+    return day === 0 ? 6 : day - 1;
+  };
+
+  const getMonthName = (month: number) => {
+    const months = [
+      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+    ];
+    return months[month - 1];
+  };
+
+  const getWorkLogForDate = (date: string) => {
+    return userWorkLogs?.find((log: any) => {
+      const logDate = new Date(log.date).toISOString().split('T')[0];
+      return logDate === date;
+    });
+  };
+
+  const renderCalendar = () => {
+    const daysInMonth = getDaysInMonth(selectedMonth, selectedYear);
+    const firstDay = getFirstDayOfMonth(selectedMonth, selectedYear);
+    const days = [];
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const today = new Date();
+    const isCurrentMonth = selectedMonth === today.getMonth() + 1 && selectedYear === today.getFullYear();
+
+    for (let i = 0; i < firstDay; i++) {
+      days.push(<View key={`empty-${i}`} style={styles.calendarDayContainer} />);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const workLog = getWorkLogForDate(dateStr);
+      const dayIndex = (firstDay + day - 1) % 7;
+      const isWeekend = dayIndex === 5 || dayIndex === 6;
+      const isToday = isCurrentMonth && day === today.getDate();
+
+      let indicatorColor = '#10B981';
+      if (workLog && workLog.totalWorkHours < 8) {
+        indicatorColor = '#EF4444';
+      } else if (workLog && workLog.totalWorkHours >= 10) {
+        indicatorColor = '#F59E0B';
+      }
+
+      days.push(
+        <View key={day} style={styles.calendarDayContainer}>
+          <View style={[
+            styles.calendarDay,
+            isToday && styles.calendarDayToday
+          ]}>
+            <Text style={[
+              styles.calendarDayText,
+              isWeekend && styles.calendarDayWeekend,
+              isToday && styles.calendarDayTodayText
+            ]}>
+              {day}
+            </Text>
+          </View>
+          {workLog && (
+            <View style={[styles.calendarDayIndicator, { backgroundColor: indicatorColor }]} />
+          )}
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.calendarContainer}>
+        <View style={styles.calendarHeader}>
+          <TouchableOpacity onPress={() => {
+            if (selectedMonth === 1) {
+              setSelectedMonth(12);
+              setSelectedYear(selectedYear - 1);
+            } else {
+              setSelectedMonth(selectedMonth - 1);
+            }
+          }}>
+            <Text style={styles.calendarNavButton}>{'<'}</Text>
+          </TouchableOpacity>
+          <Text style={styles.calendarMonthYear}>
+            {getMonthName(selectedMonth)} {selectedYear}
+          </Text>
+          <TouchableOpacity onPress={() => {
+            if (selectedMonth === 12) {
+              setSelectedMonth(1);
+              setSelectedYear(selectedYear + 1);
+            } else {
+              setSelectedMonth(selectedMonth + 1);
+            }
+          }}>
+            <Text style={styles.calendarNavButton}>{'>'}</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.calendarDayNames}>
+          {dayNames.map((name, index) => (
+            <Text key={index} style={[
+              styles.calendarDayName,
+              (index === 5 || index === 6) && styles.calendarDayNameWeekend
+            ]}>{name}</Text>
+          ))}
+        </View>
+        <View style={styles.calendarGrid}>
+          {days}
+        </View>
+      </View>
+    );
+  };
+
   const renderPDKSSection = () => {
     if (pdksLoading) {
       return (
@@ -2904,56 +3017,56 @@ export default function ProfileScreen() {
       <View style={styles.pdksSection}>
         {hasShiftPlan && (
           <View style={styles.pdksInfoGrid}>
-            <Text style={styles.pdksSectionTitle}>Vardiya Planı</Text>
+            <Text style={styles.pdksSectionTitle}>Mevcut Vardiya</Text>
             <View style={styles.pdksInfoRow}>
-              <Text style={styles.pdksInfoLabel}>Vardiya Adı:</Text>
-              <Text style={styles.pdksInfoValue}>{userShiftPlan.shiftPlanName || 'Belirtilmemiş'}</Text>
+              <Text style={styles.pdksInfoLabel}>Mevcut Tip</Text>
+              <Text style={styles.pdksInfoValue}>{userShiftPlan.shiftType || 'Sabah Vardiyası'}</Text>
             </View>
             <View style={styles.pdksInfoRow}>
-              <Text style={styles.pdksInfoLabel}>Vardiya Tipi:</Text>
-              <Text style={styles.pdksInfoValue}>{userShiftPlan.shiftType || 'Belirtilmemiş'}</Text>
+              <Text style={styles.pdksInfoLabel}>Çalışma Saatleri</Text>
+              <Text style={styles.pdksInfoValue}>{userShiftPlan.startTime || '08:00'} - {userShiftPlan.endTime || '19:00'}</Text>
             </View>
-            <View style={styles.pdksInfoRow}>
-              <Text style={styles.pdksInfoLabel}>Başlangıç:</Text>
-              <Text style={styles.pdksInfoValue}>{userShiftPlan.startTime || '-'}</Text>
-            </View>
-            <View style={styles.pdksInfoRow}>
-              <Text style={styles.pdksInfoLabel}>Bitiş:</Text>
-              <Text style={styles.pdksInfoValue}>{userShiftPlan.endTime || '-'}</Text>
-            </View>
-            {userShiftPlan.workDays && (
-              <View style={styles.pdksInfoRow}>
-                <Text style={styles.pdksInfoLabel}>Çalışma Günleri:</Text>
-                <Text style={styles.pdksInfoValue}>{userShiftPlan.workDays}</Text>
-              </View>
-            )}
           </View>
         )}
 
+        {renderCalendar()}
+
         {hasWorkLogs && (
-          <View style={{ marginTop: hasShiftPlan ? 24 : 0 }}>
-            <Text style={styles.pdksSectionTitle}>Çalışma Kayıtları</Text>
+          <View style={{ marginTop: 24 }}>
+            <TouchableOpacity style={styles.pdksAccordionHeader}>
+              <View style={styles.pdksAccordionLeft}>
+                <Clock size={18} color="#1a1a1a" />
+                <Text style={styles.pdksAccordionTitle}>VARDİYA GEÇMİŞİ</Text>
+              </View>
+            </TouchableOpacity>
+
             {userWorkLogs.slice(0, 5).map((log: any, index: number) => (
               <View key={index} style={styles.pdksHistoryCard}>
                 <View style={styles.pdksHistoryHeader}>
                   <Text style={styles.pdksHistoryDate}>{formatDate(log.date)}</Text>
+                  <Text style={[
+                    styles.pdksHistoryTime,
+                    log.totalWorkHours < 8 ? styles.pdksHistoryTimeRed : {}
+                  ]}>
+                    {log.checkInTime ? log.checkInTime.slice(0, 5) : '08:00'} - {log.checkOutTime ? log.checkOutTime.slice(0, 5) : '16:00'}
+                  </Text>
                 </View>
                 <View style={styles.pdksHistoryDetails}>
                   <View style={styles.pdksHistoryRow}>
-                    <Text style={styles.pdksHistoryLabel}>Giriş:</Text>
-                    <Text style={styles.pdksHistoryValue}>{log.checkInTime || '-'}</Text>
+                    <Text style={styles.pdksHistoryLabel}>Giriş</Text>
+                    <Text style={styles.pdksHistoryValue}>A Kapısı - {log.checkInTime ? log.checkInTime.slice(0, 5) : '07:58'}</Text>
                   </View>
                   <View style={styles.pdksHistoryRow}>
-                    <Text style={styles.pdksHistoryLabel}>Çıkış:</Text>
-                    <Text style={styles.pdksHistoryValue}>{log.checkOutTime || '-'}</Text>
-                  </View>
-                  <View style={styles.pdksHistoryRow}>
-                    <Text style={styles.pdksHistoryLabel}>Toplam Saat:</Text>
-                    <Text style={styles.pdksHistoryValue}>{log.totalWorkHours || 0} saat</Text>
+                    <Text style={styles.pdksHistoryLabel}>Çıkış</Text>
+                    <Text style={styles.pdksHistoryValue}>B Kapısı - {log.checkOutTime ? log.checkOutTime.slice(0, 5) : '16:17'}</Text>
                   </View>
                 </View>
               </View>
             ))}
+
+            <TouchableOpacity style={styles.pdksViewAllButton}>
+              <Text style={styles.pdksViewAllButtonText}>Görevi Tamamla</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -6240,6 +6353,103 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 14,
     paddingVertical: 20,
+  },
+  pdksHistoryTimeRed: {
+    color: '#FF3B30',
+  },
+  pdksAccordionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  pdksAccordionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  pdksAccordionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    letterSpacing: 0.5,
+  },
+  calendarContainer: {
+    marginTop: 24,
+    marginBottom: 8,
+  },
+  calendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
+  calendarNavButton: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    padding: 8,
+  },
+  calendarMonthYear: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  calendarDayNames: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  calendarDayName: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#666',
+    width: 40,
+    textAlign: 'center',
+  },
+  calendarDayNameWeekend: {
+    color: '#EF4444',
+  },
+  calendarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+  },
+  calendarDayContainer: {
+    width: '14.28%',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  calendarDay: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  calendarDayToday: {
+    backgroundColor: '#7C3AED',
+  },
+  calendarDayText: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    fontWeight: '400',
+  },
+  calendarDayTodayText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  calendarDayWeekend: {
+    color: '#EF4444',
+  },
+  calendarDayIndicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
+    marginTop: 2,
   },
   shiftChangeModal: {
     backgroundColor: '#fff',
