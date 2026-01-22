@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import * as DocumentPicker from 'expo-document-picker';
-import { User as UserIcon, Phone, Mail, MapPin, Briefcase, GraduationCap, Heart, HeartPulse, FileText, Award, Globe, Languages, CreditCard, LogOut, Menu, Building2, Users as Users2, DollarSign, Bell, MessageSquare, Package, Download, Pencil, Umbrella, ChevronDown, ChevronUp, Folder, File, Search, Plus, Share2, ChevronRight, FolderOpen, Calendar, X, TextAlignJustify as AlignJustify, Linkedin, Facebook, Instagram, Clock, Smartphone, Check, Upload, Users, Link, Image as ImageIcon, FileSpreadsheet } from 'lucide-react-native';
+import { User as UserIcon, Phone, Mail, MapPin, Briefcase, GraduationCap, Heart, HeartPulse, FileText, Award, Globe, Languages, CreditCard, LogOut, Menu, Building2, Users as Users2, DollarSign, Bell, MessageSquare, Package, Download, Pencil, Umbrella, ChevronDown, ChevronUp, Folder, File, Search, Plus, Share2, ChevronRight, ChevronLeft, FolderOpen, Calendar, X, TextAlignJustify as AlignJustify, Linkedin, Facebook, Instagram, Clock, Smartphone, Check, Upload, Users, Link, Image as ImageIcon, FileSpreadsheet } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
@@ -2918,8 +2918,19 @@ export default function ProfileScreen() {
     const today = new Date();
     const isCurrentMonth = selectedMonth === today.getMonth() + 1 && selectedYear === today.getFullYear();
 
-    for (let i = 0; i < firstDay; i++) {
-      days.push(<View key={`empty-${i}`} style={styles.calendarDayContainer} />);
+    const previousMonth = selectedMonth === 1 ? 12 : selectedMonth - 1;
+    const previousYear = selectedMonth === 1 ? selectedYear - 1 : selectedYear;
+    const daysInPreviousMonth = getDaysInMonth(previousMonth, previousYear);
+
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const day = daysInPreviousMonth - i;
+      days.push(
+        <View key={`prev-${day}`} style={styles.calendarDayContainer}>
+          <View style={[styles.calendarDay, styles.calendarDayOtherMonth]}>
+            <Text style={styles.calendarDayTextOtherMonth}>{day}</Text>
+          </View>
+        </View>
+      );
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -2929,17 +2940,22 @@ export default function ProfileScreen() {
       const isWeekend = dayIndex === 5 || dayIndex === 6;
       const isToday = isCurrentMonth && day === today.getDate();
 
-      let indicatorColor = '#10B981';
-      if (workLog && workLog.totalWorkHours < 8) {
-        indicatorColor = '#EF4444';
-      } else if (workLog && workLog.totalWorkHours >= 10) {
-        indicatorColor = '#F59E0B';
+      let backgroundColor = '#fff';
+      if (workLog) {
+        if (workLog.totalWorkHours < 8) {
+          backgroundColor = '#FEE2E2';
+        } else if (workLog.totalWorkHours >= 8 && workLog.totalWorkHours < 10) {
+          backgroundColor = '#D1FAE5';
+        } else if (workLog.totalWorkHours >= 10) {
+          backgroundColor = '#DBEAFE';
+        }
       }
 
       days.push(
         <View key={day} style={styles.calendarDayContainer}>
           <View style={[
             styles.calendarDay,
+            { backgroundColor },
             isToday && styles.calendarDayToday
           ]}>
             <Text style={[
@@ -2950,9 +2966,18 @@ export default function ProfileScreen() {
               {day}
             </Text>
           </View>
-          {workLog && (
-            <View style={[styles.calendarDayIndicator, { backgroundColor: indicatorColor }]} />
-          )}
+        </View>
+      );
+    }
+
+    const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+    const remainingCells = totalCells - (firstDay + daysInMonth);
+    for (let day = 1; day <= remainingCells; day++) {
+      days.push(
+        <View key={`next-${day}`} style={styles.calendarDayContainer}>
+          <View style={[styles.calendarDay, styles.calendarDayOtherMonth]}>
+            <Text style={styles.calendarDayTextOtherMonth}>{day}</Text>
+          </View>
         </View>
       );
     }
@@ -2967,8 +2992,8 @@ export default function ProfileScreen() {
             } else {
               setSelectedMonth(selectedMonth - 1);
             }
-          }}>
-            <Text style={styles.calendarNavButton}>{'<'}</Text>
+          }} style={styles.calendarNavButton}>
+            <ChevronLeft size={20} color="#666" />
           </TouchableOpacity>
           <Text style={styles.calendarMonthYear}>
             {getMonthName(selectedMonth)} {selectedYear}
@@ -2980,8 +3005,8 @@ export default function ProfileScreen() {
             } else {
               setSelectedMonth(selectedMonth + 1);
             }
-          }}>
-            <Text style={styles.calendarNavButton}>{'>'}</Text>
+          }} style={styles.calendarNavButton}>
+            <ChevronRight size={20} color="#666" />
           </TouchableOpacity>
         </View>
         <View style={styles.calendarDayNames}>
@@ -3038,71 +3063,6 @@ export default function ProfileScreen() {
         )}
 
         {renderCalendar()}
-
-        {hasWorkLogs && (
-          <View style={{ marginTop: 24 }}>
-            <TouchableOpacity style={styles.pdksAccordionHeader}>
-              <View style={styles.pdksAccordionLeft}>
-                <Clock size={18} color="#1a1a1a" />
-                <Text style={styles.pdksAccordionTitle}>VARDİYA GEÇMİŞİ</Text>
-              </View>
-            </TouchableOpacity>
-
-            {userWorkLogs
-              .sort((a: any, b: any) => {
-                const dateA = new Date(a.date).getTime();
-                const dateB = new Date(b.date).getTime();
-                return dateB - dateA;
-              })
-              .slice(0, 5)
-              .map((log: any, index: number) => {
-                const checkIn = log.checkInTime || '-';
-                const checkOut = log.checkOutTime || '-';
-                const hoursValue = Number(log.totalWorkHours);
-                const hours = !isNaN(hoursValue) ? hoursValue : 0;
-
-                return (
-                  <View key={index} style={styles.pdksHistoryCard}>
-                    <View style={styles.pdksHistoryHeader}>
-                      <Text style={styles.pdksHistoryDate}>{formatDate(log.date)}</Text>
-                      <Text style={[
-                        styles.pdksHistoryTime,
-                        hours < 8 ? styles.pdksHistoryTimeRed : {}
-                      ]}>
-                        {checkIn !== '-' ? checkIn.slice(0, 5) : '-'} - {checkOut !== '-' ? checkOut.slice(0, 5) : '-'}
-                      </Text>
-                    </View>
-                    <View style={styles.pdksHistoryDetails}>
-                      <View style={styles.pdksHistoryRow}>
-                        <Text style={styles.pdksHistoryLabel}>Giriş</Text>
-                        <Text style={styles.pdksHistoryValue}>
-                          {checkIn !== '-' ? checkIn.slice(0, 5) : 'Kayıt yok'}
-                        </Text>
-                      </View>
-                      <View style={styles.pdksHistoryRow}>
-                        <Text style={styles.pdksHistoryLabel}>Çıkış</Text>
-                        <Text style={styles.pdksHistoryValue}>
-                          {checkOut !== '-' ? checkOut.slice(0, 5) : 'Kayıt yok'}
-                        </Text>
-                      </View>
-                      <View style={styles.pdksHistoryRow}>
-                        <Text style={styles.pdksHistoryLabel}>Toplam Saat</Text>
-                        <Text style={styles.pdksHistoryValue}>
-                          {hours.toFixed(1)} saat
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                );
-              })}
-          </View>
-        )}
-
-        {!hasWorkLogs && hasShiftPlan && (
-          <View style={styles.emptyState}>
-            <Text style={styles.pdksEmptyText}>Henüz çalışma kaydı bulunmuyor.</Text>
-          </View>
-        )}
       </View>
     );
   };
@@ -6321,87 +6281,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#1a1a1a',
   },
-  pdksHistoryCard: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-    paddingVertical: 16,
-  },
-  pdksHistoryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  pdksHistoryDate: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#1a1a1a',
-  },
-  pdksHistoryTime: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  pdksHistoryTimeNormal: {
-    color: '#666',
-  },
-  pdksHistoryTimeWarning: {
-    color: '#FF3B30',
-  },
-  pdksHistoryDetails: {
-    gap: 8,
-  },
-  pdksHistoryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  pdksHistoryLabel: {
-    fontSize: 14,
-    color: '#666',
-  },
-  pdksHistoryValue: {
-    fontSize: 14,
-    color: '#1a1a1a',
-  },
-  pdksViewAllButton: {
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: '#7C3AED',
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  pdksViewAllButtonText: {
-    color: '#7C3AED',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  pdksEmptyText: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 14,
-    paddingVertical: 20,
-  },
-  pdksHistoryTimeRed: {
-    color: '#FF3B30',
-  },
-  pdksAccordionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  pdksAccordionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  pdksAccordionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    letterSpacing: 0.5,
-  },
   calendarContainer: {
     marginTop: 24,
     marginBottom: 8,
@@ -6410,13 +6289,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 8,
+    marginBottom: 20,
+    paddingHorizontal: 4,
   },
   calendarNavButton: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1a1a1a',
     padding: 8,
   },
   calendarMonthYear: {
@@ -6443,19 +6319,24 @@ const styles = StyleSheet.create({
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'flex-start',
   },
   calendarDayContainer: {
     width: '14.28%',
+    aspectRatio: 1,
     alignItems: 'center',
-    marginBottom: 12,
+    justifyContent: 'center',
+    padding: 3,
   },
   calendarDay: {
-    width: 36,
-    height: 36,
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 6,
+    backgroundColor: '#fff',
+  },
+  calendarDayOtherMonth: {
+    backgroundColor: 'transparent',
   },
   calendarDayToday: {
     backgroundColor: '#7C3AED',
@@ -6463,6 +6344,11 @@ const styles = StyleSheet.create({
   calendarDayText: {
     fontSize: 14,
     color: '#1a1a1a',
+    fontWeight: '500',
+  },
+  calendarDayTextOtherMonth: {
+    fontSize: 14,
+    color: '#D1D5DB',
     fontWeight: '400',
   },
   calendarDayTodayText: {
@@ -6471,13 +6357,6 @@ const styles = StyleSheet.create({
   },
   calendarDayWeekend: {
     color: '#EF4444',
-  },
-  calendarDayIndicator: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10B981',
-    marginTop: 2,
   },
   shiftChangeModal: {
     backgroundColor: '#fff',
@@ -6530,68 +6409,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
-  },
-  calendarContainer: {
-    padding: 20,
-  },
-  calendarHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  calendarMonthTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    textTransform: 'capitalize',
-  },
-  calendarNavButton: {
-    fontSize: 24,
-    color: '#7C3AED',
-    fontWeight: '600',
-    paddingHorizontal: 12,
-  },
-  calendarDayNames: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 12,
-  },
-  calendarDayName: {
-    width: 40,
-    textAlign: 'center',
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
-  },
-  calendarDayNameWeekend: {
-    color: '#FF3B30',
-  },
-  calendarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  calendarDay: {
-    width: '14.28%',
-    aspectRatio: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 4,
-  },
-  calendarDaySelected: {
-    backgroundColor: '#10B981',
-    borderRadius: 8,
-  },
-  calendarDayText: {
-    fontSize: 14,
-    color: '#1a1a1a',
-  },
-  calendarDayWeekend: {
-    color: '#FF3B30',
-  },
-  calendarDayTextSelected: {
-    color: '#fff',
-    fontWeight: '600',
   },
   renameModalContainer: {
     backgroundColor: '#fff',
