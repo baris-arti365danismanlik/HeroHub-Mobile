@@ -2066,11 +2066,11 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           {expandedSections['contact'] && (
             <View style={styles.profileSectionContent}>
+              <InfoRow label="İş Telefonu" value={userContact?.businessPhone ? formatPhone(userContact.businessPhone) : '-'} />
               <InfoRow label="Şahsi Telefon" value={userContact?.phoneNumber ? formatPhone(userContact.phoneNumber) : '-'} />
               <InfoRow label="Ev Telefonu" value={userContact?.homePhone ? formatPhone(userContact.homePhone) : '-'} />
-              <InfoRow label="İş Telefonu" value={userContact?.businessPhone ? formatPhone(userContact.businessPhone) : '-'} />
-              <InfoRow label="Şahsi E-Posta" value={userContact?.email || '-'} />
               <InfoRow label="İş E-Postası" value={userContact?.businessEmail || '-'} />
+              <InfoRow label="Şahsi E-Posta" value={userContact?.email || '-'} />
               <InfoRow label="Diğer E-Posta" value={userContact?.otherEmail || '-'} isLast />
             </View>
           )}
