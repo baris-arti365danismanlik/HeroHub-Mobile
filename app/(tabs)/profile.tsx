@@ -3100,18 +3100,11 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.iconButton}>
-              <Bell size={20} color="#1a1a1a" />
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>2</Text>
-              </View>
-            </TouchableOpacity>
-
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => setInboxVisible(true)}
             >
-              <MessageSquare size={20} color="#1a1a1a" />
+              <Mail size={20} color="#1a1a1a" />
               {unreadCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{unreadCount}</Text>
