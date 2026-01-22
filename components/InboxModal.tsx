@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Bell, QrCode, Check, Menu, User as UserIcon } from 'lucide-react-native';
 import { notificationService } from '@/services/notification.service';
-import { UserNotification, NotificationDetail } from '@/types/backend';
+import { UserNotification, NotificationDetail, LeaveRequestNotificationData, DayOffType, DayOffStatus } from '@/types/backend';
 import { normalizePhotoUrl } from '@/utils/formatters';
 import { SurveyModal } from './SurveyModal';
 import { DrawerMenu } from './DrawerMenu';
@@ -114,11 +114,76 @@ export function InboxModal({ visible, onClose, backendUserId, userName, profileP
     }, 3000);
   };
 
+  const getDayOffTypeName = (type?: number): string => {
+    switch (type) {
+      case DayOffType.Annual:
+        return 'Yıllık İzin';
+      case DayOffType.Sick:
+        return 'Hastalık İzni';
+      case DayOffType.Maternity:
+        return 'Doğum İzni';
+      case DayOffType.Paternity:
+        return 'Babalık İzni';
+      case DayOffType.Marriage:
+        return 'Evlilik İzni';
+      case DayOffType.Death:
+        return 'Ölüm İzni';
+      case DayOffType.Birthday:
+        return 'Doğum Günü İzni';
+      case DayOffType.Unpaid:
+        return 'Ücretsiz İzin';
+      case DayOffType.Other:
+        return 'Diğer';
+      default:
+        return 'Bilinmeyen';
+    }
+  };
+
+  const getDayOffStatusName = (status?: number): string => {
+    switch (status) {
+      case DayOffStatus.Pending:
+        return 'Beklemede';
+      case DayOffStatus.Approved:
+        return 'Onaylandı';
+      case DayOffStatus.Rejected:
+        return 'Reddedildi';
+      case DayOffStatus.Cancelled:
+        return 'İptal Edildi';
+      default:
+        return 'Bilinmeyen';
+    }
+  };
+
+  const getDayOffStatusColor = (status?: number): string => {
+    switch (status) {
+      case DayOffStatus.Pending:
+        return '#F59E0B';
+      case DayOffStatus.Approved:
+        return '#10B981';
+      case DayOffStatus.Rejected:
+        return '#EF4444';
+      case DayOffStatus.Cancelled:
+        return '#6B7280';
+      default:
+        return '#6B7280';
+    }
+  };
+
   const renderNotificationDetail = () => {
     if (!selectedNotification) return null;
 
     const senderPhotoUrl = normalizePhotoUrl(selectedNotification.senderImageUrl);
     const isSurvey = selectedNotification.inboxComponentType === 7;
+    const isLeaveRequest = selectedNotification.inboxComponentType === 1;
+
+    let leaveRequestData: LeaveRequestNotificationData | null = null;
+    if (isLeaveRequest && selectedNotification.data) {
+      try {
+        leaveRequestData = JSON.parse(selectedNotification.data) as LeaveRequestNotificationData;
+      } catch (error) {
+        console.error('Error parsing leave request data:', error);
+      }
+    }
 
     return (
       <>
@@ -154,6 +219,63 @@ export function InboxModal({ visible, onClose, backendUserId, userName, profileP
             <Text style={styles.detailTitle}>{selectedNotification.title}</Text>
             <Text style={styles.detailMessage}>{selectedNotification.message}</Text>
           </View>
+
+          {isLeaveRequest && leaveRequestData && (
+            <View style={styles.leaveRequestCard}>
+              <View style={styles.leaveRequestHeader}>
+                <Text style={styles.leaveRequestTitle}>İzin Talebi Detayları</Text>
+                <View style={[
+                  styles.leaveStatusBadge,
+                  { backgroundColor: getDayOffStatusColor(leaveRequestData.Status) }
+                ]}>
+                  <Text style={styles.leaveStatusText}>
+                    {getDayOffStatusName(leaveRequestData.Status)}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.leaveRequestInfo}>
+                <View style={styles.leaveInfoRow}>
+                  <Text style={styles.leaveInfoLabel}>İzin Tipi:</Text>
+                  <Text style={styles.leaveInfoValue}>
+                    {getDayOffTypeName(leaveRequestData.DayOffType)}
+                  </Text>
+                </View>
+
+                <View style={styles.leaveInfoRow}>
+                  <Text style={styles.leaveInfoLabel}>Başlangıç Tarihi:</Text>
+                  <Text style={styles.leaveInfoValue}>
+                    {leaveRequestData.StartDate
+                      ? new Date(leaveRequestData.StartDate).toLocaleDateString('tr-TR')
+                      : '-'}
+                  </Text>
+                </View>
+
+                <View style={styles.leaveInfoRow}>
+                  <Text style={styles.leaveInfoLabel}>Bitiş Tarihi:</Text>
+                  <Text style={styles.leaveInfoValue}>
+                    {leaveRequestData.EndDate
+                      ? new Date(leaveRequestData.EndDate).toLocaleDateString('tr-TR')
+                      : '-'}
+                  </Text>
+                </View>
+
+                <View style={styles.leaveInfoRow}>
+                  <Text style={styles.leaveInfoLabel}>Süre:</Text>
+                  <Text style={styles.leaveInfoValue}>
+                    {leaveRequestData.CountOfDays} gün
+                  </Text>
+                </View>
+
+                {leaveRequestData.Reason && (
+                  <View style={styles.leaveReasonSection}>
+                    <Text style={styles.leaveInfoLabel}>Açıklama:</Text>
+                    <Text style={styles.leaveReasonText}>{leaveRequestData.Reason}</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
 
           {isSurvey && (
             <TouchableOpacity style={styles.surveyButton} activeOpacity={0.8} onPress={handleOpenSurvey}>
@@ -529,5 +651,69 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#1a1a1a',
+  },
+  leaveRequestCard: {
+    backgroundColor: '#F9FAFB',
+    marginHorizontal: 20,
+    marginTop: 24,
+    marginBottom: 20,
+    padding: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  leaveRequestHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  leaveRequestTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  leaveStatusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  leaveStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  leaveRequestInfo: {
+    gap: 12,
+  },
+  leaveInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  leaveInfoLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  leaveInfoValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  leaveReasonSection: {
+    marginTop: 4,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  leaveReasonText: {
+    fontSize: 14,
+    color: '#4B5563',
+    lineHeight: 20,
+    marginTop: 8,
   },
 });

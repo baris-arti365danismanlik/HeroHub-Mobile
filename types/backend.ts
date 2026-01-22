@@ -864,6 +864,18 @@ export interface NotificationDetail {
   updatedAt: string;
 }
 
+export interface LeaveRequestNotificationData {
+  UserDayOffId?: number;
+  DayOffType?: number;
+  StartDate?: string;
+  EndDate?: string;
+  CountOfDays?: number;
+  Reason?: string;
+  Status?: number;
+  RequesterUserId?: number;
+  ApproverUserId?: number;
+}
+
 export interface TrainingStatus {
   planned: number;
   delayed: number;
