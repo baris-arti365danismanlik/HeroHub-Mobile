@@ -1514,13 +1514,13 @@ export default function ProfileScreen() {
 
   const profileSections = [
     'Özet',
-    'İşe Başlama',
-    'PDKS',
-    'İzin Bilgileri',
-    'Çalışma Bilgileri',
     'Profil Bilgileri',
+    'İzin Bilgileri',
     ...(hasAssetPermission('read') ? ['Zimmet Bilgileri'] : []),
     'Dosyalar',
+    'Çalışma Bilgileri',
+    'İşe Başlama',
+    'PDKS',
   ];
 
   const renderDayOffSection = () => (
