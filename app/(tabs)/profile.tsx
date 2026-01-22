@@ -2814,7 +2814,7 @@ export default function ProfileScreen() {
                               <Text style={styles.taskCompleteButtonText}>Görevi Tamamla</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.taskArrowButton}>
-                              <ChevronRight size={20} color="#fff" strokeWidth={3} />
+                              <Bell size={20} color="#fff" strokeWidth={2} />
                             </TouchableOpacity>
                           </View>
                         ) : (
