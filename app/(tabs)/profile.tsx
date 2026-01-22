@@ -2022,10 +2022,24 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           {expandedSections['personal'] && (
             <View style={styles.profileSectionContent}>
-              <InfoRow label="Personel No" value={personalInformation?.personnelNumber || '-'} />
+              <View style={[styles.infoRow, styles.infoRowWithBorder]}>
+                <Text style={styles.infoRowLabel}>Personel No</Text>
+                <View style={styles.personnelBadge}>
+                  <Text style={styles.personnelBadgeText}>{personalInformation?.personnelNumber || '-'}</Text>
+                </View>
+              </View>
+              <View style={[styles.infoRow, styles.infoRowWithBorder]}>
+                <Text style={styles.infoRowLabel}>Status</Text>
+                <View style={[styles.statusBadge, profileDetails?.userStatus === 1 ? styles.statusBadgeActive : styles.statusBadgeInactive]}>
+                  <Text style={[styles.statusBadgeText, profileDetails?.userStatus === 1 ? styles.statusBadgeTextActive : styles.statusBadgeTextInactive]}>
+                    {profileDetails?.userStatus === 1 ? 'Aktif' : 'Pasif'}
+                  </Text>
+                </View>
+              </View>
               <InfoRow label="TCKN" value={personalInformation?.tckn || '-'} />
               <InfoRow label="Adı Soyadı" value={personalInformation ? `${personalInformation.firstName} ${personalInformation.lastName}` : '-'} />
               <InfoRow label="Doğum Yeri" value={personalInformation?.birthPlace || '-'} />
+              <InfoRow label="Uyruk" value={personalInformation?.nationality !== undefined && countries.length > 0 ? (countries.find(c => c.id === personalInformation.nationality)?.name || '-') : '-'} />
               <InfoRow label="Doğum Tarihi" value={personalInformation?.birthdate ? formatDate(personalInformation.birthdate) : '-'} />
               <InfoRow label="Cinsiyet" value={personalInformation?.gender !== undefined ? formatGender(personalInformation.gender) : '-'} />
               <InfoRow label="Medeni Hal" value={personalInformation?.maritalStatus !== undefined ? formatMaritalStatus(personalInformation.maritalStatus) : '-'} isLast />
@@ -6766,5 +6780,51 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
     marginTop: 16,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  infoRowWithBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  infoRowLabel: {
+    fontSize: 14,
+    color: '#666',
+  },
+  personnelBadge: {
+    backgroundColor: '#D1FAE5',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  personnelBadgeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#059669',
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  statusBadgeActive: {
+    backgroundColor: '#D1FAE5',
+  },
+  statusBadgeInactive: {
+    backgroundColor: '#FEE2E2',
+  },
+  statusBadgeText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  statusBadgeTextActive: {
+    color: '#059669',
+  },
+  statusBadgeTextInactive: {
+    color: '#DC2626',
   },
 });

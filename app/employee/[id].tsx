@@ -28,6 +28,7 @@ export default function EmployeeDetailScreen() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [employee, setEmployee] = useState<UserProfileDetails | null>(null);
+  const [countries, setCountries] = useState<any[]>([]);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editSectionType, setEditSectionType] = useState<'personal' | 'contact' | 'address' | 'health' | 'military' | null>(null);
   const [visaRequestModalVisible, setVisaRequestModalVisible] = useState(false);
@@ -42,6 +43,7 @@ export default function EmployeeDetailScreen() {
 
   useEffect(() => {
     loadEmployeeData();
+    loadCountries();
   }, [id]);
 
   const loadEmployeeData = async () => {
@@ -55,6 +57,14 @@ export default function EmployeeDetailScreen() {
       setEmployee(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCountries = async () => {
+    try {
+      const countriesData = await userService.getCountries();
+      setCountries(countriesData);
+    } catch (error) {
     }
   };
 
@@ -258,11 +268,26 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditProfile}
             onEdit={() => handleEditSection('personal')}
           >
+            <View style={styles.infoRowContainer}>
+              <Text style={styles.infoRowLabel}>Personel No</Text>
+              <View style={styles.personnelBadge}>
+                <Text style={styles.personnelBadgeText}>{employee.personalInformation?.personnelNumber || '-'}</Text>
+              </View>
+            </View>
+            <View style={styles.infoRowContainer}>
+              <Text style={styles.infoRowLabel}>Status</Text>
+              <View style={[styles.statusBadge, employee.userStatus === 1 ? styles.statusBadgeActive : styles.statusBadgeInactive]}>
+                <Text style={[styles.statusBadgeText, employee.userStatus === 1 ? styles.statusBadgeTextActive : styles.statusBadgeTextInactive]}>
+                  {employee.userStatus === 1 ? 'Aktif' : 'Pasif'}
+                </Text>
+              </View>
+            </View>
             {renderInfoRow('TC Kimlik No', employee.personalInformation?.tckn || '-')}
             {renderInfoRow('Ad', employee.personalInformation?.firstName || '-')}
             {renderInfoRow('Soyad', employee.personalInformation?.lastName || '-')}
             {renderInfoRow('Doğum Tarihi', employee.personalInformation?.birthdate ? formatDate(employee.personalInformation.birthdate) : '-')}
             {renderInfoRow('Doğum Yeri', employee.personalInformation?.birthPlace || '-')}
+            {renderInfoRow('Uyruk', employee.personalInformation?.nationality !== undefined && countries.length > 0 ? (countries.find((c: any) => c.id === employee.personalInformation?.nationality)?.name || '-') : '-')}
             {renderInfoRow('Cinsiyet', employee.personalInformation?.gender !== undefined ? getGenderText(employee.personalInformation.gender) : '-')}
             {renderInfoRow('Medeni Durum', employee.personalInformation?.maritalStatus !== undefined ? getMaritalStatusText(employee.personalInformation.maritalStatus) : '-')}
           </Accordion>
@@ -720,5 +745,37 @@ const styles = StyleSheet.create({
   },
   visaCardBody: {
     gap: 4,
+  },
+  personnelBadge: {
+    backgroundColor: '#D1FAE5',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  personnelBadgeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#059669',
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  statusBadgeActive: {
+    backgroundColor: '#D1FAE5',
+  },
+  statusBadgeInactive: {
+    backgroundColor: '#FEE2E2',
+  },
+  statusBadgeText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  statusBadgeTextActive: {
+    color: '#059669',
+  },
+  statusBadgeTextInactive: {
+    color: '#DC2626',
   },
 });
