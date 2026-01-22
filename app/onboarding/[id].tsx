@@ -20,6 +20,7 @@ import {
   Trash2,
   Plus,
   ChevronUp,
+  Bell,
 } from 'lucide-react-native';
 import { onboardingService } from '@/services/onboarding.service';
 import {
@@ -430,13 +431,20 @@ export default function OnboardingDetailScreen() {
                       <Text style={styles.completedBadgeText}>Tamamlandı</Text>
                     </View>
                   ) : (
-                    <TouchableOpacity
-                      style={styles.completeTaskButton}
-                      onPress={() => handleCompleteTask(userTask.id)}
-                    >
-                      <Text style={styles.completeTaskButtonText}>Görevi Tamamla</Text>
-                      <Send size={16} color="#7C3AED" />
-                    </TouchableOpacity>
+                    <View style={styles.taskButtonRow}>
+                      <TouchableOpacity
+                        style={styles.completeTaskButton}
+                        onPress={() => handleCompleteTask(userTask.id)}
+                      >
+                        <Text style={styles.completeTaskButtonText}>Görevi Tamamla</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.notificationButton}
+                        onPress={() => {}}
+                      >
+                        <Bell size={16} color="#fff" />
+                      </TouchableOpacity>
+                    </View>
                   )}
                 </View>
               ))}
@@ -474,13 +482,20 @@ export default function OnboardingDetailScreen() {
                       <Text style={styles.completedBadgeText}>Tamamlandı</Text>
                     </View>
                   ) : (
-                    <TouchableOpacity
-                      style={styles.completeTaskButton}
-                      onPress={() => handleCompleteTask(userTask.id)}
-                    >
-                      <Text style={styles.completeTaskButtonText}>Görevi Tamamla</Text>
-                      <Send size={16} color="#7C3AED" />
-                    </TouchableOpacity>
+                    <View style={styles.taskButtonRow}>
+                      <TouchableOpacity
+                        style={styles.completeTaskButton}
+                        onPress={() => handleCompleteTask(userTask.id)}
+                      >
+                        <Text style={styles.completeTaskButtonText}>Görevi Tamamla</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.notificationButton}
+                        onPress={() => {}}
+                      >
+                        <Bell size={16} color="#fff" />
+                      </TouchableOpacity>
+                    </View>
                   )}
                 </View>
               ))}
@@ -845,21 +860,34 @@ const styles = StyleSheet.create({
   taskValueCompleted: {
     color: '#DC2626',
   },
+  taskButtonRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
   completeTaskButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#7C3AED',
     borderRadius: 6,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    marginTop: 8,
   },
   completeTaskButtonText: {
     fontSize: 13,
     color: '#7C3AED',
     fontWeight: '600',
+  },
+  notificationButton: {
+    width: 44,
+    height: 44,
+    backgroundColor: '#7C3AED',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   completedBadge: {
     alignSelf: 'flex-start',
