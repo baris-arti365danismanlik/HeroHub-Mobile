@@ -8,9 +8,9 @@ import {
   ScrollView,
   ActivityIndicator,
   Image,
-  SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Bell, QrCode, Check } from 'lucide-react-native';
 import { notificationService } from '@/services/notification.service';
 import { UserNotification, NotificationDetail } from '@/types/backend';
@@ -216,9 +216,10 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
         transparent={false}
         animationType="slide"
         onRequestClose={selectedNotification ? handleBackFromDetail : onClose}
+        statusBarTranslucent={false}
       >
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-        <SafeAreaView style={styles.modalContainer}>
+        <SafeAreaView style={styles.modalContainer} edges={['top', 'bottom']}>
+          <StatusBar barStyle="dark-content" />
           {loadingDetail ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#7C3AED" />
