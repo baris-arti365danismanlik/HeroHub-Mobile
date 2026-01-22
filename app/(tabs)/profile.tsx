@@ -2100,7 +2100,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           {expandedSections['address'] && (
             <View style={styles.profileSectionContent}>
-              <InfoRow label="Adres" value={userAddress?.address || '-'} />
+              <InfoRow value={userAddress?.address || '-'} fullWidth />
               <InfoRow label="İlçe" value={userAddress?.districtName || '-'} />
               <InfoRow label="İl" value={userAddress?.cityName || '-'} />
               <InfoRow label="Ülke" value={userAddress?.countryName || '-'} isLast />

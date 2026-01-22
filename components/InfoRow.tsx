@@ -2,12 +2,21 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 interface InfoRowProps {
-  label: string;
+  label?: string;
   value: string;
   isLast?: boolean;
+  fullWidth?: boolean;
 }
 
-export function InfoRow({ label, value, isLast = false }: InfoRowProps) {
+export function InfoRow({ label, value, isLast = false, fullWidth = false }: InfoRowProps) {
+  if (fullWidth || !label) {
+    return (
+      <View style={[styles.container, !isLast && styles.containerWithBorder]}>
+        <Text style={styles.fullWidthValue}>{value}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, !isLast && styles.containerWithBorder]}>
       <Text style={styles.label}>{label}</Text>
@@ -29,14 +38,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#666',
+    fontWeight: '600',
+    color: '#1a1a1a',
   },
   value: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#666',
     textAlign: 'right',
     flex: 1,
     marginLeft: 16,
+  },
+  fullWidthValue: {
+    fontSize: 14,
+    color: '#666',
+    width: '100%',
   },
 });

@@ -215,12 +215,22 @@ export default function EmployeeDetailScreen() {
     }
   };
 
-  const renderInfoRow = (label: string, value: string) => (
-    <View style={styles.infoRowContainer}>
-      <Text style={styles.infoRowLabel}>{label}</Text>
-      <Text style={styles.infoRowValue}>{value}</Text>
-    </View>
-  );
+  const renderInfoRow = (label: string | null, value: string) => {
+    if (!label) {
+      return (
+        <View style={styles.infoRowContainer}>
+          <Text style={styles.infoRowFullWidth}>{value}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.infoRowContainer}>
+        <Text style={styles.infoRowLabel}>{label}</Text>
+        <Text style={styles.infoRowValue}>{value}</Text>
+      </View>
+    );
+  };
 
   if (loading) {
     return (
@@ -309,7 +319,7 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditProfile}
             onEdit={() => handleEditSection('address')}
           >
-            {renderInfoRow('Adres', employee.userAddress?.address || '-')}
+            {renderInfoRow(null, employee.userAddress?.address || '-')}
             {renderInfoRow('İlçe', employee.userAddress?.districtName || '-')}
             {renderInfoRow('İl', employee.userAddress?.cityName || '-')}
             {renderInfoRow('Ülke', employee.userAddress?.countryName || '-')}
@@ -673,13 +683,17 @@ const styles = StyleSheet.create({
   },
   infoRowLabel: {
     fontSize: 13,
-    color: '#999',
+    fontWeight: '600',
+    color: '#1a1a1a',
     marginBottom: 4,
   },
   infoRowValue: {
     fontSize: 15,
-    color: '#1a1a1a',
-    fontWeight: '500',
+    color: '#999',
+  },
+  infoRowFullWidth: {
+    fontSize: 15,
+    color: '#999',
   },
   listItem: {
     marginBottom: 8,
