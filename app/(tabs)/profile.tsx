@@ -2976,6 +2976,16 @@ export default function ProfileScreen() {
     console.log('renderFilesSection called, documents count:', documents.length);
     console.log('Current folder ID:', currentFolderId);
     console.log('Documents:', documents);
+    console.log('Documents loading:', documentsLoading);
+
+    documents.forEach((doc, idx) => {
+      console.log(`Document ${idx}:`, {
+        id: doc.id,
+        name: doc.name,
+        type: doc.type,
+        parentId: doc.parentId
+      });
+    });
 
     const files = documents.map(doc => ({
       id: doc.id,
@@ -2985,6 +2995,8 @@ export default function ProfileScreen() {
       size: doc.size,
       icon: doc.icon
     }));
+
+    console.log('Files array length:', files.length);
 
     const getFileIcon = (iconType: string) => {
       switch (iconType) {
@@ -3080,7 +3092,7 @@ export default function ProfileScreen() {
           <View style={styles.filesContainer}>
             {files.map((item, index) => (
             <View
-              key={item.id}
+              key={`${currentFolderId}-${item.id}-${item.name}`}
               style={[
                 styles.fileItem,
                 index === files.length - 1 && styles.fileItemLast
