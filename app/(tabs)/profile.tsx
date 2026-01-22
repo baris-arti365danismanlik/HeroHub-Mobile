@@ -72,6 +72,7 @@ export default function ProfileScreen() {
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
   const [selectedSection, setSelectedSection] = useState('Özet');
   const [profileDetails, setProfileDetails] = useState<UserProfileDetails | null>(null);
+  const [workingInfo, setWorkingInfo] = useState<WorkingInformation | null>(null);
   const [countries, setCountries] = useState<Country[]>([]);
   const [modulePermissions, setModulePermissions] = useState<ModulePermission[]>([]);
   const { canWrite, canDelete, isAdmin } = usePermissions(modulePermissions);
@@ -269,14 +270,20 @@ export default function ProfileScreen() {
       try {
         setLoading(true);
 
-        const [profile, countriesList] = await Promise.all([
+        const [profile, countriesList, workingInformation] = await Promise.all([
           userService.getUserProfile(user.backend_user_id),
           userService.getCountries(),
+          employmentService.getWorkingInformation(user.backend_user_id),
         ]);
 
         setProfileDetails(profile);
         setCountries(countriesList);
         setModulePermissions(profile.modulePermissions);
+
+        const currentWorkInfo = workingInformation.find(w => w.isCurrent);
+        if (currentWorkInfo) {
+          setWorkingInfo(currentWorkInfo);
+        }
 
         loadShiftPlan();
         loadBadgeCardInfo();
@@ -317,6 +324,53 @@ export default function ProfileScreen() {
       fetchLeaveData();
     }
   }, [user?.backend_user_id, selectedSection]);
+
+  const calculateWorkDuration = (startDate: string): string => {
+    if (!startDate) return '-';
+
+    const start = new Date(startDate);
+    const now = new Date();
+
+    let years = now.getFullYear() - start.getFullYear();
+    let months = now.getMonth() - start.getMonth();
+    let days = now.getDate() - start.getDate();
+
+    if (days < 0) {
+      months--;
+      const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+      days += prevMonth.getDate();
+    }
+
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    return `${years} yıl ${months} ay ${days} gün`;
+  };
+
+  const formatWorkType = (workType?: number): string => {
+    if (!workType) return 'Tam Zamanlı';
+    switch (workType) {
+      case 1:
+        return 'Tam Zamanlı';
+      case 2:
+        return 'Yarı Zamanlı';
+      case 3:
+        return 'Freelance';
+      case 4:
+        return 'Stajyer';
+      default:
+        return 'Tam Zamanlı';
+    }
+  };
+
+  const formatJobStartDate = (dateString?: string): string => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
 
   const hasModulePermission = (moduleId: number, permission: 'read' | 'write' | 'delete'): boolean => {
     const module = modulePermissions.find(m => m.moduleId === moduleId);
@@ -1651,129 +1705,177 @@ export default function ProfileScreen() {
     return `${years} yıl ${months} ay ${days} gün`;
   };
 
-  const renderSummarySection = () => (
-    <>
-      <View style={styles.assetUserCard}>
-        {user.profilePictureUrl ? (
-          <Image
-            source={{ uri: user.profilePictureUrl }}
-            style={styles.assetUserImage}
-          />
-        ) : (
-          <View style={styles.assetUserPlaceholder}>
-            <UserIcon size={32} color="#7C3AED" />
-          </View>
-        )}
-        <View style={styles.assetUserInfo}>
-          <Text style={styles.assetUserName}>
-            {user.firstName} {user.lastName}
-          </Text>
-          {profileDetails?.currentTitle && (
-            <View style={styles.assetUserDetail}>
-              <Briefcase size={14} color="#666" />
-              <Text style={styles.assetUserDetailText}>{profileDetails.currentTitle}</Text>
+  const renderSummarySection = () => {
+    const contactInfo = profileDetails?.userContact;
+    const socialMedia = profileDetails?.socialMedia;
+    const manager = profileDetails?.reportsTo;
+    const colleagues = profileDetails?.colleagues || [];
+
+    return (
+      <>
+        <View style={styles.assetUserCard}>
+          {profileDetails?.profilePhoto ? (
+            <Image
+              source={{ uri: profileDetails.profilePhoto }}
+              style={styles.assetUserImage}
+            />
+          ) : (
+            <View style={styles.assetUserPlaceholder}>
+              <UserIcon size={32} color="#7C3AED" />
             </View>
           )}
-          <View style={styles.assetUserDetail}>
-            <Building2 size={14} color="#666" />
-            <Text style={styles.assetUserDetailText}>Art365 Danışmanlık</Text>
+          <View style={styles.assetUserInfo}>
+            <Text style={styles.assetUserName}>
+              {user.firstName} {user.lastName}
+            </Text>
+            {profileDetails?.currentTitle && (
+              <View style={styles.assetUserDetail}>
+                <Briefcase size={14} color="#666" />
+                <Text style={styles.assetUserDetailText}>{profileDetails.currentTitle}</Text>
+              </View>
+            )}
+            <View style={styles.assetUserDetail}>
+              <Building2 size={14} color="#666" />
+              <Text style={styles.assetUserDetailText}>{profileDetails?.organizationName || '-'}</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.summaryContainer}>
-          <View style={styles.contactItem}>
-            <Phone size={20} color="#333" />
-            <Text style={styles.contactText}>+90 530 234 76 54</Text>
-          </View>
+        <View style={styles.summaryContainer}>
+          {contactInfo?.phoneNumber && (
+            <View style={styles.contactItem}>
+              <Phone size={20} color="#333" />
+              <Text style={styles.contactText}>{contactInfo.phoneNumber}</Text>
+            </View>
+          )}
 
-          <View style={styles.contactItem}>
-            <Smartphone size={20} color="#333" />
-            <Text style={styles.contactText}>+90 530 234 76 54</Text>
-          </View>
+          {contactInfo?.homePhone && (
+            <View style={styles.contactItem}>
+              <Smartphone size={20} color="#333" />
+              <Text style={styles.contactText}>{contactInfo.homePhone}</Text>
+            </View>
+          )}
 
-          <View style={styles.contactItem}>
-            <Mail size={20} color="#333" />
-            <Text style={styles.contactText}>{user.email}</Text>
-          </View>
+          {contactInfo?.businessPhone && (
+            <View style={styles.contactItem}>
+              <Smartphone size={20} color="#333" />
+              <Text style={styles.contactText}>{contactInfo.businessPhone}</Text>
+            </View>
+          )}
 
-          <View style={styles.socialMediaContainer}>
-            <TouchableOpacity style={styles.socialIcon}>
-              <Linkedin size={20} color="#fff" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialIcon}>
-              <Facebook size={20} color="#fff" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialIcon}>
-              <Instagram size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
+          {contactInfo?.email && (
+            <View style={styles.contactItem}>
+              <Mail size={20} color="#333" />
+              <Text style={styles.contactText}>{contactInfo.email}</Text>
+            </View>
+          )}
+
+          {socialMedia && (socialMedia.linkedin || socialMedia.facebook || socialMedia.instagram) && (
+            <View style={styles.socialMediaContainer}>
+              {socialMedia.linkedin && (
+                <TouchableOpacity style={styles.socialIcon} onPress={() => {}}>
+                  <Linkedin size={20} color="#fff" />
+                </TouchableOpacity>
+              )}
+              {socialMedia.facebook && (
+                <TouchableOpacity style={styles.socialIcon} onPress={() => {}}>
+                  <Facebook size={20} color="#fff" />
+                </TouchableOpacity>
+              )}
+              {socialMedia.instagram && (
+                <TouchableOpacity style={styles.socialIcon} onPress={() => {}}>
+                  <Instagram size={20} color="#fff" />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
 
           <View style={styles.dividerLine} />
 
           <View style={styles.workInfoSection}>
             <Text style={styles.workInfoTitle}>İşe Başlama Tarihi</Text>
-            <Text style={styles.workInfoDate}>10 Eylül 2021</Text>
-            <Text style={styles.workInfoDuration}>3 yıl 2 ay 6 gün</Text>
-          </View>
-
-          <View style={styles.dividerLine} />
-
-          <View style={styles.summaryDetailItem}>
-            <Briefcase size={20} color="#333" />
-            <Text style={styles.summaryDetailText}>
-              {profileDetails?.currentTitle || 'Management Trainee'}
+            <Text style={styles.workInfoDate}>
+              {profileDetails?.jobStartDate ? formatJobStartDate(profileDetails.jobStartDate) : '-'}
+            </Text>
+            <Text style={styles.workInfoDuration}>
+              {profileDetails?.jobStartDate ? calculateWorkDuration(profileDetails.jobStartDate) : '-'}
             </Text>
           </View>
 
-          <View style={styles.summaryDetailItem}>
-            <Building2 size={20} color="#333" />
-            <Text style={styles.summaryDetailText}>Art365 Danışmanlık</Text>
-          </View>
+          <View style={styles.dividerLine} />
 
-          <View style={styles.summaryDetailItem}>
-            <Clock size={20} color="#333" />
-            <Text style={styles.summaryDetailText}>Tam Zamanlı</Text>
-          </View>
+          {profileDetails?.currentTitle && (
+            <View style={styles.summaryDetailItem}>
+              <Briefcase size={20} color="#333" />
+              <Text style={styles.summaryDetailText}>{profileDetails.currentTitle}</Text>
+            </View>
+          )}
+
+          {profileDetails?.organizationName && (
+            <View style={styles.summaryDetailItem}>
+              <Building2 size={20} color="#333" />
+              <Text style={styles.summaryDetailText}>{profileDetails.organizationName}</Text>
+            </View>
+          )}
+
+          {workingInfo?.workType && (
+            <View style={styles.summaryDetailItem}>
+              <Clock size={20} color="#333" />
+              <Text style={styles.summaryDetailText}>{formatWorkType(workingInfo.workType)}</Text>
+            </View>
+          )}
 
           <View style={styles.dividerLine} />
 
-          <View style={styles.managerSection}>
-            <Text style={styles.sectionTitle}>Yöneticisi</Text>
-            <View style={styles.personItem}>
-              <View style={styles.personAvatar}>
-                <UserIcon size={20} color="#7C3AED" />
-              </View>
-              <View style={styles.personInfo}>
-                <Text style={styles.personName}>Gözde Onay</Text>
-                <Text style={styles.personRole}>Pazarlama ve Ürün Direktörü</Text>
+          {manager && (
+            <View style={styles.managerSection}>
+              <Text style={styles.sectionTitle}>Yöneticisi</Text>
+              <View style={styles.personItem}>
+                {manager.profilePhoto ? (
+                  <Image
+                    source={{ uri: manager.profilePhoto }}
+                    style={styles.personAvatarImage}
+                  />
+                ) : (
+                  <View style={styles.personAvatar}>
+                    <UserIcon size={20} color="#7C3AED" />
+                  </View>
+                )}
+                <View style={styles.personInfo}>
+                  <Text style={styles.personName}>{manager.fullName || '-'}</Text>
+                  <Text style={styles.personRole}>{manager.title || '-'}</Text>
+                </View>
               </View>
             </View>
-          </View>
+          )}
 
-          <View style={styles.teamSection}>
-            <Text style={styles.sectionTitle}>Ekip Arkadaşları</Text>
-            {[
-              { name: 'Justin Press', role: 'Ürün Uzmanı' },
-              { name: 'Gretchen Vaccaro', role: 'İş Analisti' },
-              { name: 'Jaylon Rosser', role: 'Ürün Müdürü' },
-              { name: 'Tatiana Curtis', role: 'Pazarlama Elemanı' },
-              { name: 'Jaydon Dorwart', role: 'Tedarikçi' },
-            ].map((member, index, array) => (
-              <View key={index} style={[styles.personItem, index === array.length - 1 && { marginBottom: 0 }]}>
-                <View style={styles.personAvatar}>
-                  <UserIcon size={20} color="#7C3AED" />
+          {colleagues.length > 0 && (
+            <View style={styles.teamSection}>
+              <Text style={styles.sectionTitle}>Ekip Arkadaşları</Text>
+              {colleagues.map((colleague, index) => (
+                <View key={colleague.id} style={[styles.personItem, index === colleagues.length - 1 && { marginBottom: 0 }]}>
+                  {colleague.profilePhoto ? (
+                    <Image
+                      source={{ uri: colleague.profilePhoto }}
+                      style={styles.personAvatarImage}
+                    />
+                  ) : (
+                    <View style={styles.personAvatar}>
+                      <UserIcon size={20} color="#7C3AED" />
+                    </View>
+                  )}
+                  <View style={styles.personInfo}>
+                    <Text style={styles.personName}>{colleague.fullName}</Text>
+                    <Text style={styles.personRole}>{colleague.title || '-'}</Text>
+                  </View>
                 </View>
-                <View style={styles.personInfo}>
-                  <Text style={styles.personName}>{member.name}</Text>
-                  <Text style={styles.personRole}>{member.role}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          )}
         </View>
-    </>
-  );
+      </>
+    );
+  };
 
   const renderAssetsSection = () => {
     if (!hasAssetPermission('read')) {
@@ -5173,6 +5275,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9D5FF',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  personAvatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   personInfo: {
     flex: 1,
