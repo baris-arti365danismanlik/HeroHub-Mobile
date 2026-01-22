@@ -247,36 +247,33 @@ export default function EmployeesScreen() {
       )}
       <View style={styles.topSection}>
         <View style={styles.titleRow}>
-          <UsersIcon size={20} color="#666" />
-          <Text style={styles.sectionTitle}>ÇALIŞANLAR</Text>
-        </View>
-
-        <View style={styles.actionRow}>
-          {isAdmin() && (
-            <TouchableOpacity
-              style={styles.addButton}
-              activeOpacity={0.7}
-              onPress={() => setAddEmployeeModalVisible(true)}
-            >
-              <UserPlus size={20} color="#7C3AED" />
-              <Text style={styles.addButtonText}>Yeni Çalışan Ekle</Text>
-            </TouchableOpacity>
-          )}
-
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              onPress={() => setViewMode(viewMode === 'list' ? 'tree' : 'list')}
-              style={styles.iconButton}
-              activeOpacity={0.7}
-            >
-              {viewMode === 'list' ? (
-                <Network size={24} color="#666" />
-              ) : (
-                <UsersIcon size={24} color="#666" />
-              )}
-            </TouchableOpacity>
+          <View style={styles.titleWithIcon}>
+            <UsersIcon size={20} color="#666" />
+            <Text style={styles.sectionTitle}>ÇALIŞANLAR</Text>
           </View>
+          <TouchableOpacity
+            onPress={() => setViewMode(viewMode === 'list' ? 'tree' : 'list')}
+            style={styles.iconButton}
+            activeOpacity={0.7}
+          >
+            {viewMode === 'list' ? (
+              <Network size={24} color="#666" />
+            ) : (
+              <UsersIcon size={24} color="#666" />
+            )}
+          </TouchableOpacity>
         </View>
+
+        {(isAdmin() || canWrite(MODULE_IDS.EMPLOYEES)) && (
+          <TouchableOpacity
+            style={styles.addButton}
+            activeOpacity={0.7}
+            onPress={() => setAddEmployeeModalVisible(true)}
+          >
+            <UserPlus size={20} color="#fff" />
+            <Text style={styles.addButtonText}>Yeni Çalışan Ekle</Text>
+          </TouchableOpacity>
+        )}
 
         <View style={styles.searchContainer}>
           <Search size={20} color="#999" style={styles.searchIcon} />
@@ -416,7 +413,7 @@ export default function EmployeesScreen() {
             </View>
           </View>
         ) : (
-          isAdmin() && (
+          (isAdmin() || canWrite(MODULE_IDS.EMPLOYEES)) && (
             <View style={styles.treeHeaderRow}>
               <TouchableOpacity
                 style={styles.addTreeButton}
@@ -554,9 +551,14 @@ const styles = StyleSheet.create({
   },
   titleRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  titleWithIcon: {
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 12,
@@ -564,33 +566,21 @@ const styles = StyleSheet.create({
     color: '#666',
     letterSpacing: 1,
   },
-  actionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
-  },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    borderWidth: 1.5,
-    borderColor: '#7C3AED',
+    backgroundColor: '#7C3AED',
     borderRadius: 8,
-    flex: 1,
+    marginBottom: 16,
   },
   addButtonText: {
     fontSize: 15,
-    color: '#7C3AED',
-    fontWeight: '500',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 8,
-    marginLeft: 'auto',
+    color: '#fff',
+    fontWeight: '600',
   },
   iconButton: {
     padding: 8,
