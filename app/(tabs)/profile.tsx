@@ -4462,37 +4462,39 @@ const styles = StyleSheet.create({
   profileCard: {
     backgroundColor: '#fff',
     padding: 20,
-    alignItems: 'center',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   profileImageContainer: {
-    marginBottom: 16,
+    marginRight: 16,
   },
   profileImage: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: 12,
   },
   profileImagePlaceholder: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: 12,
     backgroundColor: '#F0E7FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
   profileInfo: {
-    alignItems: 'center',
+    flex: 1,
+    alignItems: 'flex-start',
   },
   profileName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#1a1a1a',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   profileDetails: {
-    gap: 6,
+    gap: 8,
   },
   profileDetailRow: {
     flexDirection: 'row',
