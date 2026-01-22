@@ -2897,7 +2897,15 @@ export default function ProfileScreen() {
 
   const getWorkLogForDate = (date: string) => {
     return userWorkLogs?.find((log: any) => {
-      const logDate = new Date(log.date).toISOString().split('T')[0];
+      if (!log.date) return false;
+
+      let logDate = log.date;
+      if (typeof logDate === 'string') {
+        logDate = logDate.split('T')[0];
+      } else if (logDate instanceof Date) {
+        logDate = logDate.toISOString().split('T')[0];
+      }
+
       return logDate === date;
     });
   };
