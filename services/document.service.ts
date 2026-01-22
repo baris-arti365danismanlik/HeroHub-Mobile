@@ -1,4 +1,4 @@
-import { httpClient } from './http.client';
+import { apiHttpClient } from './http.client';
 
 export interface UserFolder {
   id: number;
@@ -50,11 +50,15 @@ export const documentService = {
       params.append('parentFolderId', parentFolderId.toString());
     }
 
-    const response = await httpClient.get<WorkspaceResponse>(
+    const response = await apiHttpClient.get<WorkspaceResponse>(
       `/Workspace/get-workspace?${params.toString()}`
     );
 
-    const folders: UserDocument[] = response.userFolders.map(folder => ({
+    if (!response.data) {
+      return [];
+    }
+
+    const folders: UserDocument[] = response.data.userFolders.map(folder => ({
       id: folder.id.toString(),
       name: folder.name,
       type: 'folder' as const,
@@ -64,7 +68,7 @@ export const documentService = {
         : 'Boş Klasör'
     }));
 
-    const files: UserDocument[] = response.userFiles.map(file => ({
+    const files: UserDocument[] = response.data.userFiles.map(file => ({
       id: file.id.toString(),
       name: file.name,
       type: 'file' as const,

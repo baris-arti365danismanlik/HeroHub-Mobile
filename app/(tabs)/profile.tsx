@@ -802,15 +802,10 @@ export default function ProfileScreen() {
   };
 
   const loadDocuments = async () => {
-    if (!user?.backend_user_id) {
-      console.log('loadDocuments: user.backend_user_id yok', user);
-      return;
-    }
-    console.log('loadDocuments çağrılıyor, userId:', user.backend_user_id);
+    if (!user?.backend_user_id) return;
     try {
       setDocumentsLoading(true);
       const docs = await documentService.getUserDocuments(Number(user.backend_user_id));
-      console.log('Dökümanlar yüklendi:', docs);
       setDocuments(docs);
     } catch (error) {
       console.error('Error loading documents:', error);
@@ -820,7 +815,6 @@ export default function ProfileScreen() {
   };
 
   useEffect(() => {
-    console.log('useEffect tetiklendi - selectedSection:', selectedSection, 'user.backend_user_id:', user?.backend_user_id);
     if (selectedSection === 'Dosyalar' && user?.backend_user_id) {
       loadDocuments();
     }
