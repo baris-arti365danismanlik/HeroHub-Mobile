@@ -752,11 +752,10 @@ const styles = StyleSheet.create({
   personnelBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#D1FAE5',
+    backgroundColor: '#F3F4F6',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 6,
-    flex: 1,
   },
   personnelNoLabel: {
     fontSize: 14,
