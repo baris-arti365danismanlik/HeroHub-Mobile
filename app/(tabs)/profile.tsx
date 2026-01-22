@@ -6872,35 +6872,37 @@ const styles = StyleSheet.create({
   visaRequestButton: {
     alignSelf: 'center',
     minWidth: 200,
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 24,
     backgroundColor: '#7C3AED',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
+    marginTop: 20,
   },
   visaRequestButtonText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: '#fff',
   },
   visaCard: {
-    backgroundColor: '#F3F4F6',
     borderRadius: 12,
-    padding: 16,
     marginBottom: 12,
   },
   visaCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    backgroundColor: '#F3F4F6',
+    padding: 12,
+    borderRadius: 12,
   },
   visaCardCountry: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1F2937',
+    flex: 1,
   },
   visaCardActions: {
     flexDirection: 'row',
@@ -6911,6 +6913,8 @@ const styles = StyleSheet.create({
   },
   visaCardContent: {
     gap: 0,
+    paddingHorizontal: 12,
+    paddingTop: 12,
   },
   visaCardRow: {
     flexDirection: 'row',
