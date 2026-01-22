@@ -47,7 +47,7 @@ export const documentService = {
     });
 
     if (parentFolderId !== undefined && parentFolderId !== null) {
-      params.append('parentFolderId', parentFolderId.toString());
+      params.append('userFolderId', parentFolderId.toString());
     }
 
     const response = await apiHttpClient.get<WorkspaceResponse>(
