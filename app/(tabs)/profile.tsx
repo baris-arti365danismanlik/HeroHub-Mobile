@@ -25,6 +25,7 @@ import { shiftService } from '@/services/shift.service';
 import { userService } from '@/services/user.service';
 import { employmentService } from '@/services/employment.service';
 import { documentService, UserDocument } from '@/services/document.service';
+import { supabase } from '@/services/supabase.client';
 import PDKSTaskModal, { PDKSTaskData } from '@/components/PDKSTaskModal';
 import { normalizePhotoUrl } from '@/utils/formatters';
 import {
@@ -793,19 +794,23 @@ export default function ProfileScreen() {
   }, [selectedSection, user?.backend_user_id]);
 
   const loadUnreadCount = async () => {
-    if (!user?.id) return;
     try {
-      const count = await inboxService.getUnreadCount(user.id);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) return;
+
+      const count = await inboxService.getUnreadCount(session.user.id);
       setUnreadCount(count);
     } catch (error) {
     }
   };
 
   const loadDocuments = async () => {
-    if (!user?.id) return;
     try {
       setDocumentsLoading(true);
-      const docs = await documentService.getUserDocuments(user.id);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) return;
+
+      const docs = await documentService.getUserDocuments(session.user.id);
       setDocuments(docs);
     } catch (error) {
       console.error('Error loading documents:', error);
@@ -815,10 +820,10 @@ export default function ProfileScreen() {
   };
 
   useEffect(() => {
-    if (selectedSection === 'Dosyalar' && user?.id) {
+    if (selectedSection === 'Dosyalar') {
       loadDocuments();
     }
-  }, [selectedSection, user?.id]);
+  }, [selectedSection]);
 
   const loadAssets = async () => {
     if (!user?.backend_user_id) return;
