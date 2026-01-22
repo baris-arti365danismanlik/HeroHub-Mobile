@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   SafeAreaView,
+  Image,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -138,9 +139,11 @@ export function DrawerMenu({ visible, onClose, onNavigate }: DrawerMenuProps) {
         <Animated.View style={[styles.drawerContainer, drawerAnimatedStyle]}>
           <SafeAreaView style={styles.drawer}>
             <View style={styles.header}>
-              <Text style={styles.logoText}>
-                hero<Text style={styles.logoPlusText}>+</Text>
-              </Text>
+              <Image
+                source={require('@/assets/images/hero-primary-logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
 
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <X size={24} color="#333" />
@@ -215,15 +218,9 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     borderBottomWidth: 0,
   },
-  logoText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#7C3AED',
-  },
-  logoPlusText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#7C3AED',
+  logo: {
+    width: 100,
+    height: 35,
   },
   closeButton: {
     padding: 4,
