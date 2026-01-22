@@ -18,11 +18,10 @@ export interface UserShiftPlan {
 export interface ShiftPlan {
   id: number;
   name: string;
-  shiftType: string;
-  startTime: string;
-  endTime: string;
-  workDays: string;
+  startDate: string;
+  endDate: string;
   isActive: boolean;
+  organizationId: number;
 }
 
 export interface ShiftChangeRequest {
@@ -58,7 +57,7 @@ export const shiftService = {
 
   async getShiftPlans(): Promise<ShiftPlan[]> {
     try {
-      const response = await apiClient.get('/shift/list-shiftplans');
+      const response = await apiClient.get('/shift/list-shiftplan');
       return (response as any)?.data || [];
     } catch (error: any) {
       if (error.isAuthError) {

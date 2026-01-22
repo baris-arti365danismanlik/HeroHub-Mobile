@@ -21,6 +21,7 @@ interface ShiftChangeModalProps {
   onClose: () => void;
   onSubmit: (data: ShiftChangeData) => Promise<void>;
   currentShiftPlanId?: number;
+  currentShiftPlanName?: string;
 }
 
 export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
@@ -28,6 +29,7 @@ export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
   onClose,
   onSubmit,
   currentShiftPlanId,
+  currentShiftPlanName,
 }) => {
   const [shiftPlans, setShiftPlans] = useState<ShiftPlan[]>([]);
   const [selectedShiftPlanId, setSelectedShiftPlanId] = useState<number | null>(null);
@@ -104,16 +106,26 @@ export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
                 <Text style={styles.loadingText}>Vardiya planları yükleniyor...</Text>
               </View>
             ) : (
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>
-                  Vardiya Planı <Text style={styles.required}>*</Text>
-                </Text>
+              <>
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Mevcut Vardiya</Text>
+                  <View style={styles.disabledInput}>
+                    <Text style={styles.disabledInputText}>
+                      {currentShiftPlanName || 'Belirlenmemiş'}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>
+                    Vardiya Planı <Text style={styles.required}>*</Text>
+                  </Text>
                 <TouchableOpacity
                   style={styles.dropdown}
                   onPress={() => setShowDropdown(!showDropdown)}
                 >
                   <Text style={selectedPlan ? styles.dropdownText : styles.dropdownPlaceholder}>
-                    {selectedPlan ? `${selectedPlan.name} (${selectedPlan.startTime} - ${selectedPlan.endTime})` : 'Vardiya planı seçin'}
+                    {selectedPlan ? selectedPlan.name : 'Vardiya planı seçin'}
                   </Text>
                   <ChevronDown size={20} color="#666" />
                 </TouchableOpacity>
@@ -138,12 +150,7 @@ export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
                               setShowDropdown(false);
                             }}
                           >
-                            <View>
-                              <Text style={styles.dropdownItemTitle}>{plan.name}</Text>
-                              <Text style={styles.dropdownItemSubtitle}>
-                                {plan.startTime} - {plan.endTime}
-                              </Text>
-                            </View>
+                            <Text style={styles.dropdownItemTitle}>{plan.name}</Text>
                           </TouchableOpacity>
                         ))
                       )}
@@ -151,6 +158,7 @@ export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
                   </View>
                 )}
               </View>
+              </>
             )}
           </View>
 
@@ -160,7 +168,7 @@ export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
               onPress={handleClose}
               disabled={isSubmitting}
             >
-              <Text style={styles.cancelButtonText}>İptal</Text>
+              <Text style={styles.cancelButtonText}>Vazgeç</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.submitButton, (isSubmitting || isLoading) && styles.submitButtonDisabled]}
@@ -170,7 +178,7 @@ export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
               {isSubmitting ? (
                 <ActivityIndicator color="#fff" size="small" />
               ) : (
-                <Text style={styles.submitButtonText}>Talep Gönder</Text>
+                <Text style={styles.submitButtonText}>Kaydet</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -234,6 +242,17 @@ const styles = StyleSheet.create({
   },
   required: {
     color: '#EF4444',
+  },
+  disabledInput: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  disabledInputText: {
+    fontSize: 14,
+    color: '#6B7280',
   },
   dropdown: {
     backgroundColor: '#fff',
