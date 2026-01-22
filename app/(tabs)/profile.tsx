@@ -2373,9 +2373,6 @@ export default function ProfileScreen() {
                 details={[
                   { label: 'Okul', value: education.schoolName },
                   { label: 'Bölüm', value: education.department },
-                  { label: 'Başlangıç', value: formatDate(education.startDate) },
-                  { label: 'Bitiş', value: formatDate(education.endDate) },
-                  { label: 'Not Ortalaması', value: `${education.gpa}/${education.gpaSystem}` },
                 ]}
               />
             ))
