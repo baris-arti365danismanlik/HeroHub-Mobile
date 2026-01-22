@@ -94,11 +94,12 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
       const detail = await notificationService.getNotificationDetail(notificationId);
       setSelectedNotification(detail);
 
-      if (detail.inboxComponentType === 1 && detail.data) {
+      if ((detail.inboxComponentType === 1 || detail.inboxComponentType === 4) && detail.data) {
         try {
           const leaveData = JSON.parse(detail.data) as LeaveRequestNotificationData;
-          if (leaveData.RequesterUserId) {
-            const badgeInfo = await userService.getBadgeCardInfo(leaveData.RequesterUserId);
+          const userId = leaveData.RequesterUserId || leaveData.TargetUserId;
+          if (userId) {
+            const badgeInfo = await userService.getBadgeCardInfo(userId);
             setRequesterInfo({
               name: badgeInfo.fullName || `${badgeInfo.firstName} ${badgeInfo.lastName}`,
               title: badgeInfo.title || '',
@@ -211,7 +212,7 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
 
     const senderPhotoUrl = normalizePhotoUrl(selectedNotification.senderImageUrl);
     const isSurvey = selectedNotification.inboxComponentType === 7;
-    const isLeaveRequest = selectedNotification.inboxComponentType === 1;
+    const isLeaveRequest = selectedNotification.inboxComponentType === 1 || selectedNotification.inboxComponentType === 4;
 
     let leaveRequestData: LeaveRequestNotificationData | null = null;
     if (isLeaveRequest && selectedNotification.data) {
@@ -228,7 +229,9 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
           <TouchableOpacity onPress={handleBackFromDetail} style={styles.backButton}>
             <ChevronLeft size={24} color="#1a1a1a" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>GELEN KUTUSU</Text>
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {isLeaveRequest ? selectedNotification.title : 'GELEN KUTUSU'}
+          </Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -263,10 +266,6 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
 
           {isLeaveRequest && leaveRequestData && (
             <>
-              <View style={styles.detailContent}>
-                <Text style={styles.detailTitle}>{selectedNotification.title}</Text>
-                <Text style={styles.detailMessage}>{selectedNotification.message}</Text>
-              </View>
 
               {requesterInfo && (
                 <View style={styles.requesterCard}>
@@ -330,7 +329,7 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
                 )}
               </View>
 
-              {leaveRequestData.Status === DayOffStatus.Pending && (
+              {selectedNotification.inboxComponentType === 1 && leaveRequestData.Status === DayOffStatus.Pending && (
                 <View style={styles.actionButtons}>
                   <TouchableOpacity style={styles.rejectButton}>
                     <Text style={styles.rejectButtonText}>Vazgeç</Text>
@@ -480,6 +479,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: '#fff',
+  },
+  backButton: {
+    padding: 4,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    textAlign: 'center',
+    marginHorizontal: 8,
   },
   menuButton: {
     padding: 4,

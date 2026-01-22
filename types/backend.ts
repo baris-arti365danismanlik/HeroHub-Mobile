@@ -873,7 +873,12 @@ export interface LeaveRequestNotificationData {
   Reason?: string;
   Status?: number;
   RequesterUserId?: number;
+  TargetUserId?: number;
   ApproverUserId?: number;
+  RequestedDate?: string;
+  ApproverMemo?: string | null;
+  ApproverUserName?: string;
+  ApproveDate?: string;
 }
 
 export interface TrainingStatus {
