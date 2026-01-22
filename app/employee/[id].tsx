@@ -582,7 +582,7 @@ export default function EmployeeDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F7F7F9',
   },
   loadingContainer: {
     flex: 1,

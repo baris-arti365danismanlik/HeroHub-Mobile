@@ -128,7 +128,7 @@ export default function PlusAdminScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F7F7F9',
   },
   header: {
     flexDirection: 'row',

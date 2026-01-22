@@ -4277,13 +4277,13 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#F7F7F9',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#F7F7F9',
   },
   loadingText: {
     marginTop: 16,
@@ -6226,7 +6226,7 @@ const styles = StyleSheet.create({
   },
   onboardingContainer: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F7F7F9',
   },
   onboardingUserCard: {
     backgroundColor: '#fff',

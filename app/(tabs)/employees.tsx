@@ -503,7 +503,7 @@ export default function EmployeesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F7F7F9',
   },
   dropdownOverlay: {
     position: 'absolute',
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
   },
   treeContainer: {
     padding: 20,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F7F7F9',
     alignItems: 'center',
     minWidth: '100%',
   },
