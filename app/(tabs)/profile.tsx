@@ -16,6 +16,7 @@ import { AddCertificateModal, CertificateData } from '@/components/AddCertificat
 import { AddLanguageModal, LanguageData } from '@/components/AddLanguageModal';
 import { AddVisaModal, VisaData } from '@/components/AddVisaModal';
 import { AddDriverLicenseModal, DriverLicenseData } from '@/components/AddDriverLicenseModal';
+import { ShiftChangeModal, ShiftChangeData } from '@/components/ShiftChangeModal';
 import { assetService } from '@/services/asset.service';
 import { leaveService } from '@/services/leave.service';
 import { inboxService } from '@/services/inbox.service';
@@ -110,6 +111,7 @@ export default function ProfileScreen() {
   const [addLanguageModalVisible, setAddLanguageModalVisible] = useState(false);
   const [addVisaModalVisible, setAddVisaModalVisible] = useState(false);
   const [addDriverLicenseModalVisible, setAddDriverLicenseModalVisible] = useState(false);
+  const [shiftChangeModalVisible, setShiftChangeModalVisible] = useState(false);
   const [leaveModalVisible, setLeaveModalVisible] = useState(false);
   const [leaveSuccessModalVisible, setLeaveSuccessModalVisible] = useState(false);
   const [leaveForm, setLeaveForm] = useState({
@@ -3024,6 +3026,22 @@ export default function ProfileScreen() {
     );
   };
 
+  const handleShiftChange = async (data: ShiftChangeData) => {
+    try {
+      await shiftService.createShiftChangeRequest({
+        current_shift_type: data.currentShiftType,
+        requested_shift_type: data.requestedShiftType,
+        reason: data.reason,
+        effective_date: data.effectiveDate,
+      });
+      setShiftChangeModalVisible(false);
+      alert('Vardiya değişikliği talebiniz başarıyla gönderildi.');
+    } catch (error) {
+      console.error('Error creating shift change request:', error);
+      alert('Vardiya değişikliği talebi gönderilemedi.');
+    }
+  };
+
   const renderPDKSSection = () => {
     if (pdksLoading) {
       return (
@@ -3049,17 +3067,25 @@ export default function ProfileScreen() {
     return (
       <View style={styles.pdksSection}>
         {hasShiftPlan && (
-          <View style={styles.pdksInfoGrid}>
-            <Text style={styles.pdksSectionTitle}>Mevcut Vardiya</Text>
-            <View style={styles.pdksInfoRow}>
-              <Text style={styles.pdksInfoLabel}>Mevcut Tip</Text>
-              <Text style={styles.pdksInfoValue}>{userShiftPlan.shiftType || 'Sabah Vardiyası'}</Text>
+          <>
+            <View style={styles.pdksInfoGrid}>
+              <Text style={styles.pdksSectionTitle}>Mevcut Vardiya</Text>
+              <View style={styles.pdksInfoRow}>
+                <Text style={styles.pdksInfoLabel}>Mevcut Tip</Text>
+                <Text style={styles.pdksInfoValue}>{userShiftPlan.shiftType || 'Sabah Vardiyası'}</Text>
+              </View>
+              <View style={styles.pdksInfoRow}>
+                <Text style={styles.pdksInfoLabel}>Çalışma Saatleri</Text>
+                <Text style={styles.pdksInfoValue}>{userShiftPlan.startTime || '08:00'} - {userShiftPlan.endTime || '19:00'}</Text>
+              </View>
             </View>
-            <View style={styles.pdksInfoRow}>
-              <Text style={styles.pdksInfoLabel}>Çalışma Saatleri</Text>
-              <Text style={styles.pdksInfoValue}>{userShiftPlan.startTime || '08:00'} - {userShiftPlan.endTime || '19:00'}</Text>
-            </View>
-          </View>
+            <TouchableOpacity
+              style={styles.shiftChangeButton}
+              onPress={() => setShiftChangeModalVisible(true)}
+            >
+              <Text style={styles.shiftChangeButtonText}>Vardiya Değiştir</Text>
+            </TouchableOpacity>
+          </>
         )}
 
         {renderCalendar()}
@@ -4663,6 +4689,13 @@ export default function ProfileScreen() {
         visible={addDriverLicenseModalVisible}
         onClose={() => setAddDriverLicenseModalVisible(false)}
         onSubmit={handleSubmitDriverLicense}
+      />
+
+      <ShiftChangeModal
+        visible={shiftChangeModalVisible}
+        onClose={() => setShiftChangeModalVisible(false)}
+        onSubmit={handleShiftChange}
+        currentShiftType={userShiftPlan?.shiftType}
       />
 
       <Modal
@@ -6280,6 +6313,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#1a1a1a',
+  },
+  shiftChangeButton: {
+    backgroundColor: '#7C3AED',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  shiftChangeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   calendarContainer: {
     marginTop: 24,
