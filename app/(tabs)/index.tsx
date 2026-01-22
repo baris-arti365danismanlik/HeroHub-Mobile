@@ -20,7 +20,7 @@ import type {
   UserAgendaItem,
   UserTrainingStatus,
 } from '@/services/home.service';
-import { Calendar, Clock, FileText, Menu, Bell, MessageSquare, User as UserIcon, Users, BookOpen, TrendingUp, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
+import { Calendar, Clock, FileText, Menu, Mail, MessageSquare, User as UserIcon, Users, BookOpen, TrendingUp, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
 import { ProfileMenu } from '@/components/ProfileMenu';
@@ -130,23 +130,14 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.headerActions}>
-              <TouchableOpacity style={styles.iconButton}>
-                <Bell size={20} color="#1a1a1a" />
-                {notificationCount > 0 && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{notificationCount}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-
               <TouchableOpacity
                 style={styles.iconButton}
                 onPress={() => setInboxVisible(true)}
               >
-                <MessageSquare size={20} color="#1a1a1a" />
-                {unreadCount > 0 && (
+                <Mail size={20} color="#1a1a1a" />
+                {notificationCount > 0 && (
                   <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{unreadCount}</Text>
+                    <Text style={styles.badgeText}>{notificationCount}</Text>
                   </View>
                 )}
               </TouchableOpacity>
