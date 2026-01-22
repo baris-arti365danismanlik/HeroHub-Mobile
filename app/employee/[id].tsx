@@ -268,12 +268,11 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditProfile}
             onEdit={() => handleEditSection('personal')}
           >
-            <View style={[styles.infoRowContainer, styles.personnelRow]}>
-              <Text style={styles.infoRowLabel}>Personel No</Text>
-              <Text style={styles.personnelNoValue}>{employee.personalInformation?.personnelNumber || '-'}</Text>
-            </View>
-            <View style={styles.infoRowContainer}>
-              <Text style={styles.infoRowLabel}>Status</Text>
+            <View style={[styles.infoRowContainer, styles.personnelStatusRow]}>
+              <View style={styles.personnelBadge}>
+                <Text style={styles.personnelNoLabel}>Personel No: </Text>
+                <Text style={styles.personnelNoValue}>{employee.personalInformation?.personnelNumber || '-'}</Text>
+              </View>
               <View style={[styles.statusBadge, employee.userStatus === 1 ? styles.statusBadgeActive : styles.statusBadgeInactive]}>
                 <Text style={[styles.statusBadgeText, employee.userStatus === 1 ? styles.statusBadgeTextActive : styles.statusBadgeTextInactive]}>
                   {employee.userStatus === 1 ? 'Aktif' : 'Pasif'}
@@ -744,21 +743,36 @@ const styles = StyleSheet.create({
   visaCardBody: {
     gap: 4,
   },
-  personnelRow: {
-    backgroundColor: '#F0F9FF',
+  personnelStatusRow: {
+    backgroundColor: 'transparent',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  personnelBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#D1FAE5',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    flex: 1,
+  },
+  personnelNoLabel: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#1a1a1a',
   },
   personnelNoValue: {
     fontSize: 14,
     fontWeight: '600',
     color: '#1a1a1a',
-    textAlign: 'right',
-    flex: 1,
-    marginLeft: 16,
   },
   statusBadge: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 8,
     borderRadius: 6,
+    marginLeft: 8,
   },
   statusBadgeActive: {
     backgroundColor: '#D1FAE5',
