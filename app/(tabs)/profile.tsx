@@ -717,6 +717,7 @@ export default function ProfileScreen() {
         employmentService.getCities(1),
       ]);
 
+      console.log('Salary Data:', salaryData);
       setWorkingInformation(workingInfo);
       setPositions(positionsData);
       setUserSalary(salaryData);
@@ -726,6 +727,7 @@ export default function ProfileScreen() {
       setWorkplaces(workplacesData);
       setCities(citiesData);
     } catch (error) {
+      console.error('Employment data load error:', error);
     } finally {
       setEmploymentLoading(false);
     }
@@ -1821,7 +1823,11 @@ export default function ProfileScreen() {
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color="#7C3AED" />
             </View>
-          ) : userSalary && userSalary.salary ? (
+          ) : (() => {
+            console.log('UserSalary state:', userSalary);
+            console.log('Has salary?', userSalary && userSalary.salary);
+            return userSalary && userSalary.salary;
+          })() ? (
             <View style={styles.positionSection}>
               <View style={styles.positionHeader}>
                 <Text style={styles.positionTitle}>

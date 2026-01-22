@@ -42,11 +42,14 @@ export const employmentService = {
 
   async getUserSalary(userId: number): Promise<UserSalary | null> {
     try {
+      console.log('Getting salary for userId:', userId);
       const response = await apiClient.get<UserSalary>(
         `/userEmployment/get-userSalary?userId=${userId}`
       );
+      console.log('Salary API response:', response);
       return response.data || null;
     } catch (error: any) {
+      console.error('Salary API error:', error);
       if (error.isAuthError) {
         throw error;
       }
