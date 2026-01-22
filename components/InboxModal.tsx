@@ -224,7 +224,7 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
     }
 
     return (
-      <>
+      <View style={{ flex: 1 }}>
         <View style={styles.headerBar}>
           <TouchableOpacity onPress={handleBackFromDetail} style={styles.backButton}>
             <ChevronLeft size={24} color="#1a1a1a" />
@@ -235,7 +235,11 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
           <View style={{ width: 40 }} />
         </View>
 
-        <ScrollView style={styles.detailContainer}>
+        <ScrollView
+          style={styles.detailContainer}
+          contentContainerStyle={styles.detailScrollContent}
+          showsVerticalScrollIndicator={true}
+        >
           <View style={styles.detailHeader}>
             {senderPhotoUrl ? (
               <Image
@@ -321,12 +325,12 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
                   <Text style={styles.leaveDetailValue}>{leaveRequestData.CountOfDays} Gün</Text>
                 </View>
 
-                {leaveRequestData.Reason && (
-                  <View style={styles.leaveDetailItem}>
-                    <Text style={styles.leaveDetailLabel}>Not</Text>
-                    <Text style={styles.leaveDetailValue}>{leaveRequestData.Reason}</Text>
-                  </View>
-                )}
+                <View style={[styles.leaveDetailItem, { marginBottom: 0 }]}>
+                  <Text style={styles.leaveDetailLabel}>Not</Text>
+                  <Text style={styles.leaveDetailValue}>
+                    {leaveRequestData.Reason || 'Not varsa buraya gelecek.'}
+                  </Text>
+                </View>
               </View>
 
               {selectedNotification.inboxComponentType === 1 && leaveRequestData.Status === DayOffStatus.Pending && (
@@ -349,7 +353,7 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
             </TouchableOpacity>
           )}
         </ScrollView>
-      </>
+      </View>
     );
   };
 
@@ -603,6 +607,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  detailScrollContent: {
+    paddingBottom: 60,
+  },
   detailHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -773,6 +780,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     marginHorizontal: 20,
     marginTop: 20,
+    marginBottom: 20,
     padding: 20,
     borderRadius: 12,
     borderWidth: 1,
