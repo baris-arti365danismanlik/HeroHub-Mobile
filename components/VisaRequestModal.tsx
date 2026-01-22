@@ -52,26 +52,21 @@ const VISA_TYPES = [
 
 export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaRequestModalProps) {
   const [countries, setCountries] = useState<any[]>([]);
-  const [cities, setCities] = useState<any[]>([]);
   const [selectedVisaTypeId, setSelectedVisaTypeId] = useState<number | null>(null);
   const [selectedVisaType, setSelectedVisaType] = useState<string>('');
   const [selectedCountryId, setSelectedCountryId] = useState<number | null>(null);
   const [selectedCountryName, setSelectedCountryName] = useState<string>('');
-  const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
-  const [selectedCityName, setSelectedCityName] = useState<string>('');
   const [entryDate, setEntryDate] = useState<string>('');
   const [exitDate, setExitDate] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [showVisaTypeDropdown, setShowVisaTypeDropdown] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
-  const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [showEntryDatePicker, setShowEntryDatePicker] = useState(false);
   const [showExitDatePicker, setShowExitDatePicker] = useState(false);
 
   useEffect(() => {
     if (visible) {
       loadCountries();
-      loadCities();
     }
   }, [visible]);
 
@@ -81,15 +76,6 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
       setCountries(data);
     } catch (error) {
       console.error('Error loading countries:', error);
-    }
-  };
-
-  const loadCities = async () => {
-    try {
-      const data = await userService.getCities(1);
-      setCities(data);
-    } catch (error) {
-      console.error('Error loading cities:', error);
     }
   };
 
@@ -106,8 +92,8 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
       countryName: selectedCountryName,
       entryDate,
       exitDate,
-      cityId: selectedCityId || 0,
-      cityName: selectedCityName,
+      cityId: 0,
+      cityName: '',
       notes,
     });
 
@@ -119,14 +105,11 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
     setSelectedVisaType('');
     setSelectedCountryId(null);
     setSelectedCountryName('');
-    setSelectedCityId(null);
-    setSelectedCityName('');
     setEntryDate('');
     setExitDate('');
     setNotes('');
     setShowVisaTypeDropdown(false);
     setShowCountryDropdown(false);
-    setShowCityDropdown(false);
     setShowEntryDatePicker(false);
     setShowExitDatePicker(false);
     onClose();
@@ -155,7 +138,6 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 onPress={() => {
                   setShowVisaTypeDropdown(!showVisaTypeDropdown);
                   setShowCountryDropdown(false);
-                  setShowCityDropdown(false);
                 }}
               >
                 <Text style={selectedVisaType ? styles.dropdownText : styles.dropdownPlaceholder}>
@@ -191,7 +173,6 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 onPress={() => {
                   setShowCountryDropdown(!showCountryDropdown);
                   setShowVisaTypeDropdown(false);
-                  setShowCityDropdown(false);
                 }}
               >
                 <Text style={selectedCountryName ? styles.dropdownText : styles.dropdownPlaceholder}>
@@ -260,42 +241,6 @@ export function VisaRequestModal({ visible, onClose, userId, onSubmit }: VisaReq
                 }}
                 initialDate={exitDate}
               />
-            </View>
-
-            <View style={[styles.fieldContainer, showCityDropdown && { zIndex: 998 }]}>
-              <Text style={styles.label}>Evragın İletileceği İl</Text>
-              <TouchableOpacity
-                style={styles.dropdown}
-                onPress={() => {
-                  setShowCityDropdown(!showCityDropdown);
-                  setShowVisaTypeDropdown(false);
-                  setShowCountryDropdown(false);
-                }}
-              >
-                <Text style={selectedCityName ? styles.dropdownText : styles.dropdownPlaceholder}>
-                  {selectedCityName || 'Seçiniz'}
-                </Text>
-                <ChevronDown size={20} color="#999" />
-              </TouchableOpacity>
-              {showCityDropdown && (
-                <View style={[styles.dropdownListContainer, { maxHeight: 200 }]}>
-                  <ScrollView style={styles.dropdownList} nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                    {cities.map((city) => (
-                      <TouchableOpacity
-                        key={city.id}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setSelectedCityId(city.id);
-                          setSelectedCityName(city.name);
-                          setShowCityDropdown(false);
-                        }}
-                      >
-                        <Text style={styles.dropdownItemText}>{city.name}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
             </View>
 
             <View style={styles.fieldContainer}>
