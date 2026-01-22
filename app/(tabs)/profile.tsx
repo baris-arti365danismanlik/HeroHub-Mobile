@@ -2973,6 +2973,10 @@ export default function ProfileScreen() {
   };
 
   const renderFilesSection = () => {
+    console.log('renderFilesSection called, documents count:', documents.length);
+    console.log('Current folder ID:', currentFolderId);
+    console.log('Documents:', documents);
+
     const files = documents.map(doc => ({
       id: doc.id,
       name: doc.name,
