@@ -1,4 +1,4 @@
-import { Gender, BloodType, MaritalStatus, EducationLevel, DriverLicenseClass } from '@/types/backend';
+import { Gender, BloodType, MaritalStatus, EducationLevel, DriverLicenseClass, FamilyRelation } from '@/types/backend';
 
 export const formatGender = (gender?: Gender): string => {
   if (gender === undefined) return '-';
@@ -109,6 +109,26 @@ export const formatDriverLicenseClass = (licenseClass?: number): string => {
       return 'F';
     case DriverLicenseClass.G:
       return 'G';
+    default:
+      return '-';
+  }
+};
+
+export const formatFamilyRelation = (relation?: number): string => {
+  if (relation === undefined) return '-';
+  switch (relation) {
+    case FamilyRelation.Mother:
+      return 'Anne';
+    case FamilyRelation.Father:
+      return 'Baba';
+    case FamilyRelation.Spouse:
+      return 'Eş';
+    case FamilyRelation.Child:
+      return 'Çocuk';
+    case FamilyRelation.Sibling:
+      return 'Kardeş';
+    case FamilyRelation.Other:
+      return 'Diğer';
     default:
       return '-';
   }

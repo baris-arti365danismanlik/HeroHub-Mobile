@@ -71,7 +71,8 @@ import {
   formatDate,
   formatPhone,
   formatEducationLevel,
-  formatDriverLicenseClass
+  formatDriverLicenseClass,
+  formatFamilyRelation
 } from '@/utils/formatters';
 
 export default function ProfileScreen() {
@@ -2471,9 +2472,10 @@ export default function ProfileScreen() {
           {profileDetails.userFamilies.length > 0 ? (
             profileDetails.userFamilies.map((family, index) => (
               <View key={family.id}>
-                <InfoRow label="Ad Soyad" value={`${family.firstName} ${family.lastName}`} />
-                <InfoRow label="Yakınlık" value={family.relation || '-'} />
-                <InfoRow label="Doğum Tarihi" value={formatDate(family.birthDate)} />
+                <View style={styles.licenseHeaderContainer}>
+                  <Text style={styles.licenseHeader}>{formatFamilyRelation(family.relation)}</Text>
+                </View>
+                <InfoRow label="Adı Soyadı" value={`${family.firstName} ${family.lastName}`} />
                 <InfoRow label="Telefon" value={formatPhone(family.phoneNumber) || '-'} isLast={index === profileDetails.userFamilies.length - 1} />
               </View>
             ))

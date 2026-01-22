@@ -122,6 +122,18 @@ class UserService {
       }
     }
 
+    if (profileData.userFamilies && Array.isArray(profileData.userFamilies)) {
+      profileData.userFamilies = profileData.userFamilies.map((family: any) => ({
+        id: family.userFamilyId,
+        userId: family.userId,
+        firstName: family.name || '',
+        lastName: family.lastname || '',
+        phoneNumber: family.phone || '',
+        birthDate: family.birthdate || '',
+        relation: family.relation ?? 0,
+      }));
+    }
+
     return profileData as UserProfileDetails;
   }
 
