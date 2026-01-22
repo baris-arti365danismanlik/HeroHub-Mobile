@@ -2203,9 +2203,8 @@ export default function ProfileScreen() {
               <InfoRow
                 label="Durum"
                 value={userMilitary?.militaryStatus === 0 ? 'Yapıldı' : userMilitary?.militaryStatus === 1 ? 'Ertelendi' : userMilitary?.militaryStatus === 2 ? 'Muaf' : 'Uygulanmaz'}
+                isLast
               />
-              <InfoRow label="Erteleme Nedeni" value={userMilitary?.militaryPostpone || '-'} />
-              <InfoRow label="Not" value={userMilitary?.militaryNote || '-'} isLast />
             </View>
           )}
         </View>
