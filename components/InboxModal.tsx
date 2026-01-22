@@ -18,6 +18,7 @@ import { normalizePhotoUrl } from '@/utils/formatters';
 import { SurveyModal } from './SurveyModal';
 import { DrawerMenu } from './DrawerMenu';
 import { ProfileMenu } from './ProfileMenu';
+import { userService } from '@/services/user.service';
 
 interface InboxModalProps {
   visible: boolean;
@@ -39,6 +40,12 @@ export function InboxModal({ visible, onClose, backendUserId, userName, profileP
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
+  const [requesterInfo, setRequesterInfo] = useState<{
+    name: string;
+    title: string;
+    photo: string;
+    dayOffBalance: number;
+  } | null>(null);
 
   useEffect(() => {
     if (visible && backendUserId) {
@@ -69,11 +76,37 @@ export function InboxModal({ visible, onClose, backendUserId, userName, profileP
     return date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
+  const formatDateWithDay = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const dateFormatted = date.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const dayName = date.toLocaleDateString('tr-TR', { weekday: 'long' });
+    const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+    return `${dateFormatted} - ${capitalizedDay}`;
+  };
+
   const handleNotificationClick = async (notificationId: number) => {
     try {
       setLoadingDetail(true);
+      setRequesterInfo(null);
       const detail = await notificationService.getNotificationDetail(notificationId);
       setSelectedNotification(detail);
+
+      if (detail.inboxComponentType === 1 && detail.data) {
+        try {
+          const leaveData = JSON.parse(detail.data) as LeaveRequestNotificationData;
+          if (leaveData.RequesterUserId) {
+            const badgeInfo = await userService.getBadgeCardInfo(leaveData.RequesterUserId);
+            setRequesterInfo({
+              name: badgeInfo.fullName || `${badgeInfo.firstName} ${badgeInfo.lastName}`,
+              title: badgeInfo.title || '',
+              photo: normalizePhotoUrl(badgeInfo.profilePhoto),
+              dayOffBalance: badgeInfo.dayOffBalance || 0,
+            });
+          }
+        } catch (error) {
+          console.error('Error loading requester info:', error);
+        }
+      }
 
       if (!detail.isRead) {
         await notificationService.markAsRead(notificationId);
@@ -93,6 +126,7 @@ export function InboxModal({ visible, onClose, backendUserId, userName, profileP
 
   const handleBackFromDetail = () => {
     setSelectedNotification(null);
+    setRequesterInfo(null);
   };
 
   const handleOpenSurvey = () => {
@@ -211,70 +245,97 @@ export function InboxModal({ visible, onClose, backendUserId, userName, profileP
             )}
             <View style={styles.senderInfo}>
               <Text style={styles.senderName}>{selectedNotification.senderUserFullname}</Text>
-              <Text style={styles.notificationDate}>{formatDate(selectedNotification.updatedAt)}</Text>
+              <Text style={styles.notificationDate}>
+                {new Date(selectedNotification.updatedAt).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+              </Text>
             </View>
           </View>
 
-          <View style={styles.detailContent}>
-            <Text style={styles.detailTitle}>{selectedNotification.title}</Text>
-            <Text style={styles.detailMessage}>{selectedNotification.message}</Text>
-          </View>
+          {!isLeaveRequest && (
+            <View style={styles.detailContent}>
+              <Text style={styles.detailTitle}>{selectedNotification.title}</Text>
+              <Text style={styles.detailMessage}>{selectedNotification.message}</Text>
+            </View>
+          )}
 
-          {isLeaveRequest && leaveRequestData && (
-            <View style={styles.leaveRequestCard}>
-              <View style={styles.leaveRequestHeader}>
-                <Text style={styles.leaveRequestTitle}>İzin Talebi Detayları</Text>
-                <View style={[
-                  styles.leaveStatusBadge,
-                  { backgroundColor: getDayOffStatusColor(leaveRequestData.Status) }
-                ]}>
-                  <Text style={styles.leaveStatusText}>
-                    {getDayOffStatusName(leaveRequestData.Status)}
-                  </Text>
+          {isLeaveRequest && leaveRequestData && requesterInfo && (
+            <>
+              <View style={styles.detailContent}>
+                <Text style={styles.detailTitle}>{selectedNotification.title}</Text>
+                <Text style={styles.detailMessage}>{selectedNotification.message}</Text>
+              </View>
+
+              <View style={styles.requesterCard}>
+                {requesterInfo.photo ? (
+                  <Image
+                    source={{ uri: requesterInfo.photo }}
+                    style={styles.requesterPhoto}
+                  />
+                ) : (
+                  <View style={styles.requesterPhotoPlaceholder}>
+                    <Text style={styles.requesterInitial}>
+                      {requesterInfo.name.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+                <View style={styles.requesterInfo}>
+                  <Text style={styles.requesterName}>{requesterInfo.name}</Text>
+                  <Text style={styles.requesterTitle}>{requesterInfo.title}</Text>
+                </View>
+                <View style={styles.balanceBadge}>
+                  <Text style={styles.balanceBadgeLabel}>İZİN BAKİYESİ</Text>
+                  <Text style={styles.balanceBadgeValue}>{requesterInfo.dayOffBalance} Gün</Text>
                 </View>
               </View>
 
-              <View style={styles.leaveRequestInfo}>
-                <View style={styles.leaveInfoRow}>
-                  <Text style={styles.leaveInfoLabel}>İzin Tipi:</Text>
-                  <Text style={styles.leaveInfoValue}>
+              <View style={styles.leaveDetailSection}>
+                <Text style={styles.leaveDetailTitle}>İZİN DETAYI</Text>
+
+                <View style={styles.leaveDetailItem}>
+                  <Text style={styles.leaveDetailLabel}>İzin Türü</Text>
+                  <Text style={styles.leaveDetailValue}>
                     {getDayOffTypeName(leaveRequestData.DayOffType)}
                   </Text>
                 </View>
 
-                <View style={styles.leaveInfoRow}>
-                  <Text style={styles.leaveInfoLabel}>Başlangıç Tarihi:</Text>
-                  <Text style={styles.leaveInfoValue}>
-                    {leaveRequestData.StartDate
-                      ? new Date(leaveRequestData.StartDate).toLocaleDateString('tr-TR')
-                      : '-'}
+                <View style={styles.leaveDetailItem}>
+                  <Text style={styles.leaveDetailLabel}>Başlangıç Tarihi</Text>
+                  <Text style={styles.leaveDetailValue}>
+                    {leaveRequestData.StartDate ? formatDateWithDay(leaveRequestData.StartDate) : '-'}
                   </Text>
                 </View>
 
-                <View style={styles.leaveInfoRow}>
-                  <Text style={styles.leaveInfoLabel}>Bitiş Tarihi:</Text>
-                  <Text style={styles.leaveInfoValue}>
-                    {leaveRequestData.EndDate
-                      ? new Date(leaveRequestData.EndDate).toLocaleDateString('tr-TR')
-                      : '-'}
+                <View style={styles.leaveDetailItem}>
+                  <Text style={styles.leaveDetailLabel}>Bitiş Tarihi</Text>
+                  <Text style={styles.leaveDetailValue}>
+                    {leaveRequestData.EndDate ? formatDateWithDay(leaveRequestData.EndDate) : '-'}
                   </Text>
                 </View>
 
-                <View style={styles.leaveInfoRow}>
-                  <Text style={styles.leaveInfoLabel}>Süre:</Text>
-                  <Text style={styles.leaveInfoValue}>
-                    {leaveRequestData.CountOfDays} gün
-                  </Text>
+                <View style={styles.leaveDetailItem}>
+                  <Text style={styles.leaveDetailLabel}>Süre</Text>
+                  <Text style={styles.leaveDetailValue}>{leaveRequestData.CountOfDays} Gün</Text>
                 </View>
 
                 {leaveRequestData.Reason && (
-                  <View style={styles.leaveReasonSection}>
-                    <Text style={styles.leaveInfoLabel}>Açıklama:</Text>
-                    <Text style={styles.leaveReasonText}>{leaveRequestData.Reason}</Text>
+                  <View style={styles.leaveDetailItem}>
+                    <Text style={styles.leaveDetailLabel}>Not</Text>
+                    <Text style={styles.leaveDetailValue}>{leaveRequestData.Reason}</Text>
                   </View>
                 )}
               </View>
-            </View>
+
+              {leaveRequestData.Status === DayOffStatus.Pending && (
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity style={styles.rejectButton}>
+                    <Text style={styles.rejectButtonText}>Vazgeç</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.approveButton}>
+                    <Text style={styles.approveButtonText}>Onayla</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </>
           )}
 
           {isSurvey && (
@@ -652,68 +713,126 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#1a1a1a',
   },
-  leaveRequestCard: {
-    backgroundColor: '#F9FAFB',
+  requesterCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
     marginHorizontal: 20,
-    marginTop: 24,
-    marginBottom: 20,
+    marginTop: 20,
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+  },
+  requesterPhoto: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
+  requesterPhotoPlaceholder: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  requesterInitial: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  requesterInfo: {
+    flex: 1,
+  },
+  requesterName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#7C3AED',
+    marginBottom: 4,
+  },
+  requesterTitle: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  balanceBadge: {
+    backgroundColor: '#7C3AED',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  balanceBadgeLabel: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: '#E9D5FF',
+    marginBottom: 2,
+    letterSpacing: 0.5,
+  },
+  balanceBadgeValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  leaveDetailSection: {
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    marginTop: 20,
     padding: 20,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
-  leaveRequestHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  leaveDetailTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1a1a1a',
     marginBottom: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    letterSpacing: 0.5,
   },
-  leaveRequestTitle: {
+  leaveDetailItem: {
+    marginBottom: 16,
+  },
+  leaveDetailLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 6,
+  },
+  leaveDetailValue: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    lineHeight: 20,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginHorizontal: 20,
+    marginTop: 24,
+    marginBottom: 40,
+  },
+  rejectButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#EF4444',
+    alignItems: 'center',
+  },
+  rejectButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#EF4444',
   },
-  leaveStatusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  leaveStatusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  leaveRequestInfo: {
-    gap: 12,
-  },
-  leaveInfoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  approveButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: '#10B981',
     alignItems: 'center',
   },
-  leaveInfoLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6B7280',
-  },
-  leaveInfoValue: {
-    fontSize: 14,
+  approveButtonText: {
+    fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
-  },
-  leaveReasonSection: {
-    marginTop: 4,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  leaveReasonText: {
-    fontSize: 14,
-    color: '#4B5563',
-    lineHeight: 20,
-    marginTop: 8,
+    color: '#fff',
   },
 });
