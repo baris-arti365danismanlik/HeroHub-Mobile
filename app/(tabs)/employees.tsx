@@ -504,13 +504,18 @@ export default function EmployeesScreen() {
         <View style={styles.treeViewWrapper}>
           <ScrollView
             style={styles.content}
-            contentContainerStyle={styles.treeContainer}
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={true}
+            showsHorizontalScrollIndicator={true}
           >
-            <View style={{ transform: [{ scale: zoomLevel / 100 }] }}>
-              {treeEmployees.map((employee) => renderTreeEmployee(employee, 0))}
-            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={true}
+              contentContainerStyle={styles.treeContainer}
+            >
+              <View style={{ transform: [{ scale: zoomLevel / 100 }] }}>
+                {treeEmployees.map((employee) => renderTreeEmployee(employee, 0))}
+              </View>
+            </ScrollView>
           </ScrollView>
 
           <View style={styles.zoomControls}>
@@ -786,7 +791,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#F7F7F9',
     alignItems: 'center',
-    minWidth: '100%',
   },
   treeNodeContainer: {
     alignItems: 'center',
@@ -915,7 +919,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 5,
+    elevation: 10,
+    zIndex: 1000,
     overflow: 'hidden',
   },
   zoomButton: {
