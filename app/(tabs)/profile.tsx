@@ -1694,17 +1694,6 @@ export default function ProfileScreen() {
     );
   };
 
-  const calculateWorkDuration = (startDate: string) => {
-    const start = new Date(startDate);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const years = Math.floor(diffDays / 365);
-    const months = Math.floor((diffDays % 365) / 30);
-    const days = diffDays % 30;
-    return `${years} yıl ${months} ay ${days} gün`;
-  };
-
   const renderSummarySection = () => {
     const contactInfo = profileDetails?.userContact;
     const socialMedia = profileDetails?.socialMedia;
