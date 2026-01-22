@@ -2052,36 +2052,6 @@ export default function ProfileScreen() {
 
     return (
       <>
-        <View style={styles.profileInfoCard}>
-          <View style={styles.profileInfoImageContainer}>
-            {user.profilePictureUrl ? (
-              <Image
-                source={{ uri: user.profilePictureUrl }}
-                style={styles.profileInfoImage}
-              />
-            ) : (
-              <View style={styles.profileInfoImagePlaceholder}>
-                <UserIcon size={40} color="#7C3AED" />
-              </View>
-            )}
-          </View>
-          <View style={styles.profileInfoDetails}>
-            <Text style={styles.profileInfoName}>
-              {user.firstName} {user.lastName}
-            </Text>
-            {profileDetails?.currentTitle && (
-              <View style={styles.profileInfoRow}>
-                <Briefcase size={14} color="#666" />
-                <Text style={styles.profileInfoText}>{profileDetails.currentTitle}</Text>
-              </View>
-            )}
-            <View style={styles.profileInfoRow}>
-              <Building2 size={14} color="#666" />
-              <Text style={styles.profileInfoText}>{profileDetails.organizationName}</Text>
-            </View>
-          </View>
-        </View>
-
         <View style={styles.profileSectionCard}>
           <TouchableOpacity
             style={styles.profileSectionHeader}
@@ -2526,26 +2496,6 @@ export default function ProfileScreen() {
 
     return (
       <ScrollView style={styles.onboardingContainer}>
-        <View style={styles.onboardingUserCard}>
-          <View style={styles.onboardingAvatar}>
-            <UserIcon size={40} color="#7C3AED" strokeWidth={2} />
-          </View>
-          <Text style={styles.onboardingUserName}>{userName}</Text>
-          <View style={styles.onboardingUserInfo}>
-            <Building2 size={14} color="#6B7280" />
-            <Text style={styles.onboardingUserInfoText}>{userPosition}</Text>
-          </View>
-          <View style={styles.onboardingUserInfo}>
-            <Briefcase size={14} color="#6B7280" />
-            <Text style={styles.onboardingUserInfoText}>{userOrganization}</Text>
-          </View>
-        </View>
-
-        <TouchableOpacity style={styles.onboardingDropdownButton}>
-          <Text style={styles.onboardingDropdownText}>İşe Başlama</Text>
-          <ChevronDown size={20} color="#7C3AED" strokeWidth={2} />
-        </TouchableOpacity>
-
         {onboardingLoading ? (
           <View style={styles.onboardingEmptyContainer}>
             <Briefcase size={80} color="#E5E7EB" strokeWidth={1} />

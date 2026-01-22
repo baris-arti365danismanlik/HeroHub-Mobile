@@ -250,48 +250,6 @@ export default function EmployeeDetailScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.profileHeaderCard}>
-          <View style={styles.profileAvatarContainer}>
-            {(() => {
-              const photoUrl = normalizePhotoUrl(employee.profilePhoto);
-              if (photoUrl) {
-                return (
-                  <Image
-                    source={{ uri: photoUrl }}
-                    style={styles.profileAvatar}
-                  />
-                );
-              }
-              return (
-                <View style={styles.profileAvatarPlaceholder}>
-                  <Text style={styles.profileAvatarText}>
-                    {employee.personalInformation?.firstName && employee.personalInformation?.lastName
-                      ? `${employee.personalInformation.firstName[0]}${employee.personalInformation.lastName[0]}`
-                      : '?'}
-                  </Text>
-                </View>
-              );
-            })()}
-          </View>
-          <Text style={styles.profileName}>
-            {employee.personalInformation?.firstName && employee.personalInformation?.lastName
-              ? `${employee.personalInformation.firstName} ${employee.personalInformation.lastName}`
-              : 'İsimsiz'}
-          </Text>
-          {employee.currentTitle && (
-            <View style={styles.profileBadge}>
-              <Briefcase size={14} color="#7C3AED" />
-              <Text style={styles.profileBadgeText}>{employee.currentTitle}</Text>
-            </View>
-          )}
-          {employee.organizationName && (
-            <View style={styles.profileBadge}>
-              <Building2 size={14} color="#666" />
-              <Text style={styles.profileBadgeText}>{employee.organizationName}</Text>
-            </View>
-          )}
-        </View>
-
         <View style={styles.accordionContainer}>
           <Accordion
             title="KİŞİSEL BİLGİLER"
