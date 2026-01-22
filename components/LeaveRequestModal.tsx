@@ -223,11 +223,13 @@ const styles = StyleSheet.create({
   field: {
     marginBottom: 20,
     position: 'relative',
-    zIndex: 1,
+    zIndex: 0,
+    elevation: 0,
   },
   fieldWithDropdown: {
     zIndex: 9999,
-    marginBottom: 300,
+    elevation: 9999,
+    marginBottom: 20,
   },
   label: {
     fontSize: 14,
@@ -261,14 +263,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#fff',
     zIndex: 10000,
-    elevation: 10,
+    elevation: 10000,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
   },
   dropdownScroll: {
-    maxHeight: 320,
+    maxHeight: 250,
   },
   dropdownItem: {
     paddingVertical: 14,
