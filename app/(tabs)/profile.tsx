@@ -315,6 +315,12 @@ export default function ProfileScreen() {
         return;
       }
 
+      console.log('Fetching leave data with filters:', {
+        userId: user.backend_user_id,
+        leaveType: pastDayOffsLeaveType,
+        year: pastDayOffsYear
+      });
+
       try {
         setLeaveLoading(true);
 
@@ -324,10 +330,12 @@ export default function ProfileScreen() {
           leaveService.getPastDayOffs(user.backend_user_id, pastDayOffsLeaveType, pastDayOffsYear),
         ]);
 
+        console.log('Past day offs received:', past.length);
         setDayOffBalance(balance.remainingDays);
         setIncomingDayOffs(incoming);
         setPastDayOffs(past);
       } catch (error) {
+        console.error('Error fetching leave data:', error);
       } finally {
         setLeaveLoading(false);
       }
@@ -1657,16 +1665,21 @@ export default function ProfileScreen() {
           <View style={styles.filterColumn}>
             <Text style={styles.filterLabel}>Yıl</Text>
             <TextInput
-              style={styles.filterDropdown}
+              style={styles.yearFilterInput}
               value={String(pastDayOffsYear)}
               onChangeText={(text) => {
+                if (text === '') {
+                  setPastDayOffsYear(new Date().getFullYear());
+                  return;
+                }
                 const year = parseInt(text);
-                if (!isNaN(year) && year >= 2000 && year <= 2100) {
+                if (!isNaN(year)) {
                   setPastDayOffsYear(year);
                 }
               }}
               keyboardType="number-pad"
               maxLength={4}
+              placeholder="YYYY"
             />
           </View>
         </View>
@@ -7180,5 +7193,15 @@ const styles = StyleSheet.create({
     width: '100%',
     maxHeight: 400,
     paddingVertical: 8,
+  },
+  yearFilterInput: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    fontSize: 14,
+    color: '#1a1a1a',
   },
 });
