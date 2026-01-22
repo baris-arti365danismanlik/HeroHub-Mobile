@@ -260,8 +260,6 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     borderRadius: 8,
     backgroundColor: '#fff',
-    maxHeight: 250,
-    overflow: 'hidden',
     zIndex: 1000,
     elevation: 5,
     shadowColor: '#000',
@@ -270,13 +268,14 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   dropdownScroll: {
-    maxHeight: 250,
+    maxHeight: 280,
   },
   dropdownItem: {
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+    minHeight: 44,
   },
   dropdownItemLast: {
     borderBottomWidth: 0,
