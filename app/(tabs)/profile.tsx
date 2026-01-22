@@ -807,10 +807,12 @@ export default function ProfileScreen() {
     if (!user?.backend_user_id) return;
     try {
       setDocumentsLoading(true);
+      console.log('Loading documents for folderId:', folderId);
       const docs = await documentService.getUserDocuments(
         Number(user.backend_user_id),
         folderId ?? undefined
       );
+      console.log('Documents loaded:', docs.length, docs);
       setDocuments(docs);
     } catch (error) {
       console.error('Error loading documents:', error);
@@ -820,6 +822,7 @@ export default function ProfileScreen() {
   };
 
   const handleFolderClick = (folderId: string, folderName: string) => {
+    console.log('Folder clicked:', folderId, folderName);
     const numericId = Number(folderId);
     setCurrentFolderId(numericId);
     setFolderHistory(prev => [...prev, { id: numericId, name: folderName }]);
@@ -3072,25 +3075,37 @@ export default function ProfileScreen() {
         ) : (
           <View style={styles.filesContainer}>
             {files.map((item, index) => (
-            <TouchableOpacity
+            <View
               key={item.id}
               style={[
                 styles.fileItem,
                 index === files.length - 1 && styles.fileItemLast
               ]}
-              onPress={() => {
-                if (item.type === 'folder') {
-                  handleFolderClick(item.id, item.name);
-                }
-              }}
-              activeOpacity={item.type === 'folder' ? 0.7 : 1}
             >
-              <View style={styles.fileItemLeft}>
+              <TouchableOpacity
+                style={styles.fileItemLeft}
+                activeOpacity={item.type === 'folder' ? 0.7 : 1}
+                onPress={() => {
+                  if (item.type === 'folder') {
+                    handleFolderClick(item.id, item.name);
+                  }
+                }}
+              >
+                <View style={styles.fileItemIcon}>
+                  {getFileIcon(item.icon)}
+                </View>
+                <View style={styles.fileItemInfo}>
+                  <Text style={styles.fileItemName}>{item.name}</Text>
+                  <Text style={styles.fileItemMeta}>
+                    {item.type === 'folder' ? item.count : item.size}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <TouchableOpacity
                   style={styles.fileItemDots}
                   activeOpacity={0.7}
                   onPress={(e) => {
-                    e.stopPropagation();
                     const target = e.nativeEvent;
                     setSelectedFile({
                       id: item.id,
@@ -3105,18 +3120,9 @@ export default function ProfileScreen() {
                   <View style={styles.dot} />
                   <View style={styles.dot} />
                 </TouchableOpacity>
-                <View style={styles.fileItemIcon}>
-                  {getFileIcon(item.icon)}
-                </View>
-                <View style={styles.fileItemInfo}>
-                  <Text style={styles.fileItemName}>{item.name}</Text>
-                  <Text style={styles.fileItemMeta}>
-                    {item.type === 'folder' ? item.count : item.size}
-                  </Text>
-                </View>
+                <ChevronRight size={20} color="#CCC" />
               </View>
-              <ChevronRight size={20} color="#CCC" />
-            </TouchableOpacity>
+            </View>
           ))}
           </View>
         )}
