@@ -3136,7 +3136,9 @@ export default function ProfileScreen() {
                   <View style={styles.dot} />
                   <View style={styles.dot} />
                 </TouchableOpacity>
-                <ChevronRight size={20} color="#CCC" />
+                <View style={styles.fileArrowContainer}>
+                  <ChevronRight size={18} color="#7C3AED" />
+                </View>
               </View>
             </View>
           ))}
@@ -5243,6 +5245,14 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 1.5,
     backgroundColor: '#9CA3AF',
+  },
+  fileArrowContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   fileItemIcon: {
     width: 40,
