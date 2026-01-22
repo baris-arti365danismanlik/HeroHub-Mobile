@@ -6801,21 +6801,24 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 6,
+    borderRadius: 16,
     marginLeft: 8,
+    borderWidth: 1,
   },
   statusBadgeActive: {
-    backgroundColor: '#D1FAE5',
+    backgroundColor: '#10B981',
+    borderColor: '#059669',
   },
   statusBadgeInactive: {
     backgroundColor: '#FEE2E2',
+    borderColor: '#DC2626',
   },
   statusBadgeText: {
     fontSize: 14,
     fontWeight: '600',
   },
   statusBadgeTextActive: {
-    color: '#059669',
+    color: '#FFFFFF',
   },
   statusBadgeTextInactive: {
     color: '#DC2626',
