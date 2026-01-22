@@ -1750,14 +1750,8 @@ export default function ProfileScreen() {
               <InfoRow
                 label="Çalışma Şekli"
                 value={getWorkTypeName(currentWorkInfo.workType)}
+                isLast
               />
-              {currentWorkInfo.workNotes && (
-                <InfoRow
-                  label="Notlar"
-                  value={currentWorkInfo.workNotes}
-                  isLast
-                />
-              )}
             </>
           ) : (
             <View style={styles.emptyState}>
