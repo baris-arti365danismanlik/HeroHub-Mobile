@@ -9,7 +9,7 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import { ArrowLeft, User, Phone, Mail, MapPin, Heart, FileText, Shield, Users, GraduationCap, Award, MessageCircle, Globe, Plane, CreditCard as Edit2, ChevronDown, ChevronUp, Building2, Briefcase, Car, Plus, Pencil, Trash2 } from 'lucide-react-native';
+import { ArrowLeft, User, Phone, Mail, MapPin, Heart, FileText, Shield, Users, GraduationCap, Award, MessageCircle, Globe, Plane, ChevronDown, ChevronUp, Building2, Briefcase, Car, Plus, Pencil, Trash2, Smartphone, Clock, Linkedin, Facebook, Instagram } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
@@ -39,7 +39,8 @@ export default function EmployeeDetailScreen() {
 
   const permissions = usePermissions(employee?.modulePermissions);
   const canViewProfile = permissions.canRead(MODULE_IDS.PROFILE);
-  const canEditProfile = permissions.canWrite(MODULE_IDS.PROFILE);
+  const isOwnProfile = employee?.backendUserId === user?.backendUserId;
+  const canEditProfile = isOwnProfile && permissions.canWrite(MODULE_IDS.PROFILE);
 
   useEffect(() => {
     loadEmployeeData();
@@ -72,6 +73,37 @@ export default function EmployeeDetailScreen() {
     if (!dateString || dateString === '0001-01-01T00:00:00' || dateString === '0001-01-01T08:00:00Z') return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
+  };
+
+  const formatJobStartDate = (dateString?: string): string => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
+  const calculateWorkDuration = (startDate: string): string => {
+    if (!startDate) return '-';
+
+    const start = new Date(startDate);
+    const now = new Date();
+
+    let years = now.getFullYear() - start.getFullYear();
+    let months = now.getMonth() - start.getMonth();
+    let days = now.getDate() - start.getDate();
+
+    if (days < 0) {
+      months--;
+      const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+      days += prevMonth.getDate();
+    }
+
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    return `${years} yıl ${months} ay ${days} gün`;
   };
 
   const getGenderText = (gender: number): string => {
@@ -259,6 +291,11 @@ export default function EmployeeDetailScreen() {
     );
   }
 
+  const contactInfo = employee?.userContact;
+  const socialMedia = employee?.socialMedia;
+  const manager = employee?.reportsTo;
+  const colleagues = employee?.colleagues || [];
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -270,6 +307,179 @@ export default function EmployeeDetailScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.profileCard}>
+          <View style={styles.profileImageContainer}>
+            {(() => {
+              const photoUrl = normalizePhotoUrl(employee?.personalInformation?.profilePhoto);
+              if (photoUrl) {
+                return <Image source={{ uri: photoUrl }} style={styles.profileImage} />;
+              }
+              return (
+                <View style={styles.profileImagePlaceholder}>
+                  <User size={48} color="#7C3AED" />
+                </View>
+              );
+            })()}
+          </View>
+
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>
+              {employee.personalInformation?.firstName} {employee.personalInformation?.lastName}
+            </Text>
+
+            <View style={styles.profileDetails}>
+              {employee.currentTitle && (
+                <View style={styles.profileDetailRow}>
+                  <Award size={16} color="#7C3AED" />
+                  <Text style={[styles.profileDetailText, { color: '#7C3AED', fontWeight: '600' }]}>
+                    {employee.currentTitle}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.profileDetailRow}>
+                <Briefcase size={16} color="#666" />
+                <Text style={styles.profileDetailText}>
+                  {employee.personalInformation?.position || '-'}
+                </Text>
+              </View>
+              {employee.organizationName && (
+                <View style={styles.profileDetailRow}>
+                  <Building2 size={16} color="#666" />
+                  <Text style={styles.profileDetailText}>{employee.organizationName}</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.summaryCard}>
+          <View style={styles.summaryContainer}>
+            {contactInfo?.phoneNumber && (
+              <View style={styles.contactItem}>
+                <Phone size={20} color="#333" />
+                <Text style={styles.contactText}>{contactInfo.phoneNumber}</Text>
+              </View>
+            )}
+
+            {contactInfo?.homePhone && (
+              <View style={styles.contactItem}>
+                <Smartphone size={20} color="#333" />
+                <Text style={styles.contactText}>{contactInfo.homePhone}</Text>
+              </View>
+            )}
+
+            {contactInfo?.businessPhone && (
+              <View style={styles.contactItem}>
+                <Smartphone size={20} color="#333" />
+                <Text style={styles.contactText}>{contactInfo.businessPhone}</Text>
+              </View>
+            )}
+
+            {contactInfo?.email && (
+              <View style={styles.contactItem}>
+                <Mail size={20} color="#333" />
+                <Text style={styles.contactText}>{contactInfo.email}</Text>
+              </View>
+            )}
+
+            {socialMedia && (socialMedia.linkedin || socialMedia.facebook || socialMedia.instagram) && (
+              <View style={styles.socialMediaContainer}>
+                {socialMedia.linkedin && (
+                  <TouchableOpacity style={styles.socialIcon}>
+                    <Linkedin size={20} color="#fff" />
+                  </TouchableOpacity>
+                )}
+                {socialMedia.facebook && (
+                  <TouchableOpacity style={styles.socialIcon}>
+                    <Facebook size={20} color="#fff" />
+                  </TouchableOpacity>
+                )}
+                {socialMedia.instagram && (
+                  <TouchableOpacity style={styles.socialIcon}>
+                    <Instagram size={20} color="#fff" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
+            <View style={styles.dividerLine} />
+
+            <View style={styles.workInfoSection}>
+              <Text style={styles.workInfoTitle}>İşe Başlama Tarihi</Text>
+              <Text style={styles.workInfoDate}>
+                {employee?.jobStartDate ? formatJobStartDate(employee.jobStartDate) : '-'}
+              </Text>
+              <Text style={styles.workInfoDuration}>
+                {employee?.jobStartDate ? calculateWorkDuration(employee.jobStartDate) : '-'}
+              </Text>
+            </View>
+
+            <View style={styles.dividerLine} />
+
+            {employee?.currentTitle && (
+              <View style={styles.summaryDetailItem}>
+                <Briefcase size={20} color="#333" />
+                <Text style={styles.summaryDetailText}>{employee.currentTitle}</Text>
+              </View>
+            )}
+
+            {employee?.organizationName && (
+              <View style={styles.summaryDetailItem}>
+                <Building2 size={20} color="#333" />
+                <Text style={styles.summaryDetailText}>{employee.organizationName}</Text>
+              </View>
+            )}
+
+            <View style={styles.dividerLine} />
+
+            {manager && (
+              <View style={styles.managerSection}>
+                <Text style={styles.sectionTitle}>Yöneticisi</Text>
+                <View style={styles.personItem}>
+                  {manager.profilePhoto ? (
+                    <Image
+                      source={{ uri: normalizePhotoUrl(manager.profilePhoto) || '' }}
+                      style={styles.personAvatarImage}
+                    />
+                  ) : (
+                    <View style={styles.personAvatar}>
+                      <User size={20} color="#7C3AED" />
+                    </View>
+                  )}
+                  <View style={styles.personInfo}>
+                    <Text style={styles.personName}>{manager.fullName || '-'}</Text>
+                    <Text style={styles.personRole}>{manager.title || '-'}</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {colleagues.length > 0 && (
+              <View style={styles.teamSection}>
+                <Text style={styles.sectionTitle}>Ekip Arkadaşları</Text>
+                {colleagues.map((colleague, index) => (
+                  <View key={colleague.id} style={[styles.personItem, index === colleagues.length - 1 && { marginBottom: 0 }]}>
+                    {colleague.profilePhoto ? (
+                      <Image
+                        source={{ uri: normalizePhotoUrl(colleague.profilePhoto) || '' }}
+                        style={styles.personAvatarImage}
+                      />
+                    ) : (
+                      <View style={styles.personAvatar}>
+                        <User size={20} color="#7C3AED" />
+                      </View>
+                    )}
+                    <View style={styles.personInfo}>
+                      <Text style={styles.personName}>{colleague.fullName}</Text>
+                      <Text style={styles.personRole}>{colleague.title || '-'}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
+
         <View style={styles.accordionContainer}>
           <Accordion
             title="KİŞİSEL BİLGİLER"
@@ -621,54 +831,161 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  profileHeaderCard: {
+  profileCard: {
     backgroundColor: '#fff',
-    paddingVertical: 32,
-    paddingHorizontal: 16,
-    alignItems: 'center',
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: '#F0F0F0',
   },
-  profileAvatarContainer: {
-    marginBottom: 16,
+  profileImageContainer: {
+    marginRight: 16,
   },
-  profileAvatar: {
+  profileImage: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: 0,
+    borderWidth: 3,
+    borderColor: '#7C3AED',
   },
-  profileAvatarPlaceholder: {
+  profileImagePlaceholder: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: 0,
     backgroundColor: '#F0E7FF',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#7C3AED',
   },
-  profileAvatarText: {
-    fontSize: 32,
-    fontWeight: '600',
-    color: '#7C3AED',
+  profileInfo: {
+    flex: 1,
+    alignItems: 'flex-start',
   },
   profileName: {
-    fontSize: 22,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#1a1a1a',
     marginBottom: 8,
-    textAlign: 'center',
   },
-  profileBadge: {
+  profileDetails: {
+    gap: 8,
+  },
+  profileDetailRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 16,
-    marginTop: 6,
   },
-  profileBadgeText: {
+  profileDetailText: {
     fontSize: 14,
+    color: '#666',
+  },
+  summaryCard: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  summaryContainer: {
+    gap: 16,
+  },
+  contactItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  contactText: {
+    fontSize: 15,
+    color: '#1a1a1a',
+  },
+  socialMediaContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 4,
+  },
+  socialIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 6,
+    backgroundColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dividerLine: {
+    height: 1,
+    backgroundColor: '#7C3AED',
+    marginVertical: 8,
+  },
+  workInfoSection: {
+    paddingVertical: 8,
+  },
+  workInfoTitle: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  workInfoDate: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  workInfoDuration: {
+    fontSize: 13,
+    color: '#666',
+  },
+  summaryDetailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  summaryDetailText: {
+    fontSize: 15,
+    color: '#1a1a1a',
+  },
+  managerSection: {
+    paddingTop: 8,
+  },
+  teamSection: {
+    paddingTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  personItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  personAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#E9D5FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  personAvatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  personInfo: {
+    flex: 1,
+  },
+  personName: {
+    fontSize: 15,
+    color: '#1a1a1a',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  personRole: {
+    fontSize: 13,
     color: '#666',
   },
   accordionContainer: {
