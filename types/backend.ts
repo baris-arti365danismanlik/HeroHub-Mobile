@@ -57,15 +57,6 @@ export enum DriverLicenseClass {
   G = 16,
 }
 
-export enum FamilyRelation {
-  Mother = 0,
-  Father = 1,
-  Spouse = 2,
-  Child = 3,
-  Sibling = 4,
-  Other = 5,
-}
-
 export enum DayOffType {
   Annual = 0,
   Sick = 1,
