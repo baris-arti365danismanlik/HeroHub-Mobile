@@ -1,77 +1,88 @@
-import { supabase } from './supabase.client';
+import { httpClient } from './http.client';
+
+export interface UserFolder {
+  id: number;
+  name: string;
+  parentId: number | null;
+  userId: number;
+  subFolderCount: number;
+  fileCount: number;
+}
+
+export interface UserFile {
+  id: number;
+  name: string;
+  filePath: string;
+  fileSize: number;
+  fileType: string;
+  createdAt: string;
+  createdBy: string;
+  folderId: number;
+  folderName: string | null;
+  path: string | null;
+  url: string;
+}
+
+export interface WorkspaceResponse {
+  parentFolderId: number | null;
+  userFolders: UserFolder[];
+  userFiles: UserFile[];
+}
 
 export interface UserDocument {
   id: string;
-  user_id: string;
   name: string;
   type: 'folder' | 'file';
-  parent_id: string | null;
-  file_url: string | null;
-  file_size: number | null;
-  icon_type: string;
-  item_count: string | null;
-  created_at: string;
-  updated_at: string;
-  created_by: string | null;
-  is_shared: boolean;
+  icon: string;
+  count?: string;
+  size?: string;
+  url?: string;
+  fileType?: string;
 }
 
 export const documentService = {
-  async getUserDocuments(userId: string): Promise<UserDocument[]> {
-    const { data, error } = await supabase
-      .from('user_documents')
-      .select('*')
-      .eq('user_id', userId)
-      .is('parent_id', null)
-      .order('type', { ascending: false })
-      .order('name', { ascending: true });
+  async getUserDocuments(userId: number, parentFolderId?: number): Promise<UserDocument[]> {
+    const params = new URLSearchParams({
+      userId: userId.toString(),
+    });
 
-    if (error) throw error;
-    return data || [];
+    if (parentFolderId !== undefined && parentFolderId !== null) {
+      params.append('parentFolderId', parentFolderId.toString());
+    }
+
+    const response = await httpClient.get<WorkspaceResponse>(
+      `/Workspace/get-workspace?${params.toString()}`
+    );
+
+    const folders: UserDocument[] = response.userFolders.map(folder => ({
+      id: folder.id.toString(),
+      name: folder.name,
+      type: 'folder' as const,
+      icon: folder.subFolderCount > 0 ? 'folder-blue' : 'folder-yellow',
+      count: folder.fileCount > 0
+        ? `${folder.fileCount} Dosya`
+        : 'Boş Klasör'
+    }));
+
+    const files: UserDocument[] = response.userFiles.map(file => ({
+      id: file.id.toString(),
+      name: file.name,
+      type: 'file' as const,
+      icon: this.getFileIcon(file.fileType),
+      size: this.formatFileSize(file.fileSize),
+      url: file.url,
+      fileType: file.fileType
+    }));
+
+    return [...folders, ...files];
   },
 
-  async getDocumentsByParent(parentId: string): Promise<UserDocument[]> {
-    const { data, error } = await supabase
-      .from('user_documents')
-      .select('*')
-      .eq('parent_id', parentId)
-      .order('type', { ascending: false })
-      .order('name', { ascending: true });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  async createDocument(document: Partial<UserDocument>): Promise<UserDocument> {
-    const { data, error } = await supabase
-      .from('user_documents')
-      .insert(document)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async updateDocument(id: string, updates: Partial<UserDocument>): Promise<UserDocument> {
-    const { data, error } = await supabase
-      .from('user_documents')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async deleteDocument(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('user_documents')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+  getFileIcon(fileType: string): string {
+    if (fileType.startsWith('image/')) return 'image';
+    if (fileType === 'application/pdf') return 'pdf';
+    if (fileType.includes('word') || fileType.includes('document')) return 'doc';
+    if (fileType.includes('sheet') || fileType.includes('excel')) return 'excel';
+    return 'file';
   },
 
   formatFileSize(bytes: number | null): string {

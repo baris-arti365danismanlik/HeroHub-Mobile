@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import * as DocumentPicker from 'expo-document-picker';
-import { User as UserIcon, Phone, Mail, MapPin, Briefcase, GraduationCap, Heart, HeartPulse, FileText, Award, Globe, Languages, CreditCard, LogOut, Menu, Building2, Users as Users2, DollarSign, Bell, MessageSquare, Package, Download, Pencil, Umbrella, ChevronDown, ChevronUp, Folder, File, Search, Plus, Share2, ChevronRight, FolderOpen, Calendar, X, TextAlignJustify as AlignJustify, Linkedin, Facebook, Instagram, Clock, Smartphone, Check, Upload, Users, Link } from 'lucide-react-native';
+import { User as UserIcon, Phone, Mail, MapPin, Briefcase, GraduationCap, Heart, HeartPulse, FileText, Award, Globe, Languages, CreditCard, LogOut, Menu, Building2, Users as Users2, DollarSign, Bell, MessageSquare, Package, Download, Pencil, Umbrella, ChevronDown, ChevronUp, Folder, File, Search, Plus, Share2, ChevronRight, FolderOpen, Calendar, X, TextAlignJustify as AlignJustify, Linkedin, Facebook, Instagram, Clock, Smartphone, Check, Upload, Users, Link, Image as ImageIcon, FileSpreadsheet } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
@@ -25,7 +25,6 @@ import { shiftService } from '@/services/shift.service';
 import { userService } from '@/services/user.service';
 import { employmentService } from '@/services/employment.service';
 import { documentService, UserDocument } from '@/services/document.service';
-import { supabase } from '@/services/supabase.client';
 import PDKSTaskModal, { PDKSTaskData } from '@/components/PDKSTaskModal';
 import { normalizePhotoUrl } from '@/utils/formatters';
 import {
@@ -794,23 +793,19 @@ export default function ProfileScreen() {
   }, [selectedSection, user?.backend_user_id]);
 
   const loadUnreadCount = async () => {
+    if (!user?.id) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user?.id) return;
-
-      const count = await inboxService.getUnreadCount(session.user.id);
+      const count = await inboxService.getUnreadCount(user.id);
       setUnreadCount(count);
     } catch (error) {
     }
   };
 
   const loadDocuments = async () => {
+    if (!user?.backend_user_id) return;
     try {
       setDocumentsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user?.id) return;
-
-      const docs = await documentService.getUserDocuments(session.user.id);
+      const docs = await documentService.getUserDocuments(Number(user.backend_user_id));
       setDocuments(docs);
     } catch (error) {
       console.error('Error loading documents:', error);
@@ -820,10 +815,10 @@ export default function ProfileScreen() {
   };
 
   useEffect(() => {
-    if (selectedSection === 'Dosyalar') {
+    if (selectedSection === 'Dosyalar' && user?.backend_user_id) {
       loadDocuments();
     }
-  }, [selectedSection]);
+  }, [selectedSection, user?.backend_user_id]);
 
   const loadAssets = async () => {
     if (!user?.backend_user_id) return;
@@ -2972,9 +2967,11 @@ export default function ProfileScreen() {
         case 'doc':
           return <FileText size={24} color="#2563EB" />;
         case 'image':
-          return <Package size={24} color="#10B981" />;
+          return <ImageIcon size={24} color="#10B981" />;
         case 'pdf':
           return <FileText size={24} color="#EF4444" />;
+        case 'excel':
+          return <FileSpreadsheet size={24} color="#16A34A" />;
         default:
           return <File size={24} color="#666" />;
       }
