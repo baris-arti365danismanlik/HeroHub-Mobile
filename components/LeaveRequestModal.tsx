@@ -226,8 +226,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   fieldWithDropdown: {
-    zIndex: 1000,
-    marginBottom: 280,
+    zIndex: 9999,
+    marginBottom: 300,
   },
   label: {
     fontSize: 14,
@@ -260,29 +260,30 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
     borderRadius: 8,
     backgroundColor: '#fff',
-    zIndex: 1000,
-    elevation: 5,
+    zIndex: 10000,
+    elevation: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
   },
   dropdownScroll: {
-    maxHeight: 280,
+    maxHeight: 320,
   },
   dropdownItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
-    minHeight: 44,
+    minHeight: 48,
   },
   dropdownItemLast: {
     borderBottomWidth: 0,
   },
   dropdownItemText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#1a1a1a',
+    lineHeight: 22,
   },
   input: {
     borderWidth: 1,
