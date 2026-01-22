@@ -84,7 +84,7 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
           </View>
 
           <ScrollView style={styles.content}>
-            <View style={styles.field}>
+            <View style={[styles.field, showTypeDropdown && styles.fieldWithDropdown]}>
               <Text style={styles.label}>İzin Türü *</Text>
               <TouchableOpacity
                 style={styles.dropdown}
@@ -222,6 +222,12 @@ const styles = StyleSheet.create({
   },
   field: {
     marginBottom: 20,
+    position: 'relative',
+    zIndex: 1,
+  },
+  fieldWithDropdown: {
+    zIndex: 1000,
+    marginBottom: 280,
   },
   label: {
     fontSize: 14,
@@ -245,6 +251,10 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   dropdownMenu: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
     marginTop: 8,
     borderWidth: 1,
     borderColor: '#E0E0E0',
@@ -252,6 +262,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     maxHeight: 250,
     overflow: 'hidden',
+    zIndex: 1000,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
   dropdownScroll: {
     maxHeight: 250,
