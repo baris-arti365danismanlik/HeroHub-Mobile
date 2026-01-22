@@ -21,13 +21,7 @@ interface ShiftChangeModalProps {
   onClose: () => void;
   onSubmit: (data: ShiftChangeData) => Promise<void>;
   currentShiftPlanId?: number;
-  currentShiftPlan?: {
-    shiftPlanName: string;
-    shiftType: string;
-    startTime: string;
-    endTime: string;
-    workDays: string;
-  } | null;
+  currentShiftPlanName?: string;
 }
 
 export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
@@ -35,7 +29,7 @@ export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
   onClose,
   onSubmit,
   currentShiftPlanId,
-  currentShiftPlan,
+  currentShiftPlanName,
 }) => {
   const [shiftPlans, setShiftPlans] = useState<ShiftPlan[]>([]);
   const [selectedShiftPlanId, setSelectedShiftPlanId] = useState<number | null>(null);
@@ -115,31 +109,10 @@ export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
               <>
                 <View style={styles.formGroup}>
                   <Text style={styles.label}>Mevcut Vardiya</Text>
-                  <View style={styles.currentShiftBox}>
-                    {currentShiftPlan ? (
-                      <>
-                        <View style={styles.currentShiftRow}>
-                          <Text style={styles.currentShiftLabel}>Vardiya Planı:</Text>
-                          <Text style={styles.currentShiftValue}>{currentShiftPlan.shiftPlanName}</Text>
-                        </View>
-                        <View style={styles.currentShiftRow}>
-                          <Text style={styles.currentShiftLabel}>Vardiya Türü:</Text>
-                          <Text style={styles.currentShiftValue}>{currentShiftPlan.shiftType}</Text>
-                        </View>
-                        <View style={styles.currentShiftRow}>
-                          <Text style={styles.currentShiftLabel}>Çalışma Saatleri:</Text>
-                          <Text style={styles.currentShiftValue}>
-                            {currentShiftPlan.startTime} - {currentShiftPlan.endTime}
-                          </Text>
-                        </View>
-                        <View style={styles.currentShiftRow}>
-                          <Text style={styles.currentShiftLabel}>Çalışma Günleri:</Text>
-                          <Text style={styles.currentShiftValue}>{currentShiftPlan.workDays}</Text>
-                        </View>
-                      </>
-                    ) : (
-                      <Text style={styles.noShiftText}>Belirlenmemiş</Text>
-                    )}
+                  <View style={styles.disabledInput}>
+                    <Text style={styles.disabledInputText}>
+                      {currentShiftPlanName || 'Belirlenmemiş'}
+                    </Text>
                   </View>
                 </View>
 
@@ -280,36 +253,6 @@ const styles = StyleSheet.create({
   disabledInputText: {
     fontSize: 14,
     color: '#6B7280',
-  },
-  currentShiftBox: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 8,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  currentShiftRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  currentShiftLabel: {
-    fontSize: 13,
-    color: '#6B7280',
-    fontWeight: '500',
-    flex: 1,
-  },
-  currentShiftValue: {
-    fontSize: 13,
-    color: '#1F2937',
-    fontWeight: '600',
-    flex: 1,
-    textAlign: 'right',
-  },
-  noShiftText: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    textAlign: 'center',
   },
   dropdown: {
     backgroundColor: '#fff',

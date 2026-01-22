@@ -4693,13 +4693,7 @@ export default function ProfileScreen() {
         onClose={() => setShiftChangeModalVisible(false)}
         onSubmit={handleShiftChange}
         currentShiftPlanId={userShiftPlan?.shiftPlanId}
-        currentShiftPlan={userShiftPlan ? {
-          shiftPlanName: userShiftPlan.shiftPlanName,
-          shiftType: userShiftPlan.shiftType,
-          startTime: userShiftPlan.startTime,
-          endTime: userShiftPlan.endTime,
-          workDays: userShiftPlan.workDays,
-        } : null}
+        currentShiftPlanName={userShiftPlan?.shiftPlanName}
       />
 
       <Modal
