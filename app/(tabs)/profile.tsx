@@ -5159,7 +5159,7 @@ const styles = StyleSheet.create({
   },
   dividerLine: {
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#7C3AED',
     marginVertical: 8,
   },
   workInfoSection: {
