@@ -3029,10 +3029,7 @@ export default function ProfileScreen() {
   const handleShiftChange = async (data: ShiftChangeData) => {
     try {
       await shiftService.createShiftChangeRequest({
-        current_shift_type: data.currentShiftType,
-        requested_shift_type: data.requestedShiftType,
-        reason: data.reason,
-        effective_date: data.effectiveDate,
+        shift_plan_id: data.shiftPlanId,
       });
       setShiftChangeModalVisible(false);
       alert('Vardiya değişikliği talebiniz başarıyla gönderildi.');
@@ -4695,7 +4692,7 @@ export default function ProfileScreen() {
         visible={shiftChangeModalVisible}
         onClose={() => setShiftChangeModalVisible(false)}
         onSubmit={handleShiftChange}
-        currentShiftType={userShiftPlan?.shiftType}
+        currentShiftPlanId={userShiftPlan?.shiftPlanId}
       />
 
       <Modal

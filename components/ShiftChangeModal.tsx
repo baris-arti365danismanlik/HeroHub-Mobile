@@ -1,58 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   Modal,
   TouchableOpacity,
   StyleSheet,
-  TextInput,
   ScrollView,
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { X } from 'lucide-react-native';
-import { DatePicker } from './DatePicker';
+import { X, ChevronDown } from 'lucide-react-native';
+import { shiftService, ShiftPlan } from '@/services/shift.service';
 
 export interface ShiftChangeData {
-  currentShiftType: string;
-  requestedShiftType: string;
-  reason?: string;
-  effectiveDate: string;
+  shiftPlanId: number;
 }
 
 interface ShiftChangeModalProps {
   visible: boolean;
   onClose: () => void;
   onSubmit: (data: ShiftChangeData) => Promise<void>;
-  currentShiftType?: string;
+  currentShiftPlanId?: number;
 }
-
-const SHIFT_TYPES = [
-  { label: 'Sabah Vardiyası', value: 'Sabah Vardiyası' },
-  { label: 'Öğle Vardiyası', value: 'Öğle Vardiyası' },
-  { label: 'Akşam Vardiyası', value: 'Akşam Vardiyası' },
-  { label: 'Gece Vardiyası', value: 'Gece Vardiyası' },
-  { label: 'Grup-1', value: 'Vardiya Grup-1' },
-  { label: 'Grup-2', value: 'Vardiya Grup-2' },
-];
 
 export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
   visible,
   onClose,
   onSubmit,
-  currentShiftType,
+  currentShiftPlanId,
 }) => {
-  const [requestedShiftType, setRequestedShiftType] = useState('');
-  const [reason, setReason] = useState('');
-  const [effectiveDate, setEffectiveDate] = useState('');
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [shiftPlans, setShiftPlans] = useState<ShiftPlan[]>([]);
+  const [selectedShiftPlanId, setSelectedShiftPlanId] = useState<number | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (visible) {
+      loadShiftPlans();
+    }
+  }, [visible]);
+
+  const loadShiftPlans = async () => {
+    setIsLoading(true);
+    try {
+      const plans = await shiftService.getShiftPlans();
+      setShiftPlans(plans.filter(plan => plan.id !== currentShiftPlanId && plan.isActive));
+    } catch (error) {
+      console.error('Error loading shift plans:', error);
+      Alert.alert('Hata', 'Vardiya planları yüklenemedi');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleReset = () => {
-    setRequestedShiftType('');
-    setReason('');
-    setEffectiveDate('');
-    setShowDatePicker(false);
+    setSelectedShiftPlanId(null);
+    setShowDropdown(false);
   };
 
   const handleClose = () => {
@@ -61,28 +65,15 @@ export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!requestedShiftType) {
-      Alert.alert('Hata', 'Lütfen talep edilen vardiya tipini seçin');
-      return;
-    }
-
-    if (!effectiveDate) {
-      Alert.alert('Hata', 'Lütfen geçerlilik tarihini seçin');
-      return;
-    }
-
-    if (requestedShiftType === currentShiftType) {
-      Alert.alert('Hata', 'Mevcut vardiya ile aynı vardiyayı seçemezsiniz');
+    if (!selectedShiftPlanId) {
+      Alert.alert('Hata', 'Lütfen bir vardiya planı seçin');
       return;
     }
 
     setIsSubmitting(true);
     try {
       await onSubmit({
-        currentShiftType: currentShiftType || '',
-        requestedShiftType,
-        reason: reason.trim() || undefined,
-        effectiveDate,
+        shiftPlanId: selectedShiftPlanId,
       });
       handleReset();
     } catch (error) {
@@ -93,120 +84,99 @@ export const ShiftChangeModal: React.FC<ShiftChangeModalProps> = ({
     }
   };
 
+  const selectedPlan = shiftPlans.find(plan => plan.id === selectedShiftPlanId);
+
   return (
-    <>
-      <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Vardiya Değiştir</Text>
-              <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                <X size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Vardiya Değiştir</Text>
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+              <X size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
 
-            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Mevcut Vardiya</Text>
-                <View style={styles.disabledInput}>
-                  <Text style={styles.disabledInputText}>
-                    {currentShiftType || 'Belirlenmemiş'}
-                  </Text>
-                </View>
+          <View style={styles.modalContent}>
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#7C3AED" />
+                <Text style={styles.loadingText}>Vardiya planları yükleniyor...</Text>
               </View>
-
+            ) : (
               <View style={styles.formGroup}>
                 <Text style={styles.label}>
-                  Talep Edilen Vardiya <Text style={styles.required}>*</Text>
-                </Text>
-                <View style={styles.shiftTypeGrid}>
-                  {SHIFT_TYPES.filter(type => type.value !== currentShiftType).map((type) => (
-                    <TouchableOpacity
-                      key={type.value}
-                      style={[
-                        styles.shiftTypeButton,
-                        requestedShiftType === type.value && styles.shiftTypeButtonActive,
-                      ]}
-                      onPress={() => setRequestedShiftType(type.value)}
-                    >
-                      <Text
-                        style={[
-                          styles.shiftTypeButtonText,
-                          requestedShiftType === type.value &&
-                            styles.shiftTypeButtonTextActive,
-                        ]}
-                      >
-                        {type.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>
-                  Geçerlilik Tarihi <Text style={styles.required}>*</Text>
+                  Vardiya Planı <Text style={styles.required}>*</Text>
                 </Text>
                 <TouchableOpacity
-                  style={styles.dateInput}
-                  onPress={() => setShowDatePicker(true)}
+                  style={styles.dropdown}
+                  onPress={() => setShowDropdown(!showDropdown)}
                 >
-                  <Text style={effectiveDate ? styles.dateText : styles.datePlaceholder}>
-                    {effectiveDate || 'Tarih seçin'}
+                  <Text style={selectedPlan ? styles.dropdownText : styles.dropdownPlaceholder}>
+                    {selectedPlan ? `${selectedPlan.name} (${selectedPlan.startTime} - ${selectedPlan.endTime})` : 'Vardiya planı seçin'}
                   </Text>
+                  <ChevronDown size={20} color="#666" />
                 </TouchableOpacity>
-              </View>
 
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Sebep</Text>
-                <TextInput
-                  style={styles.textArea}
-                  placeholder="Vardiya değişikliği sebebini yazın (opsiyonel)"
-                  placeholderTextColor="#9CA3AF"
-                  value={reason}
-                  onChangeText={setReason}
-                  multiline
-                  numberOfLines={4}
-                  textAlignVertical="top"
-                />
-              </View>
-            </ScrollView>
-
-            <View style={styles.modalFooter}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={handleClose}
-                disabled={isSubmitting}
-              >
-                <Text style={styles.cancelButtonText}>İptal</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
-                onPress={handleSubmit}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <Text style={styles.submitButtonText}>Talep Gönder</Text>
+                {showDropdown && (
+                  <View style={styles.dropdownList}>
+                    <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
+                      {shiftPlans.length === 0 ? (
+                        <View style={styles.emptyDropdown}>
+                          <Text style={styles.emptyDropdownText}>Uygun vardiya planı bulunamadı</Text>
+                        </View>
+                      ) : (
+                        shiftPlans.map((plan) => (
+                          <TouchableOpacity
+                            key={plan.id}
+                            style={[
+                              styles.dropdownItem,
+                              selectedShiftPlanId === plan.id && styles.dropdownItemActive,
+                            ]}
+                            onPress={() => {
+                              setSelectedShiftPlanId(plan.id);
+                              setShowDropdown(false);
+                            }}
+                          >
+                            <View>
+                              <Text style={styles.dropdownItemTitle}>{plan.name}</Text>
+                              <Text style={styles.dropdownItemSubtitle}>
+                                {plan.startTime} - {plan.endTime}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        ))
+                      )}
+                    </ScrollView>
+                  </View>
                 )}
-              </TouchableOpacity>
-            </View>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.modalFooter}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={handleClose}
+              disabled={isSubmitting}
+            >
+              <Text style={styles.cancelButtonText}>İptal</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.submitButton, (isSubmitting || isLoading) && styles.submitButtonDisabled]}
+              onPress={handleSubmit}
+              disabled={isSubmitting || isLoading}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.submitButtonText}>Talep Gönder</Text>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-
-      <DatePicker
-        visible={showDatePicker}
-        onClose={() => setShowDatePicker(false)}
-        onSelectDate={(date) => {
-          setEffectiveDate(date);
-          setShowDatePicker(false);
-        }}
-        selectedDate={effectiveDate}
-        minDate={new Date().toISOString().split('T')[0]}
-      />
-    </>
+      </View>
+    </Modal>
   );
 };
 
@@ -222,7 +192,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     width: '90%',
     maxWidth: 500,
-    maxHeight: '85%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -242,6 +211,17 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     padding: 20,
+    minHeight: 150,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#666',
   },
   formGroup: {
     marginBottom: 20,
@@ -255,70 +235,62 @@ const styles = StyleSheet.create({
   required: {
     color: '#EF4444',
   },
-  disabledInput: {
-    backgroundColor: '#F3F4F6',
+  dropdown: {
+    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 14,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-  },
-  disabledInputText: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  shiftTypeGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  shiftTypeButton: {
-    flex: 1,
-    minWidth: '48%',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#fff',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  shiftTypeButtonActive: {
-    borderColor: '#7C3AED',
-    backgroundColor: '#F5F3FF',
-  },
-  shiftTypeButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#4B5563',
-  },
-  shiftTypeButtonTextActive: {
-    color: '#7C3AED',
-    fontWeight: '600',
-  },
-  dateInput: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  dateText: {
+  dropdownText: {
     fontSize: 14,
     color: '#1a1a1a',
+    flex: 1,
   },
-  datePlaceholder: {
+  dropdownPlaceholder: {
     fontSize: 14,
     color: '#9CA3AF',
+    flex: 1,
   },
-  textArea: {
+  dropdownList: {
+    marginTop: 8,
     backgroundColor: '#fff',
     borderRadius: 8,
-    padding: 14,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    maxHeight: 200,
+  },
+  dropdownScroll: {
+    maxHeight: 200,
+  },
+  dropdownItem: {
+    padding: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  dropdownItemActive: {
+    backgroundColor: '#F5F3FF',
+  },
+  dropdownItemTitle: {
     fontSize: 14,
+    fontWeight: '600',
     color: '#1a1a1a',
-    minHeight: 100,
+    marginBottom: 4,
+  },
+  dropdownItemSubtitle: {
+    fontSize: 12,
+    color: '#666',
+  },
+  emptyDropdown: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyDropdownText: {
+    fontSize: 14,
+    color: '#9CA3AF',
   },
   modalFooter: {
     flexDirection: 'row',

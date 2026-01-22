@@ -15,13 +15,20 @@ export interface UserShiftPlan {
   endDate: string | null;
 }
 
+export interface ShiftPlan {
+  id: number;
+  name: string;
+  shiftType: string;
+  startTime: string;
+  endTime: string;
+  workDays: string;
+  isActive: boolean;
+}
+
 export interface ShiftChangeRequest {
   id: string;
   user_id: string;
-  current_shift_type: string;
-  requested_shift_type: string;
-  reason?: string;
-  effective_date: string;
+  shift_plan_id: number;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   updated_at: string;
@@ -31,10 +38,7 @@ export interface ShiftChangeRequest {
 }
 
 export interface CreateShiftChangeRequest {
-  current_shift_type: string;
-  requested_shift_type: string;
-  reason?: string;
-  effective_date: string;
+  shift_plan_id: number;
 }
 
 export const shiftService = {
@@ -52,6 +56,18 @@ export const shiftService = {
     }
   },
 
+  async getShiftPlans(): Promise<ShiftPlan[]> {
+    try {
+      const response = await apiClient.get('/shift/list-shiftplans');
+      return (response as any)?.data || [];
+    } catch (error: any) {
+      if (error.isAuthError) {
+        throw error;
+      }
+      return [];
+    }
+  },
+
   async createShiftChangeRequest(data: CreateShiftChangeRequest): Promise<ShiftChangeRequest> {
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session?.user) {
@@ -62,10 +78,7 @@ export const shiftService = {
       .from('shift_change_requests')
       .insert({
         user_id: sessionData.session.user.id,
-        current_shift_type: data.current_shift_type,
-        requested_shift_type: data.requested_shift_type,
-        reason: data.reason,
-        effective_date: data.effective_date,
+        shift_plan_id: data.shift_plan_id,
       })
       .select()
       .single();
