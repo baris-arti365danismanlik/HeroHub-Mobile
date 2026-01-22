@@ -258,6 +258,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     marginTop: 8,
+    maxHeight: 200,
     borderWidth: 1,
     borderColor: '#E0E0E0',
     borderRadius: 8,
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   dropdownScroll: {
-    maxHeight: 250,
+    flexGrow: 0,
   },
   dropdownItem: {
     paddingVertical: 14,
