@@ -561,12 +561,10 @@ export interface PersonalInformation {
 }
 
 export interface DriverLicense {
-  id: number;
-  userId: number;
-  licenseType: string;
-  licenseNumber: string;
-  issueDate: string;
-  expiryDate: string;
+  driverLicenseId: number;
+  class: number;
+  startDate: string;
+  endDate: string;
 }
 
 export interface Education {

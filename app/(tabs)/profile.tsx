@@ -486,10 +486,10 @@ export default function ProfileScreen() {
         if (profileDetails.driverLicenses.length > 0) {
           const license = profileDetails.driverLicenses[0];
           setDriverLicenseEditForm({
-            licenseType: license.licenseType || '',
-            licenseNo: license.licenseNumber || '',
-            issueDate: formatDate(license.issueDate),
-            expiryDate: formatDate(license.expiryDate),
+            licenseType: license.class?.toString() || '',
+            licenseNo: '',
+            issueDate: formatDate(license.startDate),
+            expiryDate: formatDate(license.endDate),
           });
         }
         setDriverLicenseEditModalVisible(true);
@@ -2416,11 +2416,10 @@ export default function ProfileScreen() {
         >
           {driverLicenses.length > 0 ? (
             driverLicenses.map((license, index) => (
-              <View key={license.id}>
-                <InfoRow label="Ehliyet Tipi" value={license.licenseType || '-'} />
-                <InfoRow label="Ehliyet No" value={license.licenseNumber || '-'} />
-                <InfoRow label="Veriliş Tarihi" value={formatDate(license.issueDate)} />
-                <InfoRow label="Son Geçerlilik Tarihi" value={formatDate(license.expiryDate)} isLast={index === driverLicenses.length - 1} />
+              <View key={license.driverLicenseId}>
+                <Text style={styles.licenseHeader}>{index + 1}. Ehliyet</Text>
+                <InfoRow label="Ehliyet Sınıfı" value={license.class?.toString() || '-'} />
+                <InfoRow label="Geçerlilik Tarihi" value={formatDate(license.endDate)} isLast={index === driverLicenses.length - 1} />
               </View>
             ))
           ) : (
@@ -6760,6 +6759,14 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
+  },
+  licenseHeader: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginTop: 8,
+    marginBottom: 8,
+    paddingHorizontal: 16,
   },
   onboardingContainer: {
     flex: 1,
