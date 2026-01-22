@@ -264,13 +264,6 @@ export default function EmployeesScreen() {
 
           <View style={styles.actionButtons}>
             <TouchableOpacity
-              onPress={() => setDrawerVisible(true)}
-              style={styles.iconButton}
-              activeOpacity={0.7}
-            >
-              <Menu size={24} color="#666" />
-            </TouchableOpacity>
-            <TouchableOpacity
               onPress={() => setViewMode(viewMode === 'list' ? 'tree' : 'list')}
               style={styles.iconButton}
               activeOpacity={0.7}
