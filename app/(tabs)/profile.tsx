@@ -188,6 +188,8 @@ export default function ProfileScreen() {
   const [renameInput, setRenameInput] = useState('');
   const [documents, setDocuments] = useState<UserDocument[]>([]);
   const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
+  const [folderHistory, setFolderHistory] = useState<Array<{ id: number | null; name: string }>>([{ id: null, name: 'Ana Klasör' }]);
 
   const [employmentLoading, setEmploymentLoading] = useState(false);
   const [workingInformation, setWorkingInformation] = useState<WorkingInformation[]>([]);
@@ -801,11 +803,14 @@ export default function ProfileScreen() {
     }
   };
 
-  const loadDocuments = async () => {
+  const loadDocuments = async (folderId: number | null = null) => {
     if (!user?.backend_user_id) return;
     try {
       setDocumentsLoading(true);
-      const docs = await documentService.getUserDocuments(Number(user.backend_user_id));
+      const docs = await documentService.getUserDocuments(
+        Number(user.backend_user_id),
+        folderId ?? undefined
+      );
       setDocuments(docs);
     } catch (error) {
       console.error('Error loading documents:', error);
@@ -814,9 +819,25 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleFolderClick = (folderId: string, folderName: string) => {
+    const numericId = Number(folderId);
+    setCurrentFolderId(numericId);
+    setFolderHistory(prev => [...prev, { id: numericId, name: folderName }]);
+    loadDocuments(numericId);
+  };
+
+  const handleBackNavigation = (index: number) => {
+    const targetFolder = folderHistory[index];
+    setCurrentFolderId(targetFolder.id);
+    setFolderHistory(prev => prev.slice(0, index + 1));
+    loadDocuments(targetFolder.id);
+  };
+
   useEffect(() => {
     if (selectedSection === 'Dosyalar' && user?.backend_user_id) {
-      loadDocuments();
+      setCurrentFolderId(null);
+      setFolderHistory([{ id: null, name: 'Ana Klasör' }]);
+      loadDocuments(null);
     }
   }, [selectedSection, user?.backend_user_id]);
 
@@ -2953,9 +2974,9 @@ export default function ProfileScreen() {
       id: doc.id,
       name: doc.name,
       type: doc.type,
-      count: doc.item_count,
-      size: documentService.formatFileSize(doc.file_size),
-      icon: doc.icon_type
+      count: doc.count,
+      size: doc.size,
+      icon: doc.icon
     }));
 
     const getFileIcon = (iconType: string) => {
@@ -3023,19 +3044,18 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.breadcrumb}>
-            <TouchableOpacity>
-              <Text style={styles.breadcrumbActive}>Çalışma Alanınız</Text>
-            </TouchableOpacity>
-            <Text style={styles.breadcrumbSeparator}>•</Text>
-            <Text style={styles.breadcrumbText}>...</Text>
-            <Text style={styles.breadcrumbSeparator}>•</Text>
-            <TouchableOpacity>
-              <Text style={styles.breadcrumbLink}>Yeni Klasör</Text>
-            </TouchableOpacity>
-            <Text style={styles.breadcrumbSeparator}>•</Text>
-            <TouchableOpacity>
-              <Text style={styles.breadcrumbText}>Son Klasör</Text>
-            </TouchableOpacity>
+            {folderHistory.map((folder, index) => (
+              <React.Fragment key={index}>
+                <TouchableOpacity onPress={() => handleBackNavigation(index)}>
+                  <Text style={index === folderHistory.length - 1 ? styles.breadcrumbActive : styles.breadcrumbLink}>
+                    {folder.name}
+                  </Text>
+                </TouchableOpacity>
+                {index < folderHistory.length - 1 && (
+                  <Text style={styles.breadcrumbSeparator}>•</Text>
+                )}
+              </React.Fragment>
+            ))}
           </View>
         </View>
 
@@ -3052,18 +3072,25 @@ export default function ProfileScreen() {
         ) : (
           <View style={styles.filesContainer}>
             {files.map((item, index) => (
-            <View
+            <TouchableOpacity
               key={item.id}
               style={[
                 styles.fileItem,
                 index === files.length - 1 && styles.fileItemLast
               ]}
+              onPress={() => {
+                if (item.type === 'folder') {
+                  handleFolderClick(item.id, item.name);
+                }
+              }}
+              activeOpacity={item.type === 'folder' ? 0.7 : 1}
             >
               <View style={styles.fileItemLeft}>
                 <TouchableOpacity
                   style={styles.fileItemDots}
                   activeOpacity={0.7}
                   onPress={(e) => {
+                    e.stopPropagation();
                     const target = e.nativeEvent;
                     setSelectedFile({
                       id: item.id,
@@ -3089,7 +3116,7 @@ export default function ProfileScreen() {
                 </View>
               </View>
               <ChevronRight size={20} color="#CCC" />
-            </View>
+            </TouchableOpacity>
           ))}
           </View>
         )}
