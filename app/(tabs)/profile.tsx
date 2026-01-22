@@ -24,6 +24,7 @@ import { pdksService } from '@/services/pdks.service';
 import { shiftService } from '@/services/shift.service';
 import { userService } from '@/services/user.service';
 import { employmentService } from '@/services/employment.service';
+import { documentService, UserDocument } from '@/services/document.service';
 import PDKSTaskModal, { PDKSTaskData } from '@/components/PDKSTaskModal';
 import { normalizePhotoUrl } from '@/utils/formatters';
 import {
@@ -185,6 +186,8 @@ export default function ProfileScreen() {
   } | null>(null);
   const [renameModalVisible, setRenameModalVisible] = useState(false);
   const [renameInput, setRenameInput] = useState('');
+  const [documents, setDocuments] = useState<UserDocument[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
 
   const [employmentLoading, setEmploymentLoading] = useState(false);
   const [workingInformation, setWorkingInformation] = useState<WorkingInformation[]>([]);
@@ -797,6 +800,25 @@ export default function ProfileScreen() {
     } catch (error) {
     }
   };
+
+  const loadDocuments = async () => {
+    if (!user?.id) return;
+    try {
+      setDocumentsLoading(true);
+      const docs = await documentService.getUserDocuments(user.id);
+      setDocuments(docs);
+    } catch (error) {
+      console.error('Error loading documents:', error);
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedSection === 'Dosyalar' && user?.id) {
+      loadDocuments();
+    }
+  }, [selectedSection, user?.id]);
 
   const loadAssets = async () => {
     if (!user?.backend_user_id) return;
@@ -2927,15 +2949,14 @@ export default function ProfileScreen() {
   };
 
   const renderFilesSection = () => {
-    const files = [
-      { id: '1', name: 'Özlük Dosyaları', type: 'folder', count: 'Boş Klasör', icon: 'folder-blue' },
-      { id: '2', name: 'İmzalı Belgeler', type: 'folder', count: '8 Dosya', icon: 'folder-blue' },
-      { id: '3', name: 'Evrak Klasörüm', type: 'folder', count: '3 Dosya', icon: 'folder-yellow' },
-      { id: '4', name: 'Lazım Olur', type: 'folder', count: 'Boş Klasör', icon: 'folder-yellow' },
-      { id: '5', name: 'vize_evrak.docx', type: 'file', size: '15 kb', icon: 'doc' },
-      { id: '6', name: 'vesikalik.jpeg', type: 'file', size: '423 kb', icon: 'image' },
-      { id: '7', name: 'basvuru_dosya.pdf', type: 'file', size: '1.53 mb', icon: 'pdf' },
-    ];
+    const files = documents.map(doc => ({
+      id: doc.id,
+      name: doc.name,
+      type: doc.type,
+      count: doc.item_count,
+      size: documentService.formatFileSize(doc.file_size),
+      icon: doc.icon_type
+    }));
 
     const getFileIcon = (iconType: string) => {
       switch (iconType) {
@@ -3016,8 +3037,19 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <View style={styles.filesContainer}>
-          {files.map((item, index) => (
+        {documentsLoading ? (
+          <View style={styles.filesLoadingContainer}>
+            <ActivityIndicator size="large" color="#7C3AED" />
+            <Text style={styles.filesLoadingText}>Dosyalar yükleniyor...</Text>
+          </View>
+        ) : files.length === 0 ? (
+          <View style={styles.filesEmptyContainer}>
+            <Folder size={48} color="#D1D5DB" />
+            <Text style={styles.filesEmptyText}>Henüz dosya yok</Text>
+          </View>
+        ) : (
+          <View style={styles.filesContainer}>
+            {files.map((item, index) => (
             <View
               key={item.id}
               style={[
@@ -3057,7 +3089,8 @@ export default function ProfileScreen() {
               <ChevronRight size={20} color="#CCC" />
             </View>
           ))}
-        </View>
+          </View>
+        )}
       </>
     );
   };
@@ -5103,25 +5136,44 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#CCC',
   },
-  filesContainer: {
+  filesLoadingContainer: {
     backgroundColor: '#fff',
     borderRadius: 12,
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filesLoadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  filesEmptyContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filesEmptyText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  filesContainer: {
+    backgroundColor: '#F3E8FF',
+    borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
   },
   fileItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 14,
+    paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F3E8FF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#E9D5FF',
   },
   fileItemLast: {
     borderBottomWidth: 0,
