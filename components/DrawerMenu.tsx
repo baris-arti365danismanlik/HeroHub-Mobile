@@ -126,10 +126,14 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   };
 
   const isActive = (route: string): boolean => {
-    if (route === '/(tabs)') {
-      return pathname === '/' || pathname === '/(tabs)';
+    const routePath = route.replace('/(tabs)', '');
+    const normalizedPathname = pathname.replace('/(tabs)', '');
+
+    if (routePath === '' || routePath === '/') {
+      return normalizedPathname === '' || normalizedPathname === '/';
     }
-    return pathname === route || pathname.startsWith(route);
+
+    return normalizedPathname === routePath || normalizedPathname.startsWith(routePath + '/');
   };
 
   const handleNavigation = (route: string) => {
