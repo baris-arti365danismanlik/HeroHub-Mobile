@@ -394,13 +394,17 @@ class UserService {
   }): Promise<any> {
     const payload = {
       userId: data.userId,
-      name: data.name,
-      issuer: data.issuer,
-      issueDate: data.issueDate,
+      certificateName: data.name,
+      institution: data.issuer,
+      certificateDate: data.issueDate,
       expiryDate: data.expiryDate || null,
     };
 
+    console.log('Certificate API Request:', JSON.stringify(payload, null, 2));
+
     const response = await apiClient.post<any>('/Profile/create-usercertificate', payload);
+
+    console.log('Certificate API Response:', JSON.stringify(response, null, 2));
 
     if (!response.succeeded && !response.success) {
       throw new Error(response.friendlyMessage || response.message || 'Sertifika eklenemedi');
@@ -416,11 +420,15 @@ class UserService {
   }): Promise<any> {
     const payload = {
       userId: data.userId,
-      languageId: data.languageId,
-      languageLevel: data.languageLevel,
+      language: data.languageId,
+      level: data.languageLevel,
     };
 
+    console.log('Language API Request:', JSON.stringify(payload, null, 2));
+
     const response = await apiClient.post<any>('/Profile/create-userlanguage', payload);
+
+    console.log('Language API Response:', JSON.stringify(response, null, 2));
 
     if (!response.succeeded && !response.success) {
       throw new Error(response.friendlyMessage || response.message || 'Dil bilgisi eklenemedi');
@@ -438,13 +446,17 @@ class UserService {
   }): Promise<any> {
     const payload = {
       userId: data.userId,
-      licenseType: data.licenseType,
-      licenseNumber: data.licenseNumber,
-      issueDate: data.issueDate,
-      expiryDate: data.expiryDate,
+      driverLicenseType: data.licenseType,
+      driverLicenseNumber: data.licenseNumber,
+      driverLicenseDate: data.issueDate,
+      driverLicenseExpiryDate: data.expiryDate,
     };
 
+    console.log('Driver License API Request:', JSON.stringify(payload, null, 2));
+
     const response = await apiClient.post<any>('/Profile/create-userdriverlicense', payload);
+
+    console.log('Driver License API Response:', JSON.stringify(response, null, 2));
 
     if (!response.succeeded && !response.success) {
       throw new Error(response.friendlyMessage || response.message || 'Ehliyet bilgisi eklenemedi');

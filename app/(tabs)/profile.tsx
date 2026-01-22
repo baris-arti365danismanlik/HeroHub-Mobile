@@ -1064,7 +1064,9 @@ export default function ProfileScreen() {
         const parts = dateStr.split('/').map((p: string) => p.trim());
         if (parts.length === 3) {
           const [day, month, year] = parts;
-          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          const date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+          date.setHours(21, 0, 0, 0);
+          return date.toISOString();
         }
         return dateStr;
       };
@@ -1080,6 +1082,7 @@ export default function ProfileScreen() {
       alert('Sertifika başarıyla eklendi');
       await loadUserProfile();
     } catch (error: any) {
+      console.error('Certificate submission error:', error);
       alert(error.message || 'Sertifika eklenirken bir hata oluştu');
     }
   };
@@ -1091,6 +1094,8 @@ export default function ProfileScreen() {
     }
 
     try {
+      console.log('Submitting language data:', data);
+
       await userService.createUserLanguage({
         userId: user.backend_user_id,
         languageId: data.languageId,
@@ -1100,6 +1105,7 @@ export default function ProfileScreen() {
       alert('Dil bilgisi başarıyla eklendi');
       await loadUserProfile();
     } catch (error: any) {
+      console.error('Language submission error:', error);
       alert(error.message || 'Dil bilgisi eklenirken bir hata oluştu');
     }
   };
@@ -1115,10 +1121,14 @@ export default function ProfileScreen() {
         const parts = dateStr.split('/').map((p: string) => p.trim());
         if (parts.length === 3) {
           const [day, month, year] = parts;
-          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          const date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+          date.setHours(21, 0, 0, 0);
+          return date.toISOString();
         }
         return dateStr;
       };
+
+      console.log('Submitting visa data:', data);
 
       await userService.createUserVisa({
         userId: user.backend_user_id,
@@ -1132,6 +1142,7 @@ export default function ProfileScreen() {
       alert('Vize bilgisi başarıyla eklendi');
       await loadUserProfile();
     } catch (error: any) {
+      console.error('Visa submission error:', error);
       alert(error.message || 'Vize bilgisi eklenirken bir hata oluştu');
     }
   };
@@ -1147,10 +1158,14 @@ export default function ProfileScreen() {
         const parts = dateStr.split('/').map((p: string) => p.trim());
         if (parts.length === 3) {
           const [day, month, year] = parts;
-          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          const date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+          date.setHours(21, 0, 0, 0);
+          return date.toISOString();
         }
         return dateStr;
       };
+
+      console.log('Submitting driver license data:', data);
 
       await userService.createUserDriverLicense({
         userId: user.backend_user_id,
@@ -1163,6 +1178,7 @@ export default function ProfileScreen() {
       alert('Ehliyet bilgisi başarıyla eklendi');
       await loadUserProfile();
     } catch (error: any) {
+      console.error('Driver license submission error:', error);
       alert(error.message || 'Ehliyet bilgisi eklenirken bir hata oluştu');
     }
   };
