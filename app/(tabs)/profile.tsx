@@ -3048,33 +3048,52 @@ export default function ProfileScreen() {
               </View>
             </TouchableOpacity>
 
-            {userWorkLogs.slice(0, 5).map((log: any, index: number) => (
-              <View key={index} style={styles.pdksHistoryCard}>
-                <View style={styles.pdksHistoryHeader}>
-                  <Text style={styles.pdksHistoryDate}>{formatDate(log.date)}</Text>
-                  <Text style={[
-                    styles.pdksHistoryTime,
-                    log.totalWorkHours < 8 ? styles.pdksHistoryTimeRed : {}
-                  ]}>
-                    {log.checkInTime ? log.checkInTime.slice(0, 5) : '08:00'} - {log.checkOutTime ? log.checkOutTime.slice(0, 5) : '16:00'}
-                  </Text>
-                </View>
-                <View style={styles.pdksHistoryDetails}>
-                  <View style={styles.pdksHistoryRow}>
-                    <Text style={styles.pdksHistoryLabel}>Giriş</Text>
-                    <Text style={styles.pdksHistoryValue}>A Kapısı - {log.checkInTime ? log.checkInTime.slice(0, 5) : '07:58'}</Text>
-                  </View>
-                  <View style={styles.pdksHistoryRow}>
-                    <Text style={styles.pdksHistoryLabel}>Çıkış</Text>
-                    <Text style={styles.pdksHistoryValue}>B Kapısı - {log.checkOutTime ? log.checkOutTime.slice(0, 5) : '16:17'}</Text>
-                  </View>
-                </View>
-              </View>
-            ))}
+            {userWorkLogs
+              .sort((a: any, b: any) => {
+                const dateA = new Date(a.date).getTime();
+                const dateB = new Date(b.date).getTime();
+                return dateB - dateA;
+              })
+              .slice(0, 5)
+              .map((log: any, index: number) => {
+                const checkIn = log.checkInTime || '-';
+                const checkOut = log.checkOutTime || '-';
+                const hours = log.totalWorkHours || 0;
 
-            <TouchableOpacity style={styles.pdksViewAllButton}>
-              <Text style={styles.pdksViewAllButtonText}>Görevi Tamamla</Text>
-            </TouchableOpacity>
+                return (
+                  <View key={index} style={styles.pdksHistoryCard}>
+                    <View style={styles.pdksHistoryHeader}>
+                      <Text style={styles.pdksHistoryDate}>{formatDate(log.date)}</Text>
+                      <Text style={[
+                        styles.pdksHistoryTime,
+                        hours < 8 ? styles.pdksHistoryTimeRed : {}
+                      ]}>
+                        {checkIn !== '-' ? checkIn.slice(0, 5) : '-'} - {checkOut !== '-' ? checkOut.slice(0, 5) : '-'}
+                      </Text>
+                    </View>
+                    <View style={styles.pdksHistoryDetails}>
+                      <View style={styles.pdksHistoryRow}>
+                        <Text style={styles.pdksHistoryLabel}>Giriş</Text>
+                        <Text style={styles.pdksHistoryValue}>
+                          {checkIn !== '-' ? checkIn.slice(0, 5) : 'Kayıt yok'}
+                        </Text>
+                      </View>
+                      <View style={styles.pdksHistoryRow}>
+                        <Text style={styles.pdksHistoryLabel}>Çıkış</Text>
+                        <Text style={styles.pdksHistoryValue}>
+                          {checkOut !== '-' ? checkOut.slice(0, 5) : 'Kayıt yok'}
+                        </Text>
+                      </View>
+                      <View style={styles.pdksHistoryRow}>
+                        <Text style={styles.pdksHistoryLabel}>Toplam Saat</Text>
+                        <Text style={styles.pdksHistoryValue}>
+                          {hours.toFixed(1)} saat
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
           </View>
         )}
 
