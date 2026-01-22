@@ -4473,15 +4473,19 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 100,
     height: 100,
-    borderRadius: 12,
+    borderRadius: 0,
+    borderWidth: 3,
+    borderColor: '#7C3AED',
   },
   profileImagePlaceholder: {
     width: 100,
     height: 100,
-    borderRadius: 12,
+    borderRadius: 0,
     backgroundColor: '#F0E7FF',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#7C3AED',
   },
   profileInfo: {
     flex: 1,
