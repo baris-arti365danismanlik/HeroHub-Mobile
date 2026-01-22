@@ -503,16 +503,24 @@ export default function EmployeesScreen() {
       ) : (
         <View style={styles.treeViewWrapper}>
           <ScrollView
+            horizontal
             style={styles.content}
-            showsVerticalScrollIndicator={true}
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={true}
           >
             <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={true}
+              style={{ flex: 1 }}
               contentContainerStyle={styles.treeContainer}
+              showsVerticalScrollIndicator={true}
+              showsHorizontalScrollIndicator={false}
+              nestedScrollEnabled
             >
-              <View style={{ transform: [{ scale: zoomLevel / 100 }] }}>
+              <View style={{
+                transform: [{ scale: zoomLevel / 100 }],
+                minWidth: 1000 * (zoomLevel / 100),
+                alignItems: 'center',
+              }}>
                 {treeEmployees.map((employee) => renderTreeEmployee(employee, 0))}
               </View>
             </ScrollView>
