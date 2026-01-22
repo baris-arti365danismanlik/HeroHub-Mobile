@@ -3058,7 +3058,9 @@ export default function ProfileScreen() {
               .map((log: any, index: number) => {
                 const checkIn = log.checkInTime || '-';
                 const checkOut = log.checkOutTime || '-';
-                const hours = log.totalWorkHours || 0;
+                const hours = typeof log.totalWorkHours === 'number'
+                  ? log.totalWorkHours
+                  : (parseFloat(log.totalWorkHours) || 0);
 
                 return (
                   <View key={index} style={styles.pdksHistoryCard}>
