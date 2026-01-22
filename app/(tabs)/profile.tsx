@@ -1702,34 +1702,6 @@ export default function ProfileScreen() {
 
     return (
       <>
-        <View style={styles.assetUserCard}>
-          {profileDetails?.profilePhoto ? (
-            <Image
-              source={{ uri: profileDetails.profilePhoto }}
-              style={styles.assetUserImage}
-            />
-          ) : (
-            <View style={styles.assetUserPlaceholder}>
-              <UserIcon size={32} color="#7C3AED" />
-            </View>
-          )}
-          <View style={styles.assetUserInfo}>
-            <Text style={styles.assetUserName}>
-              {user.firstName} {user.lastName}
-            </Text>
-            {profileDetails?.currentTitle && (
-              <View style={styles.assetUserDetail}>
-                <Briefcase size={14} color="#666" />
-                <Text style={styles.assetUserDetailText}>{profileDetails.currentTitle}</Text>
-              </View>
-            )}
-            <View style={styles.assetUserDetail}>
-              <Building2 size={14} color="#666" />
-              <Text style={styles.assetUserDetailText}>{profileDetails?.organizationName || '-'}</Text>
-            </View>
-          </View>
-        </View>
-
         <View style={styles.summaryContainer}>
           {contactInfo?.phoneNumber && (
             <View style={styles.contactItem}>
@@ -1877,34 +1849,6 @@ export default function ProfileScreen() {
 
     return (
       <>
-        <View style={styles.assetUserCard}>
-          {user.profilePictureUrl ? (
-            <Image
-              source={{ uri: user.profilePictureUrl }}
-              style={styles.assetUserImage}
-            />
-          ) : (
-            <View style={styles.assetUserPlaceholder}>
-              <UserIcon size={32} color="#7C3AED" />
-            </View>
-          )}
-          <View style={styles.assetUserInfo}>
-            <Text style={styles.assetUserName}>
-              {user.firstName} {user.lastName}
-            </Text>
-            {profileDetails?.currentTitle && (
-              <View style={styles.assetUserDetail}>
-                <Briefcase size={14} color="#666" />
-                <Text style={styles.assetUserDetailText}>{profileDetails.currentTitle}</Text>
-              </View>
-            )}
-            <View style={styles.assetUserDetail}>
-              <Building2 size={14} color="#666" />
-              <Text style={styles.assetUserDetailText}>Art365 Danışmanlık</Text>
-            </View>
-          </View>
-        </View>
-
         <View style={styles.sectionHeader}>
           <AlignJustify size={18} color="#1a1a1a" />
           <Text style={styles.sectionHeaderTitle}>ZİMMET BİLGİLERİ</Text>
