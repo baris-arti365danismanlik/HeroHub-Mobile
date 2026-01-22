@@ -28,9 +28,10 @@ interface InboxModalProps {
   profilePhotoUrl?: string;
   onNotificationRead?: () => void;
   onLogout?: () => void;
+  onNavigate?: (route: string) => void;
 }
 
-export function InboxModal({ visible, onClose, backendUserId, userName, profilePhotoUrl, onNotificationRead, onLogout }: InboxModalProps) {
+export function InboxModal({ visible, onClose, backendUserId, userName, profilePhotoUrl, onNotificationRead, onLogout, onNavigate }: InboxModalProps) {
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [selectedNotification, setSelectedNotification] = useState<NotificationDetail | null>(null);
@@ -470,7 +471,13 @@ export function InboxModal({ visible, onClose, backendUserId, userName, profileP
       <DrawerMenu
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
-        userName={userName}
+        onNavigate={(route) => {
+          setDrawerVisible(false);
+          onClose();
+          if (onNavigate) {
+            onNavigate(route);
+          }
+        }}
       />
 
       <ProfileMenu

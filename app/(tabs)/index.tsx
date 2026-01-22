@@ -21,6 +21,7 @@ import type {
   UserTrainingStatus,
 } from '@/services/home.service';
 import { Calendar, Clock, FileText, Menu, Mail, MessageSquare, User as UserIcon, Users, BookOpen, TrendingUp, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
 import { ProfileMenu } from '@/components/ProfileMenu';
@@ -28,6 +29,7 @@ import type { UserDayOffBalance, UserProfileDetails } from '@/types/backend';
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const [dayOffBalance, setDayOffBalance] = useState<UserDayOffBalance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -319,6 +321,10 @@ export default function HomeScreen() {
             setNotificationCount(count);
           }}
           onLogout={handleLogout}
+          onNavigate={(route) => {
+            setInboxVisible(false);
+            router.push(route as any);
+          }}
         />
       )}
 

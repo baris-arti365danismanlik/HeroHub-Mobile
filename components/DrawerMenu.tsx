@@ -28,6 +28,7 @@ import { useAuth } from '@/contexts/AuthContext';
 interface DrawerMenuProps {
   visible: boolean;
   onClose: () => void;
+  onNavigate?: (route: string) => void;
 }
 
 interface MenuItem {
@@ -38,7 +39,7 @@ interface MenuItem {
   roles?: string[];
 }
 
-export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
+export function DrawerMenu({ visible, onClose, onNavigate }: DrawerMenuProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
@@ -138,7 +139,11 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
 
   const handleNavigation = (route: string) => {
     onClose();
-    router.push(route as any);
+    if (onNavigate) {
+      onNavigate(route);
+    } else {
+      router.push(route as any);
+    }
   };
 
   return (

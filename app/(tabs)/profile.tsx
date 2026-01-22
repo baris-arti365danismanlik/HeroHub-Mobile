@@ -3632,6 +3632,10 @@ export default function ProfileScreen() {
           onClose={() => setInboxVisible(false)}
           backendUserId={user.backend_user_id}
           userName={`${user.firstName} ${user.lastName}`}
+          onNavigate={(route) => {
+            setInboxVisible(false);
+            router.push(route as any);
+          }}
         />
       )}
 
