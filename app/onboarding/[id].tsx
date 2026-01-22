@@ -442,7 +442,7 @@ export default function OnboardingDetailScreen() {
                         style={styles.notificationButton}
                         onPress={() => {}}
                       >
-                        <Bell size={16} color="#fff" />
+                        <Bell size={20} color="#fff" />
                       </TouchableOpacity>
                     </View>
                   )}
@@ -493,7 +493,7 @@ export default function OnboardingDetailScreen() {
                         style={styles.notificationButton}
                         onPress={() => {}}
                       >
-                        <Bell size={16} color="#fff" />
+                        <Bell size={20} color="#fff" />
                       </TouchableOpacity>
                     </View>
                   )}
