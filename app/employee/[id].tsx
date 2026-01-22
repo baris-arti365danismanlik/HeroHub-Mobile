@@ -268,11 +268,9 @@ export default function EmployeeDetailScreen() {
             canEdit={canEditProfile}
             onEdit={() => handleEditSection('personal')}
           >
-            <View style={styles.infoRowContainer}>
+            <View style={[styles.infoRowContainer, styles.personnelRow]}>
               <Text style={styles.infoRowLabel}>Personel No</Text>
-              <View style={styles.personnelBadge}>
-                <Text style={styles.personnelBadgeText}>{employee.personalInformation?.personnelNumber || '-'}</Text>
-              </View>
+              <Text style={styles.personnelNoValue}>{employee.personalInformation?.personnelNumber || '-'}</Text>
             </View>
             <View style={styles.infoRowContainer}>
               <Text style={styles.infoRowLabel}>Status</Text>
@@ -746,16 +744,16 @@ const styles = StyleSheet.create({
   visaCardBody: {
     gap: 4,
   },
-  personnelBadge: {
-    backgroundColor: '#D1FAE5',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 6,
+  personnelRow: {
+    backgroundColor: '#F0F9FF',
   },
-  personnelBadgeText: {
+  personnelNoValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#059669',
+    color: '#1a1a1a',
+    textAlign: 'right',
+    flex: 1,
+    marginLeft: 16,
   },
   statusBadge: {
     paddingHorizontal: 12,

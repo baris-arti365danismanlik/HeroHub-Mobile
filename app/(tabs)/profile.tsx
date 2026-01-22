@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import * as DocumentPicker from 'expo-document-picker';
-import { User as UserIcon, Phone, Mail, MapPin, Briefcase, GraduationCap, Heart, HeartPulse, FileText, Award, Globe, Languages, CreditCard, LogOut, Menu, Building2, Users as Users2, DollarSign, Bell, MessageSquare, Package, Download, Pencil, Umbrella, ChevronDown, Folder, File, Search, Plus, Share2, ChevronRight, FolderOpen, Calendar, X, TextAlignJustify as AlignJustify, Linkedin, Facebook, Instagram, Clock, Smartphone, Check, Upload, Users, Link } from 'lucide-react-native';
+import { User as UserIcon, Phone, Mail, MapPin, Briefcase, GraduationCap, Heart, HeartPulse, FileText, Award, Globe, Languages, CreditCard, LogOut, Menu, Building2, Users as Users2, DollarSign, Bell, MessageSquare, Package, Download, Pencil, Umbrella, ChevronDown, ChevronUp, Folder, File, Search, Plus, Share2, ChevronRight, FolderOpen, Calendar, X, TextAlignJustify as AlignJustify, Linkedin, Facebook, Instagram, Clock, Smartphone, Check, Upload, Users, Link } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
@@ -2011,22 +2011,18 @@ export default function ProfileScreen() {
                   <Pencil size={18} color="#666" />
                 </TouchableOpacity>
               )}
-              <ChevronDown
-                size={20}
-                color="#666"
-                style={{
-                  transform: [{ rotate: expandedSections['personal'] ? '180deg' : '0deg' }]
-                }}
-              />
+              {expandedSections['personal'] ? (
+                <ChevronUp size={20} color="#666" />
+              ) : (
+                <ChevronDown size={20} color="#666" />
+              )}
             </View>
           </TouchableOpacity>
           {expandedSections['personal'] && (
             <View style={styles.profileSectionContent}>
-              <View style={[styles.infoRow, styles.infoRowWithBorder]}>
+              <View style={[styles.infoRow, styles.infoRowWithBorder, styles.personnelRow]}>
                 <Text style={styles.infoRowLabel}>Personel No</Text>
-                <View style={styles.personnelBadge}>
-                  <Text style={styles.personnelBadgeText}>{personalInformation?.personnelNumber || '-'}</Text>
-                </View>
+                <Text style={styles.personnelNoValue}>{personalInformation?.personnelNumber || '-'}</Text>
               </View>
               <View style={[styles.infoRow, styles.infoRowWithBorder]}>
                 <Text style={styles.infoRowLabel}>Status</Text>
@@ -2062,13 +2058,11 @@ export default function ProfileScreen() {
                   <Pencil size={18} color="#666" />
                 </TouchableOpacity>
               )}
-              <ChevronDown
-                size={20}
-                color="#666"
-                style={{
-                  transform: [{ rotate: expandedSections['contact'] ? '180deg' : '0deg' }]
-                }}
-              />
+              {expandedSections['contact'] ? (
+                <ChevronUp size={20} color="#666" />
+              ) : (
+                <ChevronDown size={20} color="#666" />
+              )}
             </View>
           </TouchableOpacity>
           {expandedSections['contact'] && (
@@ -2098,13 +2092,11 @@ export default function ProfileScreen() {
                   <Pencil size={18} color="#666" />
                 </TouchableOpacity>
               )}
-              <ChevronDown
-                size={20}
-                color="#666"
-                style={{
-                  transform: [{ rotate: expandedSections['address'] ? '180deg' : '0deg' }]
-                }}
-              />
+              {expandedSections['address'] ? (
+                <ChevronUp size={20} color="#666" />
+              ) : (
+                <ChevronDown size={20} color="#666" />
+              )}
             </View>
           </TouchableOpacity>
           {expandedSections['address'] && (
@@ -2132,13 +2124,11 @@ export default function ProfileScreen() {
                   <Pencil size={18} color="#666" />
                 </TouchableOpacity>
               )}
-              <ChevronDown
-                size={20}
-                color="#666"
-                style={{
-                  transform: [{ rotate: expandedSections['health'] ? '180deg' : '0deg' }]
-                }}
-              />
+              {expandedSections['health'] ? (
+                <ChevronUp size={20} color="#666" />
+              ) : (
+                <ChevronDown size={20} color="#666" />
+              )}
             </View>
           </TouchableOpacity>
           {expandedSections['health'] && (
@@ -2162,13 +2152,11 @@ export default function ProfileScreen() {
               <Text style={styles.profileSectionTitle}>EHLİYET BİLGİLERİ</Text>
             </View>
             <View style={styles.profileSectionRight}>
-              <ChevronDown
-                size={20}
-                color="#666"
-                style={{
-                  transform: [{ rotate: expandedSections['driverLicense'] ? '180deg' : '0deg' }]
-                }}
-              />
+              {expandedSections['driverLicense'] ? (
+                <ChevronUp size={20} color="#666" />
+              ) : (
+                <ChevronDown size={20} color="#666" />
+              )}
             </View>
           </TouchableOpacity>
           {expandedSections['driverLicense'] && (
@@ -2204,13 +2192,11 @@ export default function ProfileScreen() {
                   <Pencil size={18} color="#666" />
                 </TouchableOpacity>
               )}
-              <ChevronDown
-                size={20}
-                color="#666"
-                style={{
-                  transform: [{ rotate: expandedSections['military'] ? '180deg' : '0deg' }]
-                }}
-              />
+              {expandedSections['military'] ? (
+                <ChevronUp size={20} color="#666" />
+              ) : (
+                <ChevronDown size={20} color="#666" />
+              )}
             </View>
           </TouchableOpacity>
           {expandedSections['military'] && (
@@ -2517,13 +2503,11 @@ export default function ProfileScreen() {
                 <AlignJustify size={18} color="#1a1a1a" />
                 <Text style={styles.onboardingSectionHeaderText}>İŞE BAŞLAMA GÖREVLERİ</Text>
               </View>
-              <ChevronDown
-                size={20}
-                color="#1a1a1a"
-                style={{
-                  transform: [{ rotate: onboardingTasksExpanded ? '180deg' : '0deg' }]
-                }}
-              />
+              {onboardingTasksExpanded ? (
+                <ChevronUp size={20} color="#1a1a1a" />
+              ) : (
+                <ChevronDown size={20} color="#1a1a1a" />
+              )}
             </TouchableOpacity>
 
             {onboardingTasksExpanded && (
@@ -2591,13 +2575,11 @@ export default function ProfileScreen() {
                 <Users size={18} color="#1a1a1a" />
                 <Text style={styles.onboardingSectionHeaderText}>SENİ TANIYALIM</Text>
               </View>
-              <ChevronDown
-                size={20}
-                color="#1a1a1a"
-                style={{
-                  transform: [{ rotate: onboardingQuestionsExpanded ? '180deg' : '0deg' }]
-                }}
-              />
+              {onboardingQuestionsExpanded ? (
+                <ChevronUp size={20} color="#1a1a1a" />
+              ) : (
+                <ChevronDown size={20} color="#1a1a1a" />
+              )}
             </TouchableOpacity>
 
             {onboardingQuestionsExpanded && (
@@ -6795,16 +6777,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  personnelBadge: {
-    backgroundColor: '#D1FAE5',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 6,
+  personnelRow: {
+    backgroundColor: '#F0F9FF',
   },
-  personnelBadgeText: {
+  personnelNoValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#059669',
+    color: '#1a1a1a',
+    textAlign: 'right',
+    flex: 1,
+    marginLeft: 16,
   },
   statusBadge: {
     paddingHorizontal: 12,
