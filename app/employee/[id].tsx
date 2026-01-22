@@ -293,8 +293,6 @@ export default function EmployeeDetailScreen() {
 
   const contactInfo = employee?.userContact;
   const socialMedia = employee?.socialMedia;
-  const manager = employee?.reportsTo;
-  const colleagues = employee?.colleagues || [];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -427,54 +425,6 @@ export default function EmployeeDetailScreen() {
               <View style={styles.summaryDetailItem}>
                 <Building2 size={20} color="#333" />
                 <Text style={styles.summaryDetailText}>{employee.organizationName}</Text>
-              </View>
-            )}
-
-            <View style={styles.dividerLine} />
-
-            {manager && (
-              <View style={styles.managerSection}>
-                <Text style={styles.sectionTitle}>Yöneticisi</Text>
-                <View style={styles.personItem}>
-                  {manager.profilePhoto ? (
-                    <Image
-                      source={{ uri: normalizePhotoUrl(manager.profilePhoto) || '' }}
-                      style={styles.personAvatarImage}
-                    />
-                  ) : (
-                    <View style={styles.personAvatar}>
-                      <User size={20} color="#7C3AED" />
-                    </View>
-                  )}
-                  <View style={styles.personInfo}>
-                    <Text style={styles.personName}>{manager.fullName || '-'}</Text>
-                    <Text style={styles.personRole}>{manager.title || '-'}</Text>
-                  </View>
-                </View>
-              </View>
-            )}
-
-            {colleagues.length > 0 && (
-              <View style={styles.teamSection}>
-                <Text style={styles.sectionTitle}>Ekip Arkadaşları</Text>
-                {colleagues.map((colleague, index) => (
-                  <View key={colleague.id} style={[styles.personItem, index === colleagues.length - 1 && { marginBottom: 0 }]}>
-                    {colleague.profilePhoto ? (
-                      <Image
-                        source={{ uri: normalizePhotoUrl(colleague.profilePhoto) || '' }}
-                        style={styles.personAvatarImage}
-                      />
-                    ) : (
-                      <View style={styles.personAvatar}>
-                        <User size={20} color="#7C3AED" />
-                      </View>
-                    )}
-                    <View style={styles.personInfo}>
-                      <Text style={styles.personName}>{colleague.fullName}</Text>
-                      <Text style={styles.personRole}>{colleague.title || '-'}</Text>
-                    </View>
-                  </View>
-                ))}
               </View>
             )}
           </View>
