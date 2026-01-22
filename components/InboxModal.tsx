@@ -25,13 +25,14 @@ interface InboxModalProps {
   onClose: () => void;
   backendUserId: number;
   userName: string;
+  userEmail?: string;
   profilePhotoUrl?: string;
   onNotificationRead?: () => void;
   onLogout?: () => void;
   onNavigate?: (route: string) => void;
 }
 
-export function InboxModal({ visible, onClose, backendUserId, userName, profilePhotoUrl, onNotificationRead, onLogout, onNavigate }: InboxModalProps) {
+export function InboxModal({ visible, onClose, backendUserId, userName, userEmail, profilePhotoUrl, onNotificationRead, onLogout, onNavigate }: InboxModalProps) {
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [selectedNotification, setSelectedNotification] = useState<NotificationDetail | null>(null);
@@ -483,9 +484,10 @@ export function InboxModal({ visible, onClose, backendUserId, userName, profileP
       <ProfileMenu
         visible={profileMenuVisible}
         onClose={() => setProfileMenuVisible(false)}
-        userName={userName}
-        profilePhotoUrl={profilePhotoUrl}
-        onLogout={onLogout}
+        name={userName}
+        email={userEmail || ''}
+        profilePhoto={profilePhotoUrl}
+        onLogout={onLogout || (() => {})}
       />
     </>
   );
