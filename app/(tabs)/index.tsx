@@ -313,10 +313,12 @@ export default function HomeScreen() {
           onClose={() => setInboxVisible(false)}
           backendUserId={user.backend_user_id}
           userName={`${user.firstName} ${user.lastName}`}
+          profilePhotoUrl={profileDetails?.profilePhoto || user?.profilePictureUrl}
           onNotificationRead={async () => {
             const count = await notificationService.getUnreadCount().catch(() => 0);
             setNotificationCount(count);
           }}
+          onLogout={handleLogout}
         />
       )}
 

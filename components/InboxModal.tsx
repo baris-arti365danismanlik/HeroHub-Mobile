@@ -11,21 +11,25 @@ import {
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Bell, QrCode, Check } from 'lucide-react-native';
+import { ChevronLeft, Bell, QrCode, Check, Menu, User as UserIcon } from 'lucide-react-native';
 import { notificationService } from '@/services/notification.service';
 import { UserNotification, NotificationDetail } from '@/types/backend';
 import { normalizePhotoUrl } from '@/utils/formatters';
 import { SurveyModal } from './SurveyModal';
+import { DrawerMenu } from './DrawerMenu';
+import { ProfileMenu } from './ProfileMenu';
 
 interface InboxModalProps {
   visible: boolean;
   onClose: () => void;
   backendUserId: number;
   userName: string;
+  profilePhotoUrl?: string;
   onNotificationRead?: () => void;
+  onLogout?: () => void;
 }
 
-export function InboxModal({ visible, onClose, backendUserId, userName, onNotificationRead }: InboxModalProps) {
+export function InboxModal({ visible, onClose, backendUserId, userName, profilePhotoUrl, onNotificationRead, onLogout }: InboxModalProps) {
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [selectedNotification, setSelectedNotification] = useState<NotificationDetail | null>(null);
@@ -33,6 +37,8 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
   const [surveyModalVisible, setSurveyModalVisible] = useState(false);
   const [surveyAnswerId, setSurveyAnswerId] = useState<number | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
 
   useEffect(() => {
     if (visible && backendUserId) {
@@ -163,11 +169,35 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
   const renderInboxContent = () => (
     <>
       <View style={styles.headerBar}>
-        <TouchableOpacity onPress={onClose} style={styles.backButton}>
-          <ChevronLeft size={24} color="#1a1a1a" />
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() => setDrawerVisible(true)}
+        >
+          <Menu size={24} color="#1a1a1a" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>GELEN KUTUSU</Text>
-        <View style={{ width: 40 }} />
+
+        <View style={styles.logoContainer}>
+          <Text style={styles.logoText}>hero</Text>
+          <View style={styles.logoBadge}>
+            <Text style={styles.logoBadgeText}>+</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={styles.profileButton}
+          onPress={() => setProfileMenuVisible(true)}
+        >
+          {profilePhotoUrl ? (
+            <Image
+              source={{ uri: profilePhotoUrl }}
+              style={styles.headerProfileImage}
+            />
+          ) : (
+            <View style={styles.headerProfilePlaceholder}>
+              <UserIcon size={20} color="#7C3AED" />
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -251,6 +281,20 @@ export function InboxModal({ visible, onClose, backendUserId, userName, onNotifi
           onSuccess={handleSurveySuccess}
         />
       )}
+
+      <DrawerMenu
+        visible={drawerVisible}
+        onClose={() => setDrawerVisible(false)}
+        userName={userName}
+      />
+
+      <ProfileMenu
+        visible={profileMenuVisible}
+        onClose={() => setProfileMenuVisible(false)}
+        userName={userName}
+        profilePhotoUrl={profilePhotoUrl}
+        onLogout={onLogout}
+      />
     </>
   );
 }
@@ -268,17 +312,50 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: '#fff',
   },
-  backButton: {
+  menuButton: {
     padding: 4,
-    width: 40,
   },
-  headerTitle: {
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute',
+    left: '50%',
+    marginLeft: -35,
+  },
+  logoText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#7C3AED',
+  },
+  logoBadge: {
+    backgroundColor: '#7C3AED',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
+  },
+  logoBadgeText: {
+    color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    flex: 1,
-    textAlign: 'center',
-    letterSpacing: 0.5,
+    fontWeight: 'bold',
+  },
+  profileButton: {
+    padding: 0,
+  },
+  headerProfileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  headerProfilePlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F3E8FF',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loadingContainer: {
     padding: 40,
