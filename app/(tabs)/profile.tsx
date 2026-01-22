@@ -334,11 +334,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    router.replace('/(auth)/login');
-  };
-
   const handleEdit = (section: string) => {
     if (!profileDetails) return;
 
@@ -2484,31 +2479,11 @@ export default function ProfileScreen() {
           <View style={styles.onboardingEmptyContainer}>
             <Briefcase size={80} color="#E5E7EB" strokeWidth={1} />
             <Text style={styles.onboardingEmptyText}>İşe başlama bilgileri yükleniyor...</Text>
-            <TouchableOpacity
-              style={styles.onboardingLogoutButton}
-              onPress={async () => {
-                await logout();
-                router.replace('/login');
-              }}
-            >
-              <LogOut size={18} color="#DC2626" />
-              <Text style={styles.onboardingLogoutText}>Çıkış Yap</Text>
-            </TouchableOpacity>
           </View>
         ) : !hasAnyData ? (
           <View style={styles.onboardingEmptyContainer}>
             <Briefcase size={80} color="#E5E7EB" strokeWidth={1} />
             <Text style={styles.onboardingEmptyText}>İşe başlama bilgileri yükleniyor...</Text>
-            <TouchableOpacity
-              style={styles.onboardingLogoutButton}
-              onPress={async () => {
-                await logout();
-                router.replace('/login');
-              }}
-            >
-              <LogOut size={18} color="#DC2626" />
-              <Text style={styles.onboardingLogoutText}>Çıkış Yap</Text>
-            </TouchableOpacity>
           </View>
         ) : (
           <>
@@ -2677,17 +2652,6 @@ export default function ProfileScreen() {
             )}
           </View>
         )}
-
-            <TouchableOpacity
-              style={styles.onboardingLogoutButtonBottom}
-              onPress={async () => {
-                await logout();
-                router.replace('/login');
-              }}
-            >
-              <LogOut size={18} color="#DC2626" />
-              <Text style={styles.onboardingLogoutText}>Çıkış Yap</Text>
-            </TouchableOpacity>
           </>
         )}
       </ScrollView>
@@ -3056,11 +3020,6 @@ export default function ProfileScreen() {
 
           <View style={styles.sectionsContainer}>
             {renderSectionContent()}
-
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-              <LogOut size={20} color="#FF3B30" />
-              <Text style={styles.logoutText}>Çıkış Yap</Text>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </View>
