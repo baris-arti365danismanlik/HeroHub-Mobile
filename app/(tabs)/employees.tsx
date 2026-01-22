@@ -21,6 +21,8 @@ import {
   Building2,
   Network,
   X,
+  Minus,
+  Plus,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { DrawerMenu } from '@/components/DrawerMenu';
@@ -60,6 +62,7 @@ export default function EmployeesScreen() {
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(100);
   const { user, logout } = useAuth();
   const { isAdmin, canWrite } = usePermissions(user?.modulePermissions);
 
@@ -152,6 +155,22 @@ export default function EmployeesScreen() {
   };
 
   const filteredGroupedEmployees = getProcessedEmployees();
+
+  const handleZoomIn = () => {
+    if (zoomLevel < 150) {
+      setZoomLevel(prev => Math.min(prev + 25, 150));
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (zoomLevel > 50) {
+      setZoomLevel(prev => Math.max(prev - 25, 50));
+    }
+  };
+
+  const handleResetZoom = () => {
+    setZoomLevel(100);
+  };
 
   const renderTreeEmployee = (employee: TreeEmployee, depth: number = 0, isLast: boolean = false) => {
     const hasChildren = employee.children && employee.children.length > 0;
@@ -482,14 +501,46 @@ export default function EmployeesScreen() {
           ))}
         </ScrollView>
       ) : (
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.treeContainer}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-        >
-          {treeEmployees.map((employee) => renderTreeEmployee(employee, 0))}
-        </ScrollView>
+        <View style={styles.treeViewWrapper}>
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.treeContainer}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+          >
+            <View style={{ transform: [{ scale: zoomLevel / 100 }] }}>
+              {treeEmployees.map((employee) => renderTreeEmployee(employee, 0))}
+            </View>
+          </ScrollView>
+
+          <View style={styles.zoomControls}>
+            <TouchableOpacity
+              style={[styles.zoomButton, zoomLevel <= 50 && styles.zoomButtonDisabled]}
+              onPress={handleZoomOut}
+              disabled={zoomLevel <= 50}
+              activeOpacity={0.7}
+            >
+              <Minus size={18} color={zoomLevel <= 50 ? '#999' : '#333'} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.zoomPercentage}
+              onPress={handleResetZoom}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.zoomPercentageText}>{zoomLevel}%</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.zoomButton, zoomLevel >= 150 && styles.zoomButtonDisabled]}
+              onPress={handleZoomIn}
+              disabled={zoomLevel >= 150}
+              activeOpacity={0.7}
+            >
+              <Plus size={18} color={zoomLevel >= 150 ? '#999' : '#333'} />
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
@@ -846,5 +897,51 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#fff',
     fontWeight: '600',
+  },
+  treeViewWrapper: {
+    flex: 1,
+    position: 'relative',
+  },
+  zoomControls: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+    overflow: 'hidden',
+  },
+  zoomButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  zoomButtonDisabled: {
+    backgroundColor: '#F5F5F5',
+  },
+  zoomPercentage: {
+    minWidth: 60,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: '#E5E5E5',
+    backgroundColor: '#fff',
+    paddingHorizontal: 8,
+  },
+  zoomPercentageText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
   },
 });
