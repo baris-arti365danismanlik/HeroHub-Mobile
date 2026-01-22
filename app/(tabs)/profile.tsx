@@ -1777,31 +1777,33 @@ export default function ProfileScreen() {
                   <Pencil size={16} color="#7C3AED" />
                 </TouchableOpacity>
               </View>
-              {profileDetails.jobStartDate && (
-                <InfoRow
-                  label="Tarih"
-                  value={formatDate(profileDetails.jobStartDate)}
-                />
-              )}
-              {profileDetails.department && (
-                <InfoRow
-                  label="Departman"
-                  value={profileDetails.department}
-                />
-              )}
-              {currentWorkInfo?.workPlaceName && (
-                <InfoRow
-                  label="İş Yeri"
-                  value={currentWorkInfo.workPlaceName}
-                />
-              )}
-              {profileDetails.reportsTo && (
-                <InfoRow
-                  label="Yönetici"
-                  value={profileDetails.reportsTo.fullname || profileDetails.reportsTo.name}
-                  isLast
-                />
-              )}
+              <View style={styles.positionDetails}>
+                {profileDetails.jobStartDate && (
+                  <InfoRow
+                    label="Tarih"
+                    value={formatDate(profileDetails.jobStartDate)}
+                  />
+                )}
+                {profileDetails.department && (
+                  <InfoRow
+                    label="Departman"
+                    value={profileDetails.department}
+                  />
+                )}
+                {currentWorkInfo?.workPlaceName && (
+                  <InfoRow
+                    label="İş Yeri"
+                    value={currentWorkInfo.workPlaceName}
+                  />
+                )}
+                {profileDetails.reportsTo && (
+                  <InfoRow
+                    label="Yönetici"
+                    value={profileDetails.reportsTo.fullname || profileDetails.reportsTo.name}
+                    isLast
+                  />
+                )}
+              </View>
             </View>
           ) : (
             <View style={styles.emptyState}>
@@ -1820,13 +1822,23 @@ export default function ProfileScreen() {
               <ActivityIndicator size="small" color="#7C3AED" />
             </View>
           ) : userSalary && userSalary.salary ? (
-            <WorkInfoCard
-              title={`${userSalary.salary.toLocaleString('tr-TR')} ${userSalary.currency || 'TL'}`}
-              details={[
-                { label: 'Geçerlilik Tarihi', value: formatDate(userSalary.effectiveDate) },
-              ]}
-              onEdit={() => handleEdit('salary-current')}
-            />
+            <View style={styles.positionSection}>
+              <View style={styles.positionHeader}>
+                <Text style={styles.positionTitle}>
+                  {`${userSalary.salary.toLocaleString('tr-TR')} ${userSalary.currency || 'TL'}`}
+                </Text>
+                <TouchableOpacity style={styles.positionEditButton} onPress={() => handleEdit('salary-current')}>
+                  <Pencil size={16} color="#7C3AED" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.positionDetails}>
+                <InfoRow
+                  label="Geçerlilik Tarihi"
+                  value={formatDate(userSalary.effectiveDate)}
+                  isLast
+                />
+              </View>
+            </View>
           ) : (
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>Maaş bilgisi bulunmuyor</Text>
@@ -7007,14 +7019,16 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   positionSection: {
-    paddingVertical: 8,
+    paddingVertical: 0,
   },
   positionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    backgroundColor: '#F3F4F6',
     paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 8,
   },
   positionTitle: {
     fontSize: 16,
@@ -7024,5 +7038,8 @@ const styles = StyleSheet.create({
   },
   positionEditButton: {
     padding: 8,
+  },
+  positionDetails: {
+    paddingHorizontal: 16,
   },
 });
