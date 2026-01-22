@@ -124,7 +124,14 @@ export function OnboardingDropdown({ userId, organizationId }: OnboardingDropdow
         activeOpacity={0.7}>
         <Diamond size={20} color="#6B46C1" strokeWidth={2} />
         <Text style={styles.dropdownButtonText}>İşe Başlama</Text>
-        <ChevronDown size={20} color="#6B46C1" strokeWidth={2} />
+        <ChevronDown
+          size={20}
+          color="#6B46C1"
+          strokeWidth={2}
+          style={{
+            transform: [{ rotate: isOpen ? '180deg' : '0deg' }]
+          }}
+        />
       </TouchableOpacity>
 
       <Modal

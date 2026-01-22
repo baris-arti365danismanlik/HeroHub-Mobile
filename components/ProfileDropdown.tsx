@@ -31,7 +31,13 @@ export function ProfileDropdown({ options, selectedOption, onSelect }: ProfileDr
         activeOpacity={0.7}
       >
         <Text style={styles.dropdownButtonText}>{selectedOption}</Text>
-        <ChevronDown size={20} color="#666" />
+        <ChevronDown
+          size={20}
+          color="#666"
+          style={{
+            transform: [{ rotate: isOpen ? '180deg' : '0deg' }]
+          }}
+        />
       </TouchableOpacity>
 
       <Modal

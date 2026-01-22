@@ -2320,16 +2320,6 @@ export default function ProfileScreen() {
           title="EĞİTİM BİLGİLERİ"
           icon={<GraduationCap size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
-          actionButton={
-            isAdmin ? (
-              <TouchableOpacity
-                onPress={() => setAddEducationModalVisible(true)}
-                style={{ padding: 4 }}
-              >
-                <Plus size={20} color="#7C3AED" />
-              </TouchableOpacity>
-            ) : undefined
-          }
         >
           {profileDetails.educations.length > 0 ? (
             profileDetails.educations.map((education, index) => (
@@ -2426,16 +2416,6 @@ export default function ProfileScreen() {
           title="VİZE BİLGİLERİ"
           icon={<Globe size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
-          actionButton={
-            isAdmin ? (
-              <TouchableOpacity
-                onPress={() => setVisaModalVisible(true)}
-                activeOpacity={0.7}
-              >
-                <Plus size={20} color="#7C3AED" />
-              </TouchableOpacity>
-            ) : undefined
-          }
         >
           {isAdmin && (
             <TouchableOpacity
@@ -5151,13 +5131,17 @@ const styles = StyleSheet.create({
   assetUserImage: {
     width: 72,
     height: 72,
-    borderRadius: 12,
+    borderRadius: 0,
+    borderWidth: 2,
+    borderColor: '#7C3AED',
     marginRight: 16,
   },
   assetUserPlaceholder: {
     width: 72,
     height: 72,
-    borderRadius: 12,
+    borderRadius: 0,
+    borderWidth: 2,
+    borderColor: '#7C3AED',
     backgroundColor: '#E9D5FF',
     justifyContent: 'center',
     alignItems: 'center',
