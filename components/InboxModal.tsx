@@ -299,37 +299,43 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
               <View style={styles.leaveDetailSection}>
                 <Text style={styles.leaveDetailTitle}>İZİN DETAYI</Text>
 
-                <View style={styles.leaveDetailItem}>
-                  <Text style={styles.leaveDetailLabel}>İzin Türü</Text>
-                  <Text style={styles.leaveDetailValue}>
-                    {getDayOffTypeName(leaveRequestData.DayOffType)}
-                  </Text>
-                </View>
+                <View>
+                  <View style={styles.leaveDetailItem}>
+                    <Text style={styles.leaveDetailLabel}>İzin Türü</Text>
+                    <Text style={styles.leaveDetailValue}>
+                      {getDayOffTypeName(leaveRequestData.DayOffType)}
+                    </Text>
+                  </View>
+                  <View style={styles.detailSeparator} />
 
-                <View style={styles.leaveDetailItem}>
-                  <Text style={styles.leaveDetailLabel}>Başlangıç Tarihi</Text>
-                  <Text style={styles.leaveDetailValue}>
-                    {leaveRequestData.StartDate ? formatDateWithDay(leaveRequestData.StartDate) : '-'}
-                  </Text>
-                </View>
+                  <View style={styles.leaveDetailItem}>
+                    <Text style={styles.leaveDetailLabel}>Başlangıç Tarihi</Text>
+                    <Text style={styles.leaveDetailValue}>
+                      {leaveRequestData.StartDate ? formatDateWithDay(leaveRequestData.StartDate) : '-'}
+                    </Text>
+                  </View>
+                  <View style={styles.detailSeparator} />
 
-                <View style={styles.leaveDetailItem}>
-                  <Text style={styles.leaveDetailLabel}>Bitiş Tarihi</Text>
-                  <Text style={styles.leaveDetailValue}>
-                    {leaveRequestData.EndDate ? formatDateWithDay(leaveRequestData.EndDate) : '-'}
-                  </Text>
-                </View>
+                  <View style={styles.leaveDetailItem}>
+                    <Text style={styles.leaveDetailLabel}>Bitiş Tarihi</Text>
+                    <Text style={styles.leaveDetailValue}>
+                      {leaveRequestData.EndDate ? formatDateWithDay(leaveRequestData.EndDate) : '-'}
+                    </Text>
+                  </View>
+                  <View style={styles.detailSeparator} />
 
-                <View style={styles.leaveDetailItem}>
-                  <Text style={styles.leaveDetailLabel}>Süre</Text>
-                  <Text style={styles.leaveDetailValue}>{leaveRequestData.CountOfDays} Gün</Text>
-                </View>
+                  <View style={styles.leaveDetailItem}>
+                    <Text style={styles.leaveDetailLabel}>Süre</Text>
+                    <Text style={styles.leaveDetailValue}>{leaveRequestData.CountOfDays} Gün</Text>
+                  </View>
+                  <View style={styles.detailSeparator} />
 
-                <View style={[styles.leaveDetailItem, { marginBottom: 0 }]}>
-                  <Text style={styles.leaveDetailLabel}>Not</Text>
-                  <Text style={styles.leaveDetailValue}>
-                    {leaveRequestData.Reason || 'Not varsa buraya gelecek.'}
-                  </Text>
+                  <View style={styles.leaveDetailItem}>
+                    <Text style={styles.leaveDetailLabel}>Not</Text>
+                    <Text style={styles.leaveDetailValue}>
+                      {leaveRequestData.Reason || 'Not varsa buraya gelecek.'}
+                    </Text>
+                  </View>
                 </View>
               </View>
 
@@ -483,6 +489,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
   },
   backButton: {
     padding: 4,
@@ -605,7 +613,7 @@ const styles = StyleSheet.create({
   },
   detailContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F9FAFB',
   },
   detailScrollContent: {
     paddingBottom: 60,
@@ -614,23 +622,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 20,
+    paddingBottom: 16,
     gap: 16,
+    backgroundColor: '#fff',
   },
   senderPhoto: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
   },
   senderPhotoPlaceholder: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: '#FDE047',
     justifyContent: 'center',
     alignItems: 'center',
   },
   senderInitial: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '700',
     color: '#1a1a1a',
   },
@@ -638,13 +648,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   senderName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: '#7C3AED',
     marginBottom: 4,
   },
   notificationDate: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#9CA3AF',
   },
   detailContent: {
@@ -719,7 +729,7 @@ const styles = StyleSheet.create({
   requesterCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F3E8FF',
     marginHorizontal: 20,
     marginTop: 20,
     padding: 16,
@@ -781,7 +791,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 20,
     marginBottom: 20,
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 4,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -790,17 +802,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#1a1a1a',
-    marginBottom: 16,
+    marginBottom: 20,
     letterSpacing: 0.5,
   },
   leaveDetailItem: {
-    marginBottom: 16,
+    paddingVertical: 16,
+  },
+  detailSeparator: {
+    height: 1,
+    backgroundColor: '#F3F4F6',
   },
   leaveDetailLabel: {
     fontSize: 13,
     fontWeight: '600',
     color: '#6B7280',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   leaveDetailValue: {
     fontSize: 14,
@@ -811,32 +827,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginHorizontal: 20,
-    marginTop: 24,
+    marginTop: 20,
     marginBottom: 40,
   },
   rejectButton: {
     flex: 1,
-    paddingVertical: 16,
-    borderRadius: 12,
-    borderWidth: 2,
+    paddingVertical: 14,
+    borderRadius: 8,
+    borderWidth: 1.5,
     borderColor: '#EF4444',
+    backgroundColor: '#fff',
     alignItems: 'center',
   },
   rejectButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#EF4444',
   },
   approveButton: {
     flex: 1,
-    paddingVertical: 16,
-    borderRadius: 12,
-    backgroundColor: '#10B981',
+    paddingVertical: 14,
+    borderRadius: 8,
+    backgroundColor: '#A7F3D0',
     alignItems: 'center',
   },
   approveButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#fff',
+    color: '#059669',
   },
 });
