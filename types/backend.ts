@@ -108,6 +108,15 @@ export enum AssetStatus {
   Returned = 'returned',
 }
 
+export enum SalaryUpdateReason {
+  InitialSalary = 0,
+  Promotion = 1,
+  AnnualIncrease = 2,
+  PerformanceIncrease = 3,
+  MarketAdjustment = 4,
+  Other = 5,
+}
+
 export interface User {
   id: string;
   firstName: string;
@@ -757,11 +766,11 @@ export interface Position {
 }
 
 export interface UserSalary {
-  id: number;
-  userId: number;
+  notes: string | null;
+  salaryDate: string;
   salary: number;
-  currency: string;
-  effectiveDate: string;
+  updateReason: SalaryUpdateReason;
+  isCurrent: boolean;
 }
 
 export interface UserTitle {

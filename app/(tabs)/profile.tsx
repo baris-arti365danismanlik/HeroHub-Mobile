@@ -72,7 +72,8 @@ import {
   formatPhone,
   formatEducationLevel,
   formatDriverLicenseClass,
-  formatFamilyRelation
+  formatFamilyRelation,
+  formatSalaryUpdateReason
 } from '@/utils/formatters';
 
 export default function ProfileScreen() {
@@ -199,7 +200,7 @@ export default function ProfileScreen() {
   const [employmentLoading, setEmploymentLoading] = useState(false);
   const [workingInformation, setWorkingInformation] = useState<WorkingInformation[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
-  const [userSalary, setUserSalary] = useState<UserSalary | null>(null);
+  const [userSalary, setUserSalary] = useState<UserSalary[]>([]);
   const [userTitles, setUserTitles] = useState<UserTitle[]>([]);
   const [managerUsers, setManagerUsers] = useState<ManagerUser[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -1836,6 +1837,12 @@ export default function ProfileScreen() {
     const currentPositions = positions.filter(p => p.isCurrent);
     const pastPositions = positions.filter(p => !p.isCurrent);
 
+    const sortedSalaries = [...userSalary].sort((a, b) => {
+      if (a.isCurrent && !b.isCurrent) return -1;
+      if (!a.isCurrent && b.isCurrent) return 1;
+      return new Date(b.salaryDate).getTime() - new Date(a.salaryDate).getTime();
+    });
+
     return (
       <>
         <Accordion
@@ -1931,23 +1938,36 @@ export default function ProfileScreen() {
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color="#7C3AED" />
             </View>
-          ) : userSalary && userSalary.salary ? (
-            <View style={styles.positionSection}>
-              <View style={styles.positionHeader}>
-                <Text style={styles.positionTitle}>
-                  {`${userSalary.salary.toLocaleString('tr-TR')} ${userSalary.currency || 'TL'}`}
-                </Text>
-                <TouchableOpacity style={styles.positionEditButton} onPress={() => handleEdit('salary-current')}>
-                  <Pencil size={16} color="#7C3AED" />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.positionDetails}>
-                <InfoRow
-                  label="Geçerlilik Tarihi"
-                  value={formatDate(userSalary.effectiveDate)}
-                  isLast
-                />
-              </View>
+          ) : sortedSalaries && sortedSalaries.length > 0 ? (
+            <View style={styles.salaryContainer}>
+              {sortedSalaries.map((salary, index) => (
+                <View key={index}>
+                  <View style={styles.salaryHeader}>
+                    <View style={styles.salaryHeaderContent}>
+                      <Text style={styles.salaryAmount}>
+                        {salary.salary.toLocaleString('tr-TR')} ₺
+                      </Text>
+                      {salary.isCurrent && (
+                        <TouchableOpacity style={styles.positionEditButton} onPress={() => handleEdit('salary-current')}>
+                          <Pencil size={16} color="#7C3AED" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                  <InfoRow
+                    label="Tarih"
+                    value={formatDate(salary.salaryDate)}
+                  />
+                  <InfoRow
+                    label="Güncelleme Nedeni"
+                    value={formatSalaryUpdateReason(salary.updateReason)}
+                    isLast={index === sortedSalaries.length - 1}
+                  />
+                  {index < sortedSalaries.length - 1 && (
+                    <View style={styles.salaryDivider} />
+                  )}
+                </View>
+              ))}
             </View>
           ) : (
             <View style={styles.emptyState}>
@@ -7407,6 +7427,32 @@ const styles = StyleSheet.create({
   },
   positionDetails: {
     paddingHorizontal: 16,
+  },
+  salaryContainer: {
+    paddingVertical: 0,
+  },
+  salaryHeader: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  salaryHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  salaryAmount: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    flex: 1,
+  },
+  salaryDivider: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginVertical: 16,
+    marginHorizontal: 16,
   },
   optionItem: {
     flexDirection: 'row',

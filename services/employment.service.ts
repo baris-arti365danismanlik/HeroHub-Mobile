@@ -40,17 +40,17 @@ export const employmentService = {
     }
   },
 
-  async getUserSalary(userId: number): Promise<UserSalary | null> {
+  async getUserSalary(userId: number): Promise<UserSalary[]> {
     try {
-      const response = await apiClient.get<UserSalary>(
+      const response = await apiClient.get<UserSalary[]>(
         `/userEmployment/get-userSalary?userId=${userId}`
       );
-      return response.data || null;
+      return response.data || [];
     } catch (error: any) {
       if (error.isAuthError) {
         throw error;
       }
-      return null;
+      return [];
     }
   },
 

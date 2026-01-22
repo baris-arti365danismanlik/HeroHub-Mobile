@@ -1,4 +1,4 @@
-import { Gender, BloodType, MaritalStatus, EducationLevel, DriverLicenseClass } from '@/types/backend';
+import { Gender, BloodType, MaritalStatus, EducationLevel, DriverLicenseClass, SalaryUpdateReason } from '@/types/backend';
 
 export const formatGender = (gender?: Gender): string => {
   if (gender === undefined) return '-';
@@ -129,6 +129,26 @@ export const formatFamilyRelation = (relation?: number): string => {
       return 'Kardeş';
     default:
       return 'Diğer';
+  }
+};
+
+export const formatSalaryUpdateReason = (reason?: SalaryUpdateReason): string => {
+  if (reason === undefined) return '-';
+  switch (reason) {
+    case SalaryUpdateReason.InitialSalary:
+      return 'İlk Maaş';
+    case SalaryUpdateReason.Promotion:
+      return 'Terfi';
+    case SalaryUpdateReason.AnnualIncrease:
+      return 'Yıllık Zam';
+    case SalaryUpdateReason.PerformanceIncrease:
+      return 'Performans Artışı';
+    case SalaryUpdateReason.MarketAdjustment:
+      return 'Piyasa Uyarlaması';
+    case SalaryUpdateReason.Other:
+      return 'Diğer';
+    default:
+      return '-';
   }
 };
 
