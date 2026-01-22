@@ -3046,11 +3046,13 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          <ProfileDropdown
-            options={profileSections}
-            selectedOption={selectedSection}
-            onSelect={setSelectedSection}
-          />
+          <View style={styles.dropdownContainer}>
+            <ProfileDropdown
+              options={profileSections}
+              selectedOption={selectedSection}
+              onSelect={setSelectedSection}
+            />
+          </View>
 
           <View style={styles.sectionsContainer}>
             {renderSectionContent()}
@@ -4490,6 +4492,9 @@ const styles = StyleSheet.create({
   profileInfo: {
     flex: 1,
     alignItems: 'flex-start',
+  },
+  dropdownContainer: {
+    marginTop: 16,
   },
   profileName: {
     fontSize: 18,
