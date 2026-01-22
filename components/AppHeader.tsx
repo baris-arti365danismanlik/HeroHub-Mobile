@@ -35,10 +35,11 @@ export function AppHeader({
       </TouchableOpacity>
 
       <View style={styles.logoContainer}>
-        <Text style={styles.logoText}>hero</Text>
-        <View style={styles.logoBadge}>
-          <Text style={styles.logoBadgeText}>+</Text>
-        </View>
+        <Image
+          source={require('@/assets/images/hero-primary-logo.png')}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
       </View>
 
       <View style={styles.rightActions}>
@@ -99,24 +100,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     pointerEvents: 'none',
   },
-  logoText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#7C3AED',
-  },
-  logoBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#7C3AED',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 4,
-  },
-  logoBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#fff',
+  logoImage: {
+    width: 90,
+    height: 30,
   },
   rightActions: {
     flexDirection: 'row',
