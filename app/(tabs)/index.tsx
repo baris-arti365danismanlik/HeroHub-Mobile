@@ -25,6 +25,7 @@ import { useRouter } from 'expo-router';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
 import { ProfileMenu } from '@/components/ProfileMenu';
+import { AppHeader } from '@/components/AppHeader';
 import type { UserDayOffBalance, UserProfileDetails } from '@/types/backend';
 
 export default function HomeScreen() {
@@ -116,63 +117,21 @@ export default function HomeScreen() {
     <>
       <View style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <TouchableOpacity
-              style={styles.menuButton}
-              onPress={() => setDrawerVisible(true)}
-            >
-              <Menu size={24} color="#1a1a1a" />
-            </TouchableOpacity>
+          <AppHeader
+            onMenuPress={() => setDrawerVisible(true)}
+            onProfilePress={() => setProfileMenuVisible(true)}
+            profilePhotoUrl={profileDetails?.profilePhoto || user?.profilePictureUrl}
+            showInboxIcon={true}
+            inboxCount={notificationCount}
+            onInboxPress={() => setInboxVisible(true)}
+          />
 
-            <View style={styles.logoContainer}>
-              <Text style={styles.logoText}>hero</Text>
-              <View style={styles.logoBadge}>
-                <Text style={styles.logoBadgeText}>+</Text>
-              </View>
-            </View>
-
-            <View style={styles.headerActions}>
-              <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => setInboxVisible(true)}
-              >
-                <Mail size={20} color="#1a1a1a" />
-                {notificationCount > 0 && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{notificationCount}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.profileButton}
-                onPress={() => setProfileMenuVisible(true)}
-              >
-                {(() => {
-                  const photoUrl = profileDetails?.profilePhoto || user?.profilePictureUrl;
-
-                  if (photoUrl) {
-                    return (
-                      <Image
-                        source={{ uri: photoUrl }}
-                        style={styles.headerProfileImage}
-                      />
-                    );
-                  }
-                  return (
-                    <View style={styles.headerProfilePlaceholder}>
-                      <UserIcon size={20} color="#7C3AED" />
-                    </View>
-                  );
-                })()}
-              </TouchableOpacity>
-            </View>
+          <View style={styles.headerGreeting}>
+            <Text style={styles.greeting}>Merhaba,</Text>
+            <Text style={styles.userName}>
+              {user?.firstName} {user?.lastName}
+            </Text>
           </View>
-
-          <Text style={styles.greeting}>Merhaba,</Text>
-          <Text style={styles.userName}>
-            {user?.firstName} {user?.lastName}
-          </Text>
         </View>
 
         <ScrollView
@@ -353,11 +312,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F7F9',
   },
   header: {
-    padding: 24,
-    paddingTop: 60,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+  },
+  headerGreeting: {
+    padding: 24,
+    paddingTop: 12,
   },
   headerTop: {
     flexDirection: 'row',

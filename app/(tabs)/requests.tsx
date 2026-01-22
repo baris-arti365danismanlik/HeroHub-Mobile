@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
 import { leaveService } from '@/services/leave.service';
 import { Plus, Menu } from 'lucide-react-native';
 import { DrawerMenu } from '@/components/DrawerMenu';
+import { AppHeader } from '@/components/AppHeader';
+import { ProfileMenu } from '@/components/ProfileMenu';
 import { LeaveRequestModal, LeaveRequestData } from '@/components/LeaveRequestModal';
 import { SuccessModal } from '@/components/SuccessModal';
 import { parseDateToISO } from '@/utils/formatters';
@@ -25,10 +28,12 @@ const STATUS_COLORS: Record<number, string> = {
 };
 
 export default function RequestsScreen() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [requests, setRequests] = useState<UserRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
   const [leaveModalVisible, setLeaveModalVisible] = useState(false);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
@@ -90,13 +95,13 @@ export default function RequestsScreen() {
   return (
     <>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => setDrawerVisible(true)}
-          >
-            <Menu size={24} color="#1a1a1a" />
-          </TouchableOpacity>
+        <AppHeader
+          onMenuPress={() => setDrawerVisible(true)}
+          onProfilePress={() => setProfileMenuVisible(true)}
+          profilePhotoUrl={user?.profilePictureUrl}
+        />
+
+        <View style={styles.pageHeader}>
           <Text style={styles.headerTitle}>Taleplerim</Text>
           <TouchableOpacity style={styles.addButton} onPress={() => setLeaveModalVisible(true)}>
             <Plus size={24} color="#7C3AED" />
@@ -144,6 +149,18 @@ export default function RequestsScreen() {
         title="İzin Talebi Gir"
         message="Talebiniz başarı ile iletildi."
       />
+
+      <ProfileMenu
+        visible={profileMenuVisible}
+        onClose={() => setProfileMenuVisible(false)}
+        name={user ? `${user.firstName} ${user.lastName}` : ''}
+        email={user?.email || ''}
+        profilePhoto={user?.profilePictureUrl}
+        onLogout={async () => {
+          await logout();
+          router.replace('/(auth)/login');
+        }}
+      />
     </>
   );
 }
@@ -159,12 +176,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
-  header: {
+  pageHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 24,
-    paddingTop: 60,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',

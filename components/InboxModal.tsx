@@ -18,6 +18,7 @@ import { normalizePhotoUrl } from '@/utils/formatters';
 import { SurveyModal } from './SurveyModal';
 import { DrawerMenu } from './DrawerMenu';
 import { ProfileMenu } from './ProfileMenu';
+import { AppHeader } from './AppHeader';
 import { userService } from '@/services/user.service';
 
 interface InboxModalProps {
@@ -355,37 +356,11 @@ export function InboxModal({ visible, onClose, backendUserId, userName, userEmai
 
   const renderInboxContent = () => (
     <>
-      <View style={styles.headerBar}>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => setDrawerVisible(true)}
-        >
-          <Menu size={24} color="#1a1a1a" />
-        </TouchableOpacity>
-
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>hero</Text>
-          <View style={styles.logoBadge}>
-            <Text style={styles.logoBadgeText}>+</Text>
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={styles.profileButton}
-          onPress={() => setProfileMenuVisible(true)}
-        >
-          {profilePhotoUrl ? (
-            <Image
-              source={{ uri: profilePhotoUrl }}
-              style={styles.headerProfileImage}
-            />
-          ) : (
-            <View style={styles.headerProfilePlaceholder}>
-              <UserIcon size={20} color="#7C3AED" />
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+      <AppHeader
+        onMenuPress={() => setDrawerVisible(true)}
+        onProfilePress={() => setProfileMenuVisible(true)}
+        profilePhotoUrl={profilePhotoUrl}
+      />
 
       {loading ? (
         <View style={styles.loadingContainer}>

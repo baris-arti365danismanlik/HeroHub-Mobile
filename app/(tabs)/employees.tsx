@@ -23,6 +23,8 @@ import {
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { DrawerMenu } from '@/components/DrawerMenu';
+import { AppHeader } from '@/components/AppHeader';
+import { ProfileMenu } from '@/components/ProfileMenu';
 import { AddEmployeeModal, EmployeeFormData } from '@/components/AddEmployeeModal';
 import { SuccessModal } from '@/components/SuccessModal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -56,7 +58,8 @@ export default function EmployeesScreen() {
   const [showTitleDropdown, setShowTitleDropdown] = useState(false);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const { user } = useAuth();
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
+  const { user, logout } = useAuth();
   const { isAdmin, canWrite } = usePermissions(user?.modulePermissions);
 
   useEffect(() => {
@@ -225,6 +228,12 @@ export default function EmployeesScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <AppHeader
+        onMenuPress={() => setDrawerVisible(true)}
+        onProfilePress={() => setProfileMenuVisible(true)}
+        profilePhotoUrl={user?.profilePictureUrl}
+      />
+
       {(showSortDropdown || showTitleDropdown) && (
         <TouchableOpacity
           style={styles.dropdownOverlay}
@@ -484,6 +493,19 @@ export default function EmployeesScreen() {
       )}
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
+
+      <ProfileMenu
+        visible={profileMenuVisible}
+        onClose={() => setProfileMenuVisible(false)}
+        name={user ? `${user.firstName} ${user.lastName}` : ''}
+        email={user?.email || ''}
+        profilePhoto={user?.profilePictureUrl}
+        onLogout={async () => {
+          await logout();
+          router.replace('/(auth)/login');
+        }}
+      />
+
       <AddEmployeeModal
         visible={addEmployeeModalVisible}
         onClose={() => setAddEmployeeModalVisible(false)}

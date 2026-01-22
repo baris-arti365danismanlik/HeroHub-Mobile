@@ -17,12 +17,17 @@ import {
   Bell,
   Lock,
 } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { DrawerMenu } from '@/components/DrawerMenu';
+import { AppHeader } from '@/components/AppHeader';
+import { ProfileMenu } from '@/components/ProfileMenu';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function AdminScreen() {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const { user } = useAuth();
+  const [profileMenuVisible, setProfileMenuVisible] = useState(false);
+  const { user, logout } = useAuth();
+  const router = useRouter();
 
   const adminSections = [
     {
@@ -65,20 +70,14 @@ export default function AdminScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => setDrawerVisible(true)}
-          style={styles.menuButton}
-          activeOpacity={0.7}
-        >
-          <Menu size={24} color="#7C3AED" />
-        </TouchableOpacity>
+      <AppHeader
+        onMenuPress={() => setDrawerVisible(true)}
+        onProfilePress={() => setProfileMenuVisible(true)}
+        profilePhotoUrl={user?.profilePictureUrl}
+      />
 
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Admin Panel</Text>
-        </View>
-
-        <View style={styles.headerRight} />
+      <View style={styles.pageHeader}>
+        <Text style={styles.headerTitle}>Admin Panel</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -108,6 +107,18 @@ export default function AdminScreen() {
       </ScrollView>
 
       <DrawerMenu visible={drawerVisible} onClose={() => setDrawerVisible(false)} />
+
+      <ProfileMenu
+        visible={profileMenuVisible}
+        onClose={() => setProfileMenuVisible(false)}
+        name={user ? `${user.firstName} ${user.lastName}` : ''}
+        email={user?.email || ''}
+        profilePhoto={user?.profilePictureUrl}
+        onLogout={async () => {
+          await logout();
+          router.replace('/(auth)/login');
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -117,15 +128,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F7F9',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  pageHeader: {
+    padding: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+    alignItems: 'center',
   },
   menuButton: {
     padding: 8,

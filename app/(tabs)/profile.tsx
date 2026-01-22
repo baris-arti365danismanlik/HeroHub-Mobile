@@ -57,6 +57,7 @@ import { DrawerMenu } from '@/components/DrawerMenu';
 import { InboxModal } from '@/components/InboxModal';
 import { DatePicker } from '@/components/DatePicker';
 import { ProfileMenu } from '@/components/ProfileMenu';
+import { AppHeader } from '@/components/AppHeader';
 import { WelcomePackageModal } from '@/components/WelcomePackageModal';
 import { SuccessModal } from '@/components/SuccessModal';
 import { VisaRequestModal, type VisaRequestData } from '@/components/VisaRequestModal';
@@ -3084,51 +3085,14 @@ export default function ProfileScreen() {
   return (
     <>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => setDrawerVisible(true)}
-          >
-            <Menu size={24} color="#1a1a1a" />
-          </TouchableOpacity>
-
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>hero</Text>
-            <View style={styles.logoBadge}>
-              <Text style={styles.logoBadgeText}>+</Text>
-            </View>
-          </View>
-
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.iconButton}
-              onPress={() => setInboxVisible(true)}
-            >
-              <Mail size={20} color="#1a1a1a" />
-              {unreadCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{unreadCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.profileButton}
-              onPress={() => setProfileMenuVisible(true)}
-            >
-              {user.profilePictureUrl ? (
-                <Image
-                  source={{ uri: user.profilePictureUrl }}
-                  style={styles.headerProfileImage}
-                />
-              ) : (
-                <View style={styles.headerProfilePlaceholder}>
-                  <UserIcon size={20} color="#7C3AED" />
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
+        <AppHeader
+          onMenuPress={() => setDrawerVisible(true)}
+          onProfilePress={() => setProfileMenuVisible(true)}
+          profilePhotoUrl={profileDetails?.profilePhoto || user?.profilePictureUrl}
+          showInboxIcon={true}
+          inboxCount={unreadCount}
+          onInboxPress={() => setInboxVisible(true)}
+        />
 
         <ScrollView
           style={styles.scrollView}
@@ -3626,6 +3590,11 @@ export default function ProfileScreen() {
           backendUserId={user.backend_user_id}
           userName={`${user.firstName} ${user.lastName}`}
           userEmail={user.email}
+          profilePhotoUrl={profileDetails?.profilePhoto || user?.profilePictureUrl}
+          onLogout={async () => {
+            await logout();
+            router.replace('/(auth)/login');
+          }}
           onNavigate={(route) => {
             setInboxVisible(false);
             router.push(route as any);
