@@ -2141,40 +2141,29 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        <View style={styles.profileSectionCard}>
-          <TouchableOpacity
-            style={styles.profileSectionHeader}
-            onPress={() => toggleSection('driverLicense')}
-          >
-            <View style={styles.profileSectionLeft}>
-              <CreditCard size={18} color="#1a1a1a" />
-              <Text style={styles.profileSectionTitle}>EHLİYET BİLGİLERİ</Text>
-            </View>
-            <View style={styles.profileSectionRight}>
-              {expandedSections['driverLicense'] ? (
-                <ChevronUp size={20} color="#666" />
-              ) : (
-                <ChevronDown size={20} color="#666" />
-              )}
-            </View>
-          </TouchableOpacity>
-          {expandedSections['driverLicense'] && (
-            <View style={styles.profileSectionContent}>
-              {driverLicenses.length > 0 ? (
-                driverLicenses.map((license, index) => (
-                  <View key={license.id}>
-                    <InfoRow label="Ehliyet Tipi" value={license.licenseType || '-'} />
-                    <InfoRow label="Ehliyet No" value={license.licenseNumber || '-'} />
-                    <InfoRow label="Veriliş Tarihi" value={formatDate(license.issueDate)} />
-                    <InfoRow label="Son Geçerlilik Tarihi" value={formatDate(license.expiryDate)} isLast={index === driverLicenses.length - 1} />
-                  </View>
-                ))
-              ) : (
-                <InfoRow label="Ehliyet" value="Bilgi yok" isLast />
-              )}
-            </View>
+        <Accordion
+          title="EHLİYET BİLGİLERİ"
+          icon={<CreditCard size={18} color="#1a1a1a" />}
+          isExpandedDefault={false}
+          actionButton={
+            <TouchableOpacity style={styles.addIconButton}>
+              <Plus size={18} color="#7C3AED" />
+            </TouchableOpacity>
+          }
+        >
+          {driverLicenses.length > 0 ? (
+            driverLicenses.map((license, index) => (
+              <View key={license.id}>
+                <InfoRow label="Ehliyet Tipi" value={license.licenseType || '-'} />
+                <InfoRow label="Ehliyet No" value={license.licenseNumber || '-'} />
+                <InfoRow label="Veriliş Tarihi" value={formatDate(license.issueDate)} />
+                <InfoRow label="Son Geçerlilik Tarihi" value={formatDate(license.expiryDate)} isLast={index === driverLicenses.length - 1} />
+              </View>
+            ))
+          ) : (
+            <InfoRow label="Ehliyet" value="Bilgi yok" isLast />
           )}
-        </View>
+        </Accordion>
 
         <View style={styles.profileSectionCard}>
           <TouchableOpacity
@@ -2232,6 +2221,11 @@ export default function ProfileScreen() {
           title="EĞİTİM BİLGİLERİ"
           icon={<GraduationCap size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
+          actionButton={
+            <TouchableOpacity style={styles.addIconButton}>
+              <Plus size={18} color="#7C3AED" />
+            </TouchableOpacity>
+          }
         >
           {profileDetails.educations.length > 0 ? (
             profileDetails.educations.map((education, index) => (
@@ -2273,6 +2267,11 @@ export default function ProfileScreen() {
           title="SERTİFİKALAR"
           icon={<Award size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
+          actionButton={
+            <TouchableOpacity style={styles.addIconButton}>
+              <Plus size={18} color="#7C3AED" />
+            </TouchableOpacity>
+          }
         >
           {profileDetails.certificates.length > 0 ? (
             profileDetails.certificates.map((cert, index) => (
@@ -2295,6 +2294,11 @@ export default function ProfileScreen() {
           title="DİL BİLGİLERİ"
           icon={<Languages size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
+          actionButton={
+            <TouchableOpacity style={styles.addIconButton}>
+              <Plus size={18} color="#7C3AED" />
+            </TouchableOpacity>
+          }
         >
           {profileDetails.userLanguages.length > 0 ? (
             profileDetails.userLanguages.map((lang, index) => (
@@ -2328,6 +2332,11 @@ export default function ProfileScreen() {
           title="VİZE BİLGİLERİ"
           icon={<Globe size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
+          actionButton={
+            <TouchableOpacity style={styles.addIconButton}>
+              <Plus size={18} color="#7C3AED" />
+            </TouchableOpacity>
+          }
         >
           {isAdmin && (
             <TouchableOpacity
@@ -6824,5 +6833,8 @@ const styles = StyleSheet.create({
   },
   statusBadgeTextInactive: {
     color: '#DC2626',
+  },
+  addIconButton: {
+    padding: 4,
   },
 });
