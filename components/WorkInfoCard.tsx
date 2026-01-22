@@ -7,13 +7,20 @@ interface WorkInfoCardProps {
   details: { label: string; value: string; isHighlight?: boolean }[];
   onEdit?: () => void;
   isPast?: boolean;
+  titleBadge?: boolean;
 }
 
-export function WorkInfoCard({ title, details, onEdit, isPast = false }: WorkInfoCardProps) {
+export function WorkInfoCard({ title, details, onEdit, isPast = false, titleBadge = false }: WorkInfoCardProps) {
   return (
     <View style={[styles.card, isPast && styles.cardPast]}>
       <View style={styles.cardHeader}>
-        <Text style={[styles.cardTitle, isPast && styles.cardTitlePast]}>{title}</Text>
+        {titleBadge ? (
+          <View style={styles.titleBadge}>
+            <Text style={[styles.cardTitle, isPast && styles.cardTitlePast]}>{title}</Text>
+          </View>
+        ) : (
+          <Text style={[styles.cardTitle, isPast && styles.cardTitlePast]}>{title}</Text>
+        )}
         {onEdit && (
           <TouchableOpacity onPress={onEdit} style={styles.editButton}>
             <Edit2 size={18} color={isPast ? '#999' : '#666'} />
@@ -45,7 +52,7 @@ export function WorkInfoCard({ title, details, onEdit, isPast = false }: WorkInf
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
@@ -69,6 +76,13 @@ const styles = StyleSheet.create({
   },
   cardTitlePast: {
     color: '#999',
+  },
+  titleBadge: {
+    backgroundColor: '#F8F9FA',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
   },
   editButton: {
     padding: 4,

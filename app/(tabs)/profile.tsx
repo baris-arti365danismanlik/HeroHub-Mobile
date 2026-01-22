@@ -2372,6 +2372,7 @@ export default function ProfileScreen() {
               <WorkInfoCard
                 key={education.educationId}
                 title={formatEducationLevel(education.level)}
+                titleBadge={true}
                 details={[
                   { label: 'Okul', value: education.schoolName },
                   { label: 'Bölüm', value: education.department },
