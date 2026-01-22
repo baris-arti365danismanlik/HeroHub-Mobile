@@ -28,6 +28,8 @@ import { useRouter } from 'expo-router';
 import { DrawerMenu } from '@/components/DrawerMenu';
 import { AppHeader } from '@/components/AppHeader';
 import { ProfileMenu } from '@/components/ProfileMenu';
+import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { AddEmployeeModal, EmployeeFormData } from '@/components/AddEmployeeModal';
 import { SuccessModal } from '@/components/SuccessModal';
 import { useAuth } from '@/contexts/AuthContext';
@@ -65,6 +67,11 @@ export default function EmployeesScreen() {
   const [zoomLevel, setZoomLevel] = useState(100);
   const { user, logout } = useAuth();
   const { isAdmin, canWrite } = usePermissions(user?.modulePermissions);
+
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const prevTranslateX = useSharedValue(0);
+  const prevTranslateY = useSharedValue(0);
 
   useEffect(() => {
     if (user?.organization_id) {
@@ -170,7 +177,29 @@ export default function EmployeesScreen() {
 
   const handleResetZoom = () => {
     setZoomLevel(100);
+    translateX.value = withSpring(0);
+    translateY.value = withSpring(0);
+    prevTranslateX.value = 0;
+    prevTranslateY.value = 0;
   };
+
+  const panGesture = Gesture.Pan()
+    .onUpdate((e) => {
+      translateX.value = prevTranslateX.value + e.translationX;
+      translateY.value = prevTranslateY.value + e.translationY;
+    })
+    .onEnd(() => {
+      prevTranslateX.value = translateX.value;
+      prevTranslateY.value = translateY.value;
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+      { scale: zoomLevel / 100 }
+    ],
+  }));
 
   const renderTreeEmployee = (employee: TreeEmployee, depth: number = 0, isLast: boolean = false) => {
     const hasChildren = employee.children && employee.children.length > 0;
@@ -502,29 +531,13 @@ export default function EmployeesScreen() {
         </ScrollView>
       ) : (
         <View style={styles.treeViewWrapper}>
-          <ScrollView
-            horizontal
-            style={styles.content}
-            contentContainerStyle={{ flexGrow: 1 }}
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={true}
-          >
-            <ScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={styles.treeContainer}
-              showsVerticalScrollIndicator={true}
-              showsHorizontalScrollIndicator={false}
-              nestedScrollEnabled
-            >
-              <View style={{
-                transform: [{ scale: zoomLevel / 100 }],
-                minWidth: 1000 * (zoomLevel / 100),
-                alignItems: 'center',
-              }}>
+          <GestureDetector gesture={panGesture}>
+            <Animated.View style={[styles.content, { backgroundColor: '#F7F7F9' }]}>
+              <Animated.View style={[styles.treeContainer, animatedStyle]}>
                 {treeEmployees.map((employee) => renderTreeEmployee(employee, 0))}
-              </View>
-            </ScrollView>
-          </ScrollView>
+              </Animated.View>
+            </Animated.View>
+          </GestureDetector>
 
           <View style={styles.zoomControls}>
             <TouchableOpacity
@@ -736,6 +749,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     zIndex: 1,
+    overflow: 'hidden',
   },
   groupContainer: {
     marginBottom: 8,
@@ -797,8 +811,9 @@ const styles = StyleSheet.create({
   },
   treeContainer: {
     padding: 20,
-    backgroundColor: '#F7F7F9',
     alignItems: 'center',
+    minWidth: 1500,
+    minHeight: 1000,
   },
   treeNodeContainer: {
     alignItems: 'center',
