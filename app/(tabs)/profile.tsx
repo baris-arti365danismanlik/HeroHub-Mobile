@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import * as DocumentPicker from 'expo-document-picker';
-import { User as UserIcon, Phone, Mail, MapPin, Briefcase, GraduationCap, Heart, FileText, Award, Globe, Languages, CreditCard, LogOut, Menu, Building2, Users as Users2, DollarSign, Bell, MessageSquare, Package, Download, Pencil, Umbrella, ChevronDown, Folder, File, Search, Plus, Share2, ChevronRight, FolderOpen, Calendar, X, TextAlignJustify as AlignJustify, Linkedin, Facebook, Instagram, Clock, Smartphone, Check, Upload, Users, Link } from 'lucide-react-native';
+import { User as UserIcon, Phone, Mail, MapPin, Briefcase, GraduationCap, Heart, HeartPulse, FileText, Award, Globe, Languages, CreditCard, LogOut, Menu, Building2, Users as Users2, DollarSign, Bell, MessageSquare, Package, Download, Pencil, Umbrella, ChevronDown, Folder, File, Search, Plus, Share2, ChevronRight, FolderOpen, Calendar, X, TextAlignJustify as AlignJustify, Linkedin, Facebook, Instagram, Clock, Smartphone, Check, Upload, Users, Link } from 'lucide-react-native';
 import { Accordion } from '@/components/Accordion';
 import { InfoRow } from '@/components/InfoRow';
 import { ProfileDropdown } from '@/components/ProfileDropdown';
@@ -1385,7 +1385,7 @@ export default function ProfileScreen() {
     <>
       <Accordion
         title="İZİN BİLGİLERİ"
-        icon={<Umbrella size={18} color="#7C3AED" />}
+        icon={<Umbrella size={18} color="#1a1a1a" />}
         isExpandedDefault={false}
       >
         <View style={styles.balanceCard}>
@@ -1403,7 +1403,7 @@ export default function ProfileScreen() {
 
       <Accordion
         title="PLANLANAN İZİNLER"
-        icon={<Umbrella size={18} color="#7C3AED" />}
+        icon={<Umbrella size={18} color="#1a1a1a" />}
         isExpandedDefault={false}
       >
         {leaveLoading ? (
@@ -1487,7 +1487,7 @@ export default function ProfileScreen() {
 
       <Accordion
         title="GEÇMİŞ İZİNLER"
-        icon={<Umbrella size={18} color="#7C3AED" />}
+        icon={<Umbrella size={18} color="#1a1a1a" />}
         isExpandedDefault={false}
       >
         {leaveLoading ? (
@@ -1590,7 +1590,7 @@ export default function ProfileScreen() {
       <>
         <Accordion
           title="ÇALIŞAN BİLGİLERİ"
-          icon={<UserIcon size={18} color="#7C3AED" />}
+          icon={<UserIcon size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
         >
           {employmentLoading ? (
@@ -1628,7 +1628,7 @@ export default function ProfileScreen() {
 
         <Accordion
           title="POZİSYON BİLGİLERİ"
-          icon={<Briefcase size={18} color="#7C3AED" />}
+          icon={<Briefcase size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
         >
           {employmentLoading ? (
@@ -1669,7 +1669,7 @@ export default function ProfileScreen() {
 
         <Accordion
           title="MAAŞ BİLGİLERİ"
-          icon={<DollarSign size={18} color="#7C3AED" />}
+          icon={<DollarSign size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
         >
           {employmentLoading ? (
@@ -2125,7 +2125,7 @@ export default function ProfileScreen() {
             onPress={() => toggleSection('contact')}
           >
             <View style={styles.profileSectionLeft}>
-              <Phone size={18} color="#1a1a1a" />
+              <Briefcase size={18} color="#1a1a1a" />
               <Text style={styles.profileSectionTitle}>İLETİŞİM BİLGİLERİ</Text>
             </View>
             <View style={styles.profileSectionRight}>
@@ -2195,7 +2195,7 @@ export default function ProfileScreen() {
             onPress={() => toggleSection('health')}
           >
             <View style={styles.profileSectionLeft}>
-              <Heart size={18} color="#1a1a1a" />
+              <HeartPulse size={18} color="#1a1a1a" />
               <Text style={styles.profileSectionTitle}>SAĞLIK BİLGİLERİ</Text>
             </View>
             <View style={styles.profileSectionRight}>
@@ -2267,7 +2267,7 @@ export default function ProfileScreen() {
             onPress={() => toggleSection('military')}
           >
             <View style={styles.profileSectionLeft}>
-              <Award size={18} color="#1a1a1a" />
+              <Building2 size={18} color="#1a1a1a" />
               <Text style={styles.profileSectionTitle}>ASKERLİK BİLGİLERİ</Text>
             </View>
             <View style={styles.profileSectionRight}>
@@ -2299,7 +2299,7 @@ export default function ProfileScreen() {
 
         <Accordion
           title="AİLE BİLGİLERİ"
-          icon={<Users2 size={18} color="#7C3AED" />}
+          icon={<Users2 size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
         >
           {profileDetails.userFamilies.length > 0 ? (
@@ -2318,7 +2318,7 @@ export default function ProfileScreen() {
 
         <Accordion
           title="EĞİTİM BİLGİLERİ"
-          icon={<GraduationCap size={18} color="#7C3AED" />}
+          icon={<GraduationCap size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
           actionButton={
             isAdmin ? (
@@ -2352,7 +2352,7 @@ export default function ProfileScreen() {
 
         <Accordion
           title="SOSYAL LİNKLER"
-          icon={<Globe size={18} color="#7C3AED" />}
+          icon={<Globe size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
         >
           {profileDetails.socialMedia ? (
@@ -2369,7 +2369,7 @@ export default function ProfileScreen() {
 
         <Accordion
           title="SERTİFİKALAR"
-          icon={<Award size={18} color="#7C3AED" />}
+          icon={<Award size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
         >
           {profileDetails.certificates.length > 0 ? (
@@ -2391,7 +2391,7 @@ export default function ProfileScreen() {
 
         <Accordion
           title="DİL BİLGİLERİ"
-          icon={<Languages size={18} color="#7C3AED" />}
+          icon={<Languages size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
         >
           {profileDetails.userLanguages.length > 0 ? (
@@ -2408,7 +2408,7 @@ export default function ProfileScreen() {
 
         <Accordion
           title="PASAPORT BİLGİLERİ"
-          icon={<FileText size={18} color="#7C3AED" />}
+          icon={<FileText size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
         >
           {profileDetails.userPassport && profileDetails.userPassport.passportNumber ? (
@@ -2424,7 +2424,7 @@ export default function ProfileScreen() {
 
         <Accordion
           title="VİZE BİLGİLERİ"
-          icon={<Globe size={18} color="#7C3AED" />}
+          icon={<Globe size={18} color="#1a1a1a" />}
           isExpandedDefault={false}
           actionButton={
             isAdmin ? (
@@ -2459,7 +2459,7 @@ export default function ProfileScreen() {
                           style={styles.visaCardActionButton}
                           activeOpacity={0.7}
                         >
-                          <Pencil size={18} color="#7C3AED" />
+                          <Pencil size={18} color="#666" />
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={styles.visaCardActionButton}

@@ -82,7 +82,7 @@ export function Accordion({ title, icon, children, isExpandedDefault = false, ca
               style={styles.editButton}
               activeOpacity={0.7}
             >
-              <Pencil size={16} color="#7C3AED" />
+              <Pencil size={16} color="#666" />
             </TouchableOpacity>
           )}
           <Animated.View style={[styles.chevron, { transform: [{ rotate: rotation }] }]}>
