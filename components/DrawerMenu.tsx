@@ -17,10 +17,7 @@ import {
   X,
   Home,
   Users,
-  Settings,
-  Plus,
   UserIcon,
-  ContactRound,
 } from 'lucide-react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -96,27 +93,6 @@ export function DrawerMenu({ visible, onClose, onNavigate }: DrawerMenuProps) {
       label: 'Çalışanlar',
       icon: (color: string) => <Users size={18} color={color} />,
       route: '/(tabs)/employees',
-      roles: ['Admin', 'Manager', 'HR', '365 Admin'],
-    },
-    {
-      id: 'employees-alt',
-      label: 'Çalışanlar',
-      icon: (color: string) => <ContactRound size={18} color={color} />,
-      route: '/(tabs)/employees',
-    },
-    {
-      id: 'admin',
-      label: 'Admin',
-      icon: (color: string) => <Settings size={18} color={color} />,
-      route: '/(tabs)/admin',
-      roles: ['Admin', '365 Admin'],
-    },
-    {
-      id: 'plus-admin',
-      label: 'Artı Admin',
-      icon: (color: string) => <Plus size={18} color={color} />,
-      route: '/(tabs)/plus-admin',
-      roles: ['SuperAdmin', '365 Admin'],
     },
   ];
 

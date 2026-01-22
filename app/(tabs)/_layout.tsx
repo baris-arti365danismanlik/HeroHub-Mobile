@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, FileText, User, Users, Settings, Plus } from 'lucide-react-native';
+import { Home, User, Users } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -21,13 +21,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="requests"
-        options={{
-          title: 'Talepler',
-          tabBarIcon: ({ size, color }) => <FileText size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profil',
@@ -39,20 +32,6 @@ export default function TabLayout() {
         options={{
           title: 'Çalışanlar',
           tabBarIcon: ({ size, color }) => <Users size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="admin"
-        options={{
-          title: 'Admin',
-          tabBarIcon: ({ size, color }) => <Settings size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="plus-admin"
-        options={{
-          title: 'Artı Admin',
-          tabBarIcon: ({ size, color }) => <Plus size={size} color={color} />,
         }}
       />
     </Tabs>
