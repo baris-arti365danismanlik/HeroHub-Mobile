@@ -258,35 +258,37 @@ export function InboxModal({ visible, onClose, backendUserId, userName, profileP
             </View>
           )}
 
-          {isLeaveRequest && leaveRequestData && requesterInfo && (
+          {isLeaveRequest && leaveRequestData && (
             <>
               <View style={styles.detailContent}>
                 <Text style={styles.detailTitle}>{selectedNotification.title}</Text>
                 <Text style={styles.detailMessage}>{selectedNotification.message}</Text>
               </View>
 
-              <View style={styles.requesterCard}>
-                {requesterInfo.photo ? (
-                  <Image
-                    source={{ uri: requesterInfo.photo }}
-                    style={styles.requesterPhoto}
-                  />
-                ) : (
-                  <View style={styles.requesterPhotoPlaceholder}>
-                    <Text style={styles.requesterInitial}>
-                      {requesterInfo.name.charAt(0).toUpperCase()}
-                    </Text>
+              {requesterInfo && (
+                <View style={styles.requesterCard}>
+                  {requesterInfo.photo ? (
+                    <Image
+                      source={{ uri: requesterInfo.photo }}
+                      style={styles.requesterPhoto}
+                    />
+                  ) : (
+                    <View style={styles.requesterPhotoPlaceholder}>
+                      <Text style={styles.requesterInitial}>
+                        {requesterInfo.name.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+                  <View style={styles.requesterInfo}>
+                    <Text style={styles.requesterName}>{requesterInfo.name}</Text>
+                    <Text style={styles.requesterTitle}>{requesterInfo.title}</Text>
                   </View>
-                )}
-                <View style={styles.requesterInfo}>
-                  <Text style={styles.requesterName}>{requesterInfo.name}</Text>
-                  <Text style={styles.requesterTitle}>{requesterInfo.title}</Text>
+                  <View style={styles.balanceBadge}>
+                    <Text style={styles.balanceBadgeLabel}>İZİN BAKİYESİ</Text>
+                    <Text style={styles.balanceBadgeValue}>{requesterInfo.dayOffBalance} Gün</Text>
+                  </View>
                 </View>
-                <View style={styles.balanceBadge}>
-                  <Text style={styles.balanceBadgeLabel}>İZİN BAKİYESİ</Text>
-                  <Text style={styles.balanceBadgeValue}>{requesterInfo.dayOffBalance} Gün</Text>
-                </View>
-              </View>
+              )}
 
               <View style={styles.leaveDetailSection}>
                 <Text style={styles.leaveDetailTitle}>İZİN DETAYI</Text>
