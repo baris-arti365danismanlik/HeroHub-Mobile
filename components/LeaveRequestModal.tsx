@@ -292,6 +292,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#1a1a1a',
     fontWeight: '600',
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   input: {
     borderWidth: 1,
