@@ -8,7 +8,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import { X } from 'lucide-react-native';
+import { X, ChevronDown } from 'lucide-react-native';
 
 interface LeaveRequestModalProps {
   visible: boolean;
@@ -93,6 +93,7 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
                 <Text style={leaveType ? styles.dropdownText : styles.dropdownPlaceholder}>
                   {leaveType || 'Seçiniz'}
                 </Text>
+                <ChevronDown size={20} color="#666" />
               </TouchableOpacity>
               {showTypeDropdown && (
                 <View style={styles.dropdownMenu}>
@@ -128,7 +129,7 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
                 value={startDate}
                 onChangeText={setStartDate}
                 placeholder="GG.AA.YYYY"
-                placeholderTextColor="#999"
+                placeholderTextColor="#9CA3AF"
               />
             </View>
 
@@ -139,7 +140,7 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
                 value={endDate}
                 onChangeText={setEndDate}
                 placeholder="GG.AA.YYYY"
-                placeholderTextColor="#999"
+                placeholderTextColor="#9CA3AF"
               />
             </View>
 
@@ -150,7 +151,7 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
                 value={duration}
                 onChangeText={setDuration}
                 placeholder="Örn: 1 veya 0.5"
-                placeholderTextColor="#999"
+                placeholderTextColor="#9CA3AF"
                 keyboardType="decimal-pad"
               />
             </View>
@@ -162,7 +163,7 @@ export function LeaveRequestModal({ visible, onClose, onSubmit }: LeaveRequestMo
                 value={notes}
                 onChangeText={setNotes}
                 placeholder="İsteğe bağlı açıklama"
-                placeholderTextColor="#999"
+                placeholderTextColor="#9CA3AF"
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   field: {
-    marginBottom: 20,
+    marginBottom: 24,
     position: 'relative',
     zIndex: 0,
     elevation: 0,
@@ -229,11 +230,11 @@ const styles = StyleSheet.create({
   fieldWithDropdown: {
     zIndex: 9999,
     elevation: 9999,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#1a1a1a',
     marginBottom: 8,
   },
@@ -241,16 +242,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E0E0E0',
     borderRadius: 8,
-    padding: 12,
+    padding: 14,
     backgroundColor: '#fff',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   dropdownText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#1a1a1a',
+    flex: 1,
   },
   dropdownPlaceholder: {
-    fontSize: 16,
-    color: '#999',
+    fontSize: 14,
+    color: '#9CA3AF',
+    flex: 1,
   },
   dropdownMenu: {
     position: 'absolute',
@@ -260,15 +266,15 @@ const styles = StyleSheet.create({
     marginTop: 8,
     maxHeight: 200,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#E5E7EB',
     borderRadius: 8,
     backgroundColor: '#fff',
     zIndex: 10000,
     elevation: 10000,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   dropdownScroll: {
     maxHeight: 200,
@@ -283,16 +289,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   dropdownItemText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#1a1a1a',
-    lineHeight: 22,
+    fontWeight: '600',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#E5E7EB',
     borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
+    padding: 14,
+    fontSize: 14,
     color: '#1a1a1a',
     backgroundColor: '#fff',
   },
@@ -307,12 +313,13 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: '#7C3AED',
-    padding: 16,
+    padding: 14,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   submitButtonDisabled: {
-    backgroundColor: '#D0D0D0',
+    opacity: 0.6,
   },
   submitButtonText: {
     color: '#fff',
